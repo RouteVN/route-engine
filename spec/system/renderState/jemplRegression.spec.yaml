@@ -1,0 +1,412 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.jemplRegression
+suites: [jemplRegression]
+---
+suite: jemplRegression
+exportName: addChoices
+---
+case: structural action guard false is distinct from an undefined binding
+in:
+  - elements:
+      - id: story
+        type: container
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: choices
+        items:
+          - id: one
+            text: One
+    variables:
+      visible: false
+    resources:
+      layouts:
+        choices:
+          elements:
+            - id: choice
+              type: container
+              click:
+                payload:
+                  actions:
+                    nextLine:
+                      $when: variables.visible
+                      sectionId: next
+out:
+  elements:
+    - id: story
+      type: container
+      children:
+        - id: choice
+          type: container
+          click:
+            payload:
+              bypassChoice: true
+              actions: {}
+  animations: []
+---
+case: structural action guard true is distinct from an undefined binding
+in:
+  - elements:
+      - id: story
+        type: container
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: choices
+        items:
+          - id: one
+            text: One
+    variables:
+      visible: true
+    resources:
+      layouts:
+        choices:
+          elements:
+            - id: choice
+              type: container
+              click:
+                payload:
+                  actions:
+                    nextLine:
+                      $when: variables.visible
+                      sectionId: next
+out:
+  elements:
+    - id: story
+      type: container
+      children:
+        - id: choice
+          type: container
+          click:
+            payload:
+              bypassChoice: true
+              actions:
+                nextLine:
+                  sectionId: next
+                  bypassChoice: true
+  animations: []
+---
+case: missing whole-value action is enriched without a conditional
+in:
+  - elements:
+      - id: story
+        type: container
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: choices
+        items:
+          - id: one
+            text: One
+    variables: {}
+    resources:
+      layouts:
+        choices:
+          elements:
+            - id: choice
+              type: container
+              click:
+                payload:
+                  actions:
+                    nextLine: "${variables.missing}"
+out:
+  elements:
+    - id: story
+      type: container
+      children:
+        - id: choice
+          type: container
+          click:
+            payload:
+              bypassChoice: true
+              actions:
+                nextLine:
+                  bypassChoice: true
+  animations: []
+---
+case: missing whole-value action is enriched with a no-op conditional
+in:
+  - elements:
+      - id: story
+        type: container
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: choices
+        items:
+          - id: one
+            text: One
+    variables: {}
+    resources:
+      layouts:
+        choices:
+          elements:
+            - id: choice
+              type: container
+              click:
+                payload:
+                  actions:
+                    nextLine: "${variables.missing}"
+                    $if true:
+                      hideChoices: {}
+out:
+  elements:
+    - id: story
+      type: container
+      children:
+        - id: choice
+          type: container
+          click:
+            payload:
+              bypassChoice: true
+              actions:
+                nextLine:
+                  bypassChoice: true
+                hideChoices: {}
+  animations: []
+---
+case: nested conditional in selected else branch with active false
+in:
+  - elements:
+      - id: story
+        type: container
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: choices
+        items:
+          - id: one
+            text: One
+    variables:
+      selected: false
+      active: false
+    resources:
+      layouts:
+        choices:
+          elements:
+            - $if variables.selected:
+                id: unselected
+                type: container
+              $else:
+                $if variables.active:
+                  id: active
+                  type: container
+                $else:
+                  id: inactive
+                  type: container
+out:
+  elements:
+    - id: story
+      type: container
+      children:
+        - id: inactive
+          type: container
+  animations: []
+---
+case: nested conditional in selected else branch with active true
+in:
+  - elements:
+      - id: story
+        type: container
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: choices
+        items:
+          - id: one
+            text: One
+    variables:
+      selected: false
+      active: true
+    resources:
+      layouts:
+        choices:
+          elements:
+            - $if variables.selected:
+                id: unselected
+                type: container
+              $else:
+                $if variables.active:
+                  id: active
+                  type: container
+                $else:
+                  id: inactive
+                  type: container
+out:
+  elements:
+    - id: story
+      type: container
+      children:
+        - id: active
+          type: container
+  animations: []
+---
+case: nested conditional in selected if branch with active false
+in:
+  - elements:
+      - id: story
+        type: container
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: choices
+        items:
+          - id: one
+            text: One
+    variables:
+      selected: true
+      active: false
+    resources:
+      layouts:
+        choices:
+          elements:
+            - $if variables.selected:
+                $if variables.active:
+                  id: active
+                  type: container
+                $else:
+                  id: inactive
+                  type: container
+              $else:
+                id: unselected
+                type: container
+out:
+  elements:
+    - id: story
+      type: container
+      children:
+        - id: inactive
+          type: container
+  animations: []
+---
+case: nested conditional in selected if branch with active true
+in:
+  - elements:
+      - id: story
+        type: container
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: choices
+        items:
+          - id: one
+            text: One
+    variables:
+      selected: true
+      active: true
+    resources:
+      layouts:
+        choices:
+          elements:
+            - $if variables.selected:
+                $if variables.active:
+                  id: active
+                  type: container
+                $else:
+                  id: inactive
+                  type: container
+              $else:
+                id: unselected
+                type: container
+out:
+  elements:
+    - id: story
+      type: container
+      children:
+        - id: active
+          type: container
+  animations: []
+---
+case: dynamic object key resolves in the selected else fallback
+in:
+  - elements:
+      - id: story
+        type: container
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: choices
+        items:
+          - id: one
+            text: One
+    variables:
+      selected: false
+      key: resolved
+      record: {}
+    resources:
+      layouts:
+        choices:
+          elements:
+            - id: choice
+              type: container
+              data:
+                $if variables.selected:
+                  unused: true
+                $else:
+                  "${variables.key}":
+                    value: 7
+                  stamp: "${objectValues(variables.record)}"
+out:
+  elements:
+    - id: story
+      type: container
+      children:
+        - id: choice
+          type: container
+          data:
+            resolved:
+              value: 7
+            stamp: []
+  animations: []
+---
+case: dynamic object key resolves in the selected if fallback
+in:
+  - elements:
+      - id: story
+        type: container
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: choices
+        items:
+          - id: one
+            text: One
+    variables:
+      selected: true
+      key: resolved
+      record: {}
+    resources:
+      layouts:
+        choices:
+          elements:
+            - id: choice
+              type: container
+              data:
+                $if variables.selected:
+                  "${variables.key}":
+                    value: 7
+                  stamp: "${objectValues(variables.record)}"
+                $else:
+                  unused: true
+out:
+  elements:
+    - id: story
+      type: container
+      children:
+        - id: choice
+          type: container
+          data:
+            resolved:
+              value: 7
+            stamp: []
+  animations: []

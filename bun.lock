@@ -5,7 +5,7 @@
     "": {
       "dependencies": {
         "immer": "^10.1.1",
-        "jempl": "1.1.1",
+        "jempl": "1.1.2",
         "js-yaml": "^4.1.0",
         "puty": "^0.1.1",
         "unicode-segmenter": "^0.17.0",
@@ -284,7 +284,7 @@
 
     "istanbul-reports": ["istanbul-reports@3.2.0", "", { "dependencies": { "html-escaper": "^2.0.0", "istanbul-lib-report": "^3.0.0" } }, "sha512-HGYWWS/ehqTV3xN10i23tkPkpH46MLCIMFNCaaKNavAXTF1RkqxawEPtnjnGZ6XKSInBKkiOA5BKS+aZiY3AvA=="],
 
-    "jempl": ["jempl@1.1.1", "", {}, "sha512-/BmsJz+JUw07cV3ZY8FNtqjEZ1uiIm0EGAu6u8HbqZVT3Y4NHCtleaTGRmotbgvWcG83a5DMFZPAdS3JF5KaTw=="],
+    "jempl": ["jempl@1.1.2", "", {}, "sha512-pUZIM4l2haZt4p0PSDAcSNsqEIBF/6NeNvf+PnYAExr+MwePTi84kIEkZKcoLwYjW2kxRWVOCvG3K2QNEEfiZg=="],
 
     "js-binary-schema-parser": ["js-binary-schema-parser@2.0.3", "", {}, "sha512-xezGJmOb4lk/M1ZZLTR/jaBHQ4gG/lqQnJqdIv4721DMggsa1bDVlHXNeHYogaIEHD9vCRv0fcL4hMA+Coarkg=="],
 
