@@ -532,6 +532,10 @@ properties:
                 - type: number
                 - type: boolean
                 - type: object
+                - type: array
+            valueMode:
+              const: literal
+              description: Preserve an object-variable set value as literal JSON without templates or event bindings. Omitted retains legacy interpolation.
             roundTo:
               type: integer
               minimum: 0

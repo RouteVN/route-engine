@@ -1,3 +1,7 @@
+import {
+  isLiteralVariableOperation,
+  cloneLiteralVariableValue,
+} from "../literalVariableValues.js";
 import { current, isDraft, original } from "immer";
 import {
   createStore,
@@ -503,6 +507,8 @@ const sanitizeRollbackUpdateVariablePayload = (payload, projectData) => {
     }
 
     try {
+      if (isLiteralVariableOperation(operation, variableConfig.type))
+        cloneLiteralVariableValue(value);
       validateVariableOperation(variableConfig.type, op, variableId);
       validateVariableOperationValue(
         variableConfig.type,
@@ -2439,7 +2445,8 @@ const applyRollbackCheckpointUpdateVariable = (state, payload) => {
   }
 
   const operations = payload?.operations ?? [];
-  for (const { variableId, op, value, roundTo } of operations) {
+  for (const operation of operations) {
+    const { variableId, op, value, roundTo } = operation;
     const variableConfig = state.projectData.resources?.variables?.[variableId];
     const scope = variableConfig?.scope;
     const type = variableConfig?.type;
@@ -2451,6 +2458,8 @@ const applyRollbackCheckpointUpdateVariable = (state, payload) => {
       throw new Error(`Cannot update readonly variable: ${variableId}`);
     }
 
+    if (isLiteralVariableOperation(operation, type))
+      cloneLiteralVariableValue(value);
     validateVariableScope(scope, variableId);
     validateVariableOperation(type, op, variableId);
     validateVariableOperationValue(type, op, value, variableId, { roundTo });
@@ -6600,7 +6609,8 @@ export const updateVariable = (
   const globalUpdates = [];
   const contextOperations = [];
 
-  operations.forEach(({ variableId, op, value, roundTo }) => {
+  operations.forEach((operation) => {
+    const { variableId, op, value, roundTo } = operation;
     const variableConfig = state.projectData.resources?.variables?.[variableId];
     const scope = variableConfig?.scope;
     const type = variableConfig?.type;
@@ -6613,9 +6623,14 @@ export const updateVariable = (
     }
 
     // Use pure helpers for validation
+    const operationValue = isLiteralVariableOperation(operation, type)
+      ? cloneLiteralVariableValue(value)
+      : value;
     validateVariableScope(scope, variableId);
     validateVariableOperation(type, op, variableId);
-    validateVariableOperationValue(type, op, value, variableId, { roundTo });
+    validateVariableOperationValue(type, op, operationValue, variableId, {
+      roundTo,
+    });
     if (getActiveSceneReplayContext(state) && scope !== "context") {
       throw new Error(
         `Cannot update ${scope}-scoped variable "${variableId}" while a scene replay is active`,
@@ -6627,7 +6642,9 @@ export const updateVariable = (
 
     if (scope === "context") {
       contextVariableModified = true;
-      const contextOperation = { variableId, op, value };
+      const contextOperation = { variableId, op, value: operationValue };
+      if (Object.hasOwn(operation, "valueMode"))
+        contextOperation.valueMode = operation.valueMode;
       if (roundTo !== undefined) {
         contextOperation.roundTo = roundTo;
       }
@@ -6635,9 +6652,14 @@ export const updateVariable = (
     }
 
     // Use pure helper to apply operation
-    target[variableId] = applyVariableOperation(target[variableId], op, value, {
-      roundTo,
-    });
+    target[variableId] = applyVariableOperation(
+      target[variableId],
+      op,
+      operationValue,
+      {
+        roundTo,
+      },
+    );
 
     if (scope === "device" || scope === "account") {
       globalUpdates.push({

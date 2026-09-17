@@ -1,3 +1,7 @@
+import {
+  isLiteralVariableOperation,
+  cloneLiteralVariableValue,
+} from "./literalVariableValues.js";
 import { current, isDraft, produce } from "immer";
 import { evaluateCondition, parseAndRender, parseConditionJson } from "jempl";
 
@@ -994,9 +998,7 @@ export const isVariableValueCompatible = (variableConfig, value) => {
     case "string":
       return typeof value === "string";
     case "object":
-      return (
-        value !== null && typeof value === "object" && !Array.isArray(value)
-      );
+      return value !== null && typeof value === "object";
     default:
       return false;
   }
@@ -3197,12 +3199,20 @@ const processActionTemplateValue = (value, context, path = []) => {
   }
 
   if (value && typeof value === "object") {
+    const operationPath = path.join(".");
+    const isOperation =
+      operationPath === "updateVariable.operations" ||
+      operationPath ===
+        "choice.items.events.click.actions.updateVariable.operations";
+    const literal = isOperation && isLiteralVariableOperation(value);
     return Object.fromEntries(
       Object.entries(value).map(([key, nestedValue]) => [
         key,
-        isOpaqueActionBranch(path, key)
-          ? nestedValue
-          : processActionTemplateValue(nestedValue, context, [...path, key]),
+        literal && key === "value"
+          ? cloneLiteralVariableValue(nestedValue)
+          : isOpaqueActionBranch(path, key)
+            ? nestedValue
+            : processActionTemplateValue(nestedValue, context, [...path, key]),
       ]),
     );
   }
