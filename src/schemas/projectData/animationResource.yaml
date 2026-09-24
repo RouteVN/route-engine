@@ -11,12 +11,19 @@ $defs:
       - value
       - duration
     properties:
+      startValue:
+        type: number
+        description: Optional starting value for this keyframe.
       value:
         type: number
         description: The target value for this keyframe.
       duration:
         type: number
         description: Duration to reach this value in milliseconds.
+      delay:
+        type: number
+        minimum: 0
+        description: Delay before this keyframe in milliseconds.
       easing:
         type: string
         description: Easing function to use.
@@ -68,13 +75,33 @@ $defs:
         minItems: 1
         items:
           $ref: "#/$defs/keyframe"
-    required:
-      - keyframes
+      auto:
+        type: object
+        required: [duration]
+        properties:
+          duration:
+            type: number
+            minimum: 0
+          delay:
+            type: number
+            minimum: 0
+          easing:
+            type: string
+        additionalProperties: false
+    oneOf:
+      - required: [keyframes]
+      - required: [auto]
+        not:
+          required: [initialValue]
     additionalProperties: false
   updateTween:
     type: object
     properties:
       alpha:
+        $ref: "#/$defs/tweenProperty"
+      translateX:
+        $ref: "#/$defs/tweenProperty"
+      translateY:
         $ref: "#/$defs/tweenProperty"
       x:
         $ref: "#/$defs/tweenProperty"
@@ -206,7 +233,12 @@ properties:
   next:
     $ref: "#/$defs/transitionSide"
   mask:
-    $ref: "#/$defs/mask"
+    oneOf:
+      - $ref: "#/$defs/mask"
+      - type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/mask"
 allOf:
   - if:
       properties:
@@ -227,8 +259,4 @@ allOf:
     then:
       not:
         required: [tween]
-      anyOf:
-        - required: [prev]
-        - required: [next]
-        - required: [mask]
 additionalProperties: false
