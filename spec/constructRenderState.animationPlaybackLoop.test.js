@@ -207,17 +207,16 @@ describe("constructRenderState animation playback loop", () => {
     );
   });
 
-  it("rejects loops without a positive finite authored duration", () => {
-    expect(() =>
-      constructVisualRenderState({
-        playback: {
-          loop: true,
-        },
-        resources: createResources({ duration: 0 }),
-      }),
-    ).toThrow(
-      "[visual.items[marker].animations.playback] playback.loop requires an animation with a finite duration greater than 0.",
-    );
+  it("skips zero-length looping update animations", () => {
+    const renderState = constructVisualRenderState({
+      playback: {
+        continuity: "persistent",
+        loop: true,
+      },
+      resources: createResources({ duration: 0 }),
+    });
+
+    expect(renderState.animations).toEqual([]);
   });
 
   it("emits an animation authored on the second duplicate character occurrence", () => {
