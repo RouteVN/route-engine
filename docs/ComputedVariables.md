@@ -333,6 +333,9 @@ mod: [a, b]
 neg: [value]
 ```
 
+`div` returns `0` when the divisor is zero, so a stored value changing to zero
+does not interrupt render state construction.
+
 Numeric helpers:
 
 ```yaml

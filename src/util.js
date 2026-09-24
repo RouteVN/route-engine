@@ -1331,7 +1331,7 @@ const evaluateComputedOperator = (operator, operands, context) => {
         context,
         2,
       );
-      return left / right;
+      return right === 0 ? 0 : left / right;
     }
     case "mod": {
       const [left, right] = evaluateNumericOperandList(

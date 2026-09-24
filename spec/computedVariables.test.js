@@ -96,6 +96,34 @@ describe("computed variables", () => {
     });
   });
 
+  it("renders a computed ratio when its stored divisor is zero", () => {
+    const engine = createRouteEngine({ handlePendingEffects: () => {} });
+    const projectData = createProjectData({
+      hp: { type: "number", scope: "context", default: 80 },
+      maxHp: { type: "number", scope: "context", default: 0 },
+      hpRatio: {
+        type: "number",
+        scope: "context",
+        computed: {
+          expr: {
+            div: [{ var: "variables.hp" }, { var: "variables.maxHp" }],
+          },
+        },
+      },
+    });
+    engine.init({
+      initialState: { projectData },
+    });
+
+    expect(() => engine.selectRenderState()).not.toThrow();
+    expect(
+      resolveComputedVariables({
+        projectData,
+        variables: engine.selectSystemState().contexts[0].variables,
+      }).hpRatio,
+    ).toBe(0);
+  });
+
   it("evaluates conditional branches with explicit defaults", () => {
     const store = createSystemStore({
       projectData: createProjectData({
