@@ -327,14 +327,10 @@ const init = async () => {
     },
   };
 
-  if (!window?.RTGL_VT_DEBUG) {
-    Object.assign(assets, {
-      video_sample: {
-        url: "/public/video_sample.mp4",
-        type: "video/mp4",
-      },
-    });
-  }
+  assets.video_sample = {
+    url: "/public/video_sample.mp4",
+    type: "video/mp4",
+  };
 
   const assetBufferManager = createAssetBufferManager();
   await assetBufferManager.load(assets);

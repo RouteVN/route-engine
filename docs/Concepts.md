@@ -109,7 +109,8 @@ Mutable runtime state managed by the system store. Key components:
   - `pointers`: Position tracker for the active read location
   - `configuration`: Context-specific settings
   - `views`: Context-owned compatibility view metadata. Active authored overlays live in `global.overlayStack`.
-  - `bgm`: Current background music
+  - `bgm`: Legacy compatibility field; active background music is derived from
+    the current section's presentation state
   - `variables`: Stored game variables. Computed variables are projected from state and resources when template data is built; they are not stored here.
   - `dialogueHistory`: Chronological, context-local dialogue occurrences and the active-branch cursor. It is created lazily when dialogue is displayed and saved with the context.
   - `rollback`: Active branch timeline for rollback navigation

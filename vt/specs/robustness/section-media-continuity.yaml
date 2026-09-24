@@ -1,0 +1,88 @@
+---
+title: Section Entry Media Continuity
+description: A choice transition continues a video background authored by both sections.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+specs:
+  - the choice click enters a destination with the same media
+  - the destination first line authors the same video background
+  - unchanged video background retains its render identity
+steps:
+  - action: wait
+    ms: 150
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value: { sectionId: source, lineId: choice }
+  - action: assert
+    type: js
+    global: __vtLastRenderState.elements.0.children.1.src
+    value: video_sample
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value: { sectionId: destination, lineId: destination }
+  - action: assert
+    type: js
+    global: __vtLastRenderState.elements.0.children.1.id
+    value: bg-cg-background-video
+  - action: assert
+    type: js
+    global: __vtLastRenderState.elements.0.children.1.src
+    value: video_sample
+  - action: screenshot
+---
+screen: { width: 960, height: 540 }
+resources:
+  videos:
+    atmosphere:
+      fileId: video_sample
+      width: 960
+      height: 540
+  colors:
+    choice: { hex: "#4D4D4D" }
+  layouts:
+    choiceLayout:
+      elements:
+        - id: continue
+          type: rect
+          x: 360
+          y: 230
+          width: 240
+          height: 80
+          colorId: choice
+          click:
+            payload:
+              actions:
+                sectionTransition: { sectionId: destination }
+story:
+  initialSceneId: scene
+  scenes:
+    scene:
+      initialSectionId: source
+      sections:
+        source:
+          lines:
+            - id: choice
+              actions:
+                background: { resourceId: atmosphere }
+                choice:
+                  resourceId: choiceLayout
+                  items: [{ id: continue, content: Continue }]
+        destination:
+          lines:
+            - id: destination
+              actions:
+                background: { resourceId: atmosphere }
