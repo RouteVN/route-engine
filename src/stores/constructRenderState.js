@@ -545,9 +545,9 @@ const ensureDialogueContentItems = (content, path) => {
   return content;
 };
 
-const getDialogueContentTextLength = ({ content, path, variables }) =>
+const getDialogueContentTextLength = ({ content, path, variables, runtime }) =>
   ensureDialogueContentItems(content, path).reduce((length, item) => {
-    const text = interpolateDialogueText(item.text, { variables });
+    const text = interpolateDialogueText(item.text, { variables, runtime });
     return length + `${text ?? ""}`.length;
   }, 0);
 
@@ -2466,6 +2466,7 @@ const createDialogueTemplateData = ({
           content: dialogueState.initialRevealedContent,
           path: "dialogue.initialRevealedContent",
           variables,
+          runtime,
         });
   const runtimeDialogueTextSpeed =
     runtime?.dialogueTextSpeed ?? GLOBAL_RUNTIME_DEFAULTS.dialogueTextSpeed;
@@ -2488,7 +2489,7 @@ const createDialogueTemplateData = ({
       textSpeed: line.textSpeed ?? runtimeDialogueTextSpeed,
       content: lineContent.map((item) => ({
         ...item,
-        text: interpolateDialogueText(item.text, { variables }),
+        text: interpolateDialogueText(item.text, { variables, runtime }),
       })),
       character,
       characterName: character.name,
@@ -2509,7 +2510,7 @@ const createDialogueTemplateData = ({
     textSpeed,
     content: dialogueContent.map((item) => ({
       ...item,
-      text: interpolateDialogueText(item.text, { variables }),
+      text: interpolateDialogueText(item.text, { variables, runtime }),
     })),
     initialRevealedCharacters,
     lines: dialogueLines,
