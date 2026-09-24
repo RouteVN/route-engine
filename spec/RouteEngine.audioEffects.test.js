@@ -137,6 +137,81 @@ describe("RouteEngine audioEffects occurrences", () => {
     }
   });
 
+  it("keeps a skipped line effect suppressed after project data updates", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene.sections.section.lines[0].actions.bgm.audioEffects =
+      { resourceId: "smooth" };
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      const engine = createEngine({ projectData });
+      expect(engine.selectRenderState().audioEffects).toBeUndefined();
+      expect(engine.selectRenderState().audio[0].children[0].volume).toBe(80);
+      expect(engine.selectPresentationChanges().bgm.data.volume).toBe(80);
+
+      engine.handleAction("updateProjectData", {
+        projectData: structuredClone(projectData),
+      });
+      engine.handleLineActions();
+
+      expect(engine.selectRenderState().audioEffects).toBeUndefined();
+      expect(engine.selectPresentationState().bgm.volume).toBe(80);
+      expect(engine.selectRenderState().audio[0].children[0].src).toBe(
+        "old.ogg",
+      );
+      expect(engine.selectRenderState().audio[0].children[0].volume).toBe(80);
+      expect(engine.selectPresentationChanges().bgm.data.volume).toBe(80);
+      expect(warn).toHaveBeenCalledOnce();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it("does not reuse a skipped BGM projection after line data changes", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene.sections.section.lines[0].actions.bgm.audioEffects =
+      { resourceId: "smooth" };
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      const engine = createEngine({ projectData });
+      const updatedProjectData = structuredClone(projectData);
+      updatedProjectData.story.scenes.scene.sections.section.lines[0].actions.bgm.volume = 50;
+
+      engine.handleAction("updateProjectData", {
+        projectData: updatedProjectData,
+      });
+      engine.handleLineActions();
+
+      expect(engine.selectPresentationState().bgm.volume).toBe(30);
+      expect(engine.selectRenderState().audioEffects).toHaveLength(1);
+      expect(warn).toHaveBeenCalledOnce();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it("keeps the skipped BGM mix across a section with no BGM action", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene.sections.section.lines[0].actions.bgm.audioEffects =
+      { resourceId: "smooth" };
+    projectData.story.scenes.scene.sections.recovery = {
+      lines: [{ id: "quiet", actions: {} }],
+    };
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      const engine = createEngine({ projectData });
+      engine.handleAction("sectionTransition", { sectionId: "recovery" });
+
+      expect(engine.selectPresentationState().bgm.volume).toBe(80);
+      expect(engine.selectRenderState().audio[0].children[0].volume).toBe(80);
+      expect(warn).toHaveBeenCalledOnce();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
   it("skips a transition effect when a line retains the same music", () => {
     const projectData = createProjectData();
     projectData.story.scenes.scene.sections.section.lines[1].actions.bgm = {

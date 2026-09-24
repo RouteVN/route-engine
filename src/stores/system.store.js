@@ -3666,17 +3666,23 @@ export const selectAutoForwardTimerDelay = ({ state }) =>
     speed: selectRuntimeValueFromState(state, "autoForwardSpeed"),
   });
 
-export const selectPresentationChanges = ({ state }) => {
+export const selectPresentationChanges = ({ state }, options = {}) => {
   const previousPresentationState = selectPreviousPresentationState({ state });
   const currentLine = selectCurrentLine({ state });
   const currentLineActions = currentLine?.actions ?? {};
 
-  const presentationStateAfterLineActions = constructPresentationState(
+  let presentationStateAfterLineActions = constructPresentationState(
     [previousPresentationState ?? {}, currentLineActions],
     {
       resources: state.projectData.resources,
     },
   );
+  if (options.bgmPresentationOverride) {
+    presentationStateAfterLineActions = {
+      ...presentationStateAfterLineActions,
+      bgm: options.bgmPresentationOverride,
+    };
+  }
 
   return diffPresentationState(
     previousPresentationState ?? {},

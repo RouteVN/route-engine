@@ -40,6 +40,10 @@ const PERSISTENT_PLAYBACK_RESET_ACTIONS = new Set([
   "updateLocalizationPackage",
   "updateProjectData",
 ]);
+const PRESENTATION_REFRESH_ACTIONS = new Set([
+  "updateLocalizationPackage",
+  "updateProjectData",
+]);
 
 const PERSISTENT_PLAYBACK_RESTORE_ACTIONS = new Set([
   "loadSlot",
@@ -465,6 +469,16 @@ export default function createRouteEngine(options) {
 
   const hasBgmAudioEffectSelections = (bgm) => !!bgm?.audioEffects;
 
+  const getBgmOccurrenceInputSignature = (payload, resources) =>
+    JSON.stringify({
+      payload,
+      audioEffect: resources.audioEffects?.[payload?.audioEffects?.resourceId],
+      sounds: (payload?.sounds ?? []).map(({ resourceId }) => [
+        resourceId,
+        resources.sounds?.[resourceId],
+      ]),
+    });
+
   const captureOutgoingBgmChannel = () =>
     structuredClone(
       _hasCommittedRenderState
@@ -532,14 +546,22 @@ export default function createRouteEngine(options) {
       options.rollbackSource === "line"
         ? `${_lifecycleGeneration}:${lineEntryId}:${actionPath}`
         : null;
+    const nextResources = captureCurrentBgmResources();
+    const inputSignature = getBgmOccurrenceInputSignature(
+      payload,
+      nextResources,
+    );
     const accepted = lineOccurrenceKey
       ? _acceptedLineBgmActionOccurrences.get(lineOccurrenceKey)
       : null;
-    if (accepted) {
+    if (accepted?.inputSignature === inputSignature) {
       if (accepted.skippedBgm) {
         _bgmPresentationOverride = structuredClone(accepted.skippedBgm);
       }
       return accepted;
+    }
+    if (accepted) {
+      _acceptedLineBgmActionOccurrences.delete(lineOccurrenceKey);
     }
 
     _audioEffectOccurrenceSequence += 1;
@@ -549,9 +571,9 @@ export default function createRouteEngine(options) {
       selection: payload?.audioEffects
         ? structuredClone(payload.audioEffects)
         : null,
+      inputSignature,
     };
 
-    const nextResources = captureCurrentBgmResources();
     let effects;
     try {
       effects = resolveAudioEffects({
@@ -735,7 +757,9 @@ export default function createRouteEngine(options) {
   };
 
   const selectPresentationChanges = () => {
-    return _systemStore.selectPresentationChanges();
+    return _systemStore.selectPresentationChanges({
+      bgmPresentationOverride: _bgmPresentationOverride,
+    });
   };
 
   const selectSectionLineChanges = (payload) => {
@@ -1301,8 +1325,8 @@ export default function createRouteEngine(options) {
     const pointerAfterAction =
       _systemStore.selectCurrentPointer()?.pointer ?? null;
     if (
-      pointerBeforeAction?.sectionId !== pointerAfterAction?.sectionId ||
-      PERSISTENT_PLAYBACK_RESET_ACTIONS.has(actionType)
+      PERSISTENT_PLAYBACK_RESET_ACTIONS.has(actionType) &&
+      !PRESENTATION_REFRESH_ACTIONS.has(actionType)
     ) {
       _bgmPresentationOverride = null;
     }
