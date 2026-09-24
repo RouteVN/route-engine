@@ -1890,6 +1890,11 @@ const getEffectiveChannelVolume = (
   volume = DEFAULT_AUTHORED_AUDIO_VOLUME,
 ) => getLayeredVolume(volume, getRuntimeAudioVolume(runtime, field));
 
+const getVideoVolume = (volume, runtime, field) =>
+  runtime?.muteAll === true
+    ? 0
+    : getEffectiveChannelVolume(runtime, field, volume ?? 50);
+
 const createChannelNode = ({
   id,
   volume,
@@ -2884,7 +2889,11 @@ export const addBackgroundOrCg = (
 
         if (isVideo) {
           element.loop = presentationState.background.loop ?? false;
-          element.volume = background.volume ?? 50;
+          element.volume = getVideoVolume(
+            background.volume,
+            runtime,
+            "musicVolume",
+          );
         }
 
         if (element) {
@@ -3339,7 +3348,11 @@ export const addVisuals = (
 
             if (isVideo) {
               element.loop = resource.loop ?? false;
-              element.volume = resource.volume ?? 50;
+              element.volume = getVideoVolume(
+                resource.volume,
+                runtime,
+                "soundVolume",
+              );
             }
 
             storyContainer.children.push(element);
