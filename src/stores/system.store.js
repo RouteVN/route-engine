@@ -3642,18 +3642,19 @@ const selectCurrentLineAutoForwardText = (state) => {
     return "";
   }
 
+  const runtime = selectRuntimeFromState(state);
   const variables = selectVariablesWithComputedValues({
     variables: {
       ...(state.global?.variables ?? {}),
       ...(getCurrentContext(state)?.variables ?? {}),
     },
-    runtime: selectRuntimeFromState(state),
+    runtime,
     variableConfigs: state.projectData.resources?.variables ?? {},
     eager: false,
   });
   return dialogue.content
     .map((item) => {
-      const text = interpolateDialogueText(item?.text, { variables });
+      const text = interpolateDialogueText(item?.text, { variables, runtime });
       return `${text ?? ""}`;
     })
     .join("");
