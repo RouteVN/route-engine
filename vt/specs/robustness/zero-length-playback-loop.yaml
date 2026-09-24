@@ -1,0 +1,65 @@
+---
+title: Zero Length Playback Loop
+description: A zero length update loop leaves its visual item visible.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 100
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+resources:
+  layouts:
+    marker:
+      elements:
+        - id: marker-shape
+          type: rect
+          width: 120
+          height: 120
+          colorId: markerColor
+  transforms:
+    markerPosition:
+      x: 960
+      y: 540
+      anchorX: 0.5
+      anchorY: 0.5
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+  animations:
+    stationaryLoop:
+      type: update
+      tween:
+        x:
+          initialValue: 960
+          keyframes:
+            - duration: 0
+              value: 960
+  colors:
+    markerColor:
+      hex: "#FFFFFF"
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: first
+              actions:
+                visual:
+                  items:
+                    - id: marker
+                      resourceId: marker
+                      transformId: markerPosition
+                      animations:
+                        resourceId: stationaryLoop
+                        playback:
+                          loop: true

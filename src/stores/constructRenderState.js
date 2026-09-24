@@ -138,6 +138,9 @@ const createAnimationInstance = ({
           `[${animationPath}.playback] animation.complete is not allowed when playback.loop is true because a loop never completes.`,
         );
       }
+      if (normalizedPlayback.loop === true && authoredDurationMs === 0) {
+        return null;
+      }
       if (
         normalizedPlayback.loop === true &&
         (!Number.isFinite(authoredDurationMs) || authoredDurationMs <= 0)
