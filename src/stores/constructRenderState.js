@@ -29,6 +29,18 @@ const jemplFunctions = {
 const LOOP_DIRECTIVE_RE =
   /^\$for\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s*,\s*([A-Za-z_][A-Za-z0-9_]*))?\s+in\s+(.+?)(?::)?$/;
 
+const normalizeLoopSource = (directive) => {
+  const loopMatch = LOOP_DIRECTIVE_RE.exec(directive);
+  if (!loopMatch) {
+    return null;
+  }
+
+  const [, itemName, indexName, sourceExpression] = loopMatch;
+  return `${itemName}${
+    indexName ? `, ${indexName}` : ""
+  } in __arrayOrEmpty(${sourceExpression.trim()})`;
+};
+
 const normalizeLoopDirectives = (node) => {
   if (Array.isArray(node)) {
     return node.map((item) => {
@@ -42,15 +54,12 @@ const normalizeLoopDirectives = (node) => {
       }
 
       const [key] = Object.keys(item);
-      const loopMatch = LOOP_DIRECTIVE_RE.exec(key);
-      if (!loopMatch) {
+      const normalizedLoop = normalizeLoopSource(key);
+      if (!normalizedLoop) {
         return normalizeLoopDirectives(item);
       }
 
-      const [, itemName, indexName, sourceExpression] = loopMatch;
-      const normalizedKey = `$for ${itemName}${
-        indexName ? `, ${indexName}` : ""
-      } in __arrayOrEmpty(${sourceExpression.trim()})`;
+      const normalizedKey = `$for ${normalizedLoop}`;
       const loopTemplate = Array.isArray(item[key]) ? item[key] : [];
       return {
         [normalizedKey]: normalizeLoopDirectives(loopTemplate),
@@ -65,7 +74,9 @@ const normalizeLoopDirectives = (node) => {
   return Object.fromEntries(
     Object.entries(node).map(([key, value]) => [
       key,
-      normalizeLoopDirectives(value),
+      key === "$each" && typeof value === "string"
+        ? (normalizeLoopSource(`$for ${value}`) ?? value)
+        : normalizeLoopDirectives(value),
     ]),
   );
 };

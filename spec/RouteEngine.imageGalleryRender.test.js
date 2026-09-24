@@ -549,4 +549,74 @@ describe("RouteEngine image-gallery render API", () => {
       children: [],
     });
   });
+
+  it("renders $each with an absent gallery as an empty loop", () => {
+    const projectData = createProjectData({ includeImageGallery: false });
+    projectData.resources.layouts.galleryHud.elements = [
+      {
+        id: "gallery-grid",
+        type: "container",
+        children: [
+          {
+            $each: "group in imageGallery.pageGroups",
+            id: "gallery-group-${group.groupId}",
+            type: "text",
+            content: "${group.groupId}",
+          },
+        ],
+      },
+    ];
+
+    const engine = createEngine(projectData);
+
+    expect(engine.selectImageGallery()).toBeNull();
+    expect(() => engine.selectRenderState()).not.toThrow();
+    expect(
+      findElementById(engine.selectRenderState().elements, "gallery-grid"),
+    ).toMatchObject({ children: [] });
+  });
+
+  it("renders nested $each loops and skips a missing source in the current item", () => {
+    const projectData = createProjectData();
+    projectData.resources.layouts.galleryHud.elements = [
+      {
+        id: "gallery-grid",
+        type: "container",
+        children: [
+          {
+            $each: "group, index in imageGallery.pageGroups",
+            id: "gallery-group-${index}-${group.groupId}",
+            type: "container",
+            children: [
+              {
+                $each: "variant in group.variants",
+                id: "gallery-variant-${variant.variantId}",
+                type: "text",
+                content: "${variant.imageId}",
+              },
+              {
+                $each: "variant in group.missingVariants",
+                id: "unexpected-${variant.variantId}",
+                type: "text",
+                content: "${variant.imageId}",
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const renderState = createEngine(projectData).selectRenderState();
+
+    expect(
+      findElementById(renderState.elements, "gallery-group-0-festival"),
+    ).toMatchObject({
+      children: [
+        {
+          id: "gallery-variant-day",
+          content: "festivalDay",
+        },
+      ],
+    });
+  });
 });
