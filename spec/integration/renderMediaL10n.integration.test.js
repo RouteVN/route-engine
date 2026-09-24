@@ -149,6 +149,12 @@ describe("render, media, and animation contracts through engine effects", () => 
           portrait: { fileId: "portrait.png", width: 240, height: 360 },
         },
         videos: {
+          backdrop: {
+            fileId: "backdrop.mp4",
+            width: 1920,
+            height: 1080,
+            volume: 80,
+          },
           cutscene: {
             fileId: "cutscene.mp4",
             width: 640,
@@ -175,6 +181,7 @@ describe("render, media, and animation contracts through engine effects", () => 
         },
       },
       actions: {
+        background: { resourceId: "backdrop" },
         visual: {
           items: [
             {
@@ -200,7 +207,10 @@ describe("render, media, and animation contracts through engine effects", () => 
       },
     });
 
-    const harness = createEngineIntegrationHarness({ projectData });
+    const harness = createEngineIntegrationHarness({
+      projectData,
+      global: { runtime: { musicVolume: 30, soundVolume: 40 } },
+    });
     const elements = harness.renderStates.at(-1).elements;
 
     expect(findRenderElement(elements, "visual-portrait")).toMatchObject({
@@ -215,8 +225,15 @@ describe("render, media, and animation contracts through engine effects", () => 
       type: "video",
       src: "cutscene.mp4",
       loop: true,
-      volume: 25,
+      volume: 10,
     });
+    expect(findRenderElement(elements, "bg-cg-background-video")).toMatchObject(
+      {
+        type: "video",
+        src: "backdrop.mp4",
+        volume: 24,
+      },
+    );
     expect(findRenderElement(elements, "visual-actor")).toMatchObject({
       type: "spritesheet-animation",
       src: "actor.png",
@@ -226,6 +243,50 @@ describe("render, media, and animation contracts through engine effects", () => 
         loop: false,
       },
     });
+  });
+
+  it("mutes background and visual video audio with mute-all", () => {
+    const projectData = createSingleLineProject({
+      resources: {
+        videos: {
+          backdrop: {
+            fileId: "backdrop.mp4",
+            width: 1920,
+            height: 1080,
+            volume: 80,
+          },
+          cutscene: {
+            fileId: "cutscene.mp4",
+            width: 640,
+            height: 360,
+            volume: 25,
+          },
+        },
+        transforms: { videoPosition: { x: 400, y: 200 } },
+      },
+      actions: {
+        background: { resourceId: "backdrop" },
+        visual: {
+          items: [
+            {
+              id: "cutscene",
+              resourceId: "cutscene",
+              transformId: "videoPosition",
+            },
+          ],
+        },
+      },
+    });
+    const harness = createEngineIntegrationHarness({
+      projectData,
+      global: { runtime: { muteAll: true } },
+    });
+    const elements = harness.renderStates.at(-1).elements;
+
+    expect(findRenderElement(elements, "bg-cg-background-video").volume).toBe(
+      0,
+    );
+    expect(findRenderElement(elements, "visual-cutscene").volume).toBe(0);
   });
 
   it("resolves particle image textures before dispatching a renderer node", () => {
