@@ -944,10 +944,19 @@ in:
             - id: "dialogue-text"
               type: "text-revealing"
               content: "${dialogue.content}"
+              textStyleId: "body"
               revealEffect: "typewriter"
-      colors: {}
-      fonts: {}
-      textStyles: {}
+      fonts:
+        fontMain:
+          fileId: "Arial"
+      textStyles:
+        body:
+          fontId: "fontMain"
+          colorId: "fg"
+          textDecoration: "underline"
+      colors:
+        fg:
+          hex: "#FFFFFF"
     dialogueUIHidden: false
     autoMode: false
     skipMode: false
@@ -964,6 +973,14 @@ out:
           content:
             - text: "Hello world"
           revealEffect: "none"
+          textStyle:
+            fontFamily: "Arial"
+            fontSize: 16
+            fontWeight: "400"
+            fontStyle: "normal"
+            lineHeight: 1.2
+            fill: "#FFFFFF"
+            textDecoration: "underline"
   animations: []
 ---
 case: skip mode accelerates text-revealing dialogue elements

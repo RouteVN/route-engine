@@ -251,6 +251,7 @@ in:
           fontWeight: "700"
           fontStyle: "normal"
           lineHeight: 1.2
+          textDecoration: "underline"
         ruby:
           fontId: "fontMain"
           colorId: "muted"
@@ -305,6 +306,7 @@ out:
                 fontStyle: "normal"
                 lineHeight: 1.2
                 fill: "#FFD166"
+                textDecoration: "underline"
           width: 500
           x: 320
           y: 180

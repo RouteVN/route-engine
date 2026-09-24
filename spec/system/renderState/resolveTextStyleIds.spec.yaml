@@ -18,6 +18,7 @@ in:
         fontWeight: "400"
         fontStyle: "italic"
         lineHeight: 1.2
+        textDecoration: "underline"
         strokeColorId: "outline"
         strokeWidth: 2
         shadow:
@@ -46,6 +47,7 @@ out:
     fontStyle: "italic"
     lineHeight: 1.2
     fill: "#FFFFFF"
+    textDecoration: "underline"
     strokeColor: "#000000"
     strokeWidth: 2
     shadow:

@@ -555,6 +555,10 @@ properties:
             type: string
             description: Font style
             enum: [normal, italic, oblique]
+          textDecoration:
+            type: string
+            description: Text decoration passed through to the renderer
+            enum: [none, underline]
           lineHeight:
             type: number
             description: Line height. 1 = font size pixels
