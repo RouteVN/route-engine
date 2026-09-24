@@ -3,6 +3,11 @@ import { evaluateCondition, parseAndRender, parseConditionJson } from "jempl";
 
 export const RUN_STORE_TRANSACTION = Symbol("runStoreTransaction");
 
+export const getOwnProperty = (value, key) =>
+  value != null && Object.prototype.hasOwnProperty.call(value, key)
+    ? value[key]
+    : undefined;
+
 const STRICT_COMPARISON_FUNCTION_PREFIX = "__routeEngineConditionComparison";
 
 const isStrictlyOrderComparable = (left, right) =>
@@ -723,7 +728,7 @@ export const validateMusicRoomConfig = (projectData = {}) => {
     }
     trackIds.add(track.id);
 
-    const sound = projectData?.resources?.sounds?.[track.soundId];
+    const sound = getOwnProperty(projectData?.resources?.sounds, track.soundId);
     if (!hasOwn(projectData?.resources?.sounds, track.soundId)) {
       throw new Error(
         `Music room track "${track.id}" references unknown sound "${track.soundId}"`,
@@ -869,14 +874,14 @@ export const validateSceneReplayConfig = (projectData = {}) => {
         `Scene replay scene "${replay.sceneId}" references unknown thumbnail image "${replay.thumbnailImageId}"`,
       );
     }
-    const scene = scenes[replay.sceneId];
+    const scene = getOwnProperty(scenes, replay.sceneId);
     if (!scene) {
       throw new Error(
         `Scene replay references unknown scene "${replay.sceneId}"`,
       );
     }
     const startSectionId = scene.initialSectionId;
-    const startSection = scene.sections?.[startSectionId];
+    const startSection = getOwnProperty(scene.sections, startSectionId);
     if (!startSection) {
       throw new Error(
         `Scene replay scene "${replay.sceneId}" references unknown initial section "${startSectionId}"`,
@@ -901,7 +906,10 @@ export const validateSceneReplayConfig = (projectData = {}) => {
     }
 
     for (const [variableId, value] of Object.entries(replay.initialVariables)) {
-      const variableConfig = projectData?.resources?.variables?.[variableId];
+      const variableConfig = getOwnProperty(
+        projectData?.resources?.variables,
+        variableId,
+      );
       if (!variableConfig) {
         throw new Error(
           `Scene replay scene "${replay.sceneId}" initialVariables references unknown variable "${variableId}"`,

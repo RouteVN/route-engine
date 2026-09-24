@@ -1,4 +1,5 @@
 import { createBgmSoundRenderId } from "./audioIds.js";
+import { getOwnProperty } from "./util.js";
 
 const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
 
@@ -55,7 +56,7 @@ const getCanonicalSoundProperty = ({
       : bgm?.sounds?.find(
           (sound) => createBgmSoundRenderId(bgm, sound) === renderedSound?.id,
         );
-  const resource = resources.sounds?.[sound?.resourceId];
+  const resource = getOwnProperty(resources.sounds, sound?.resourceId);
   return (
     sound?.[property] ?? resource?.[property] ?? DEFAULT_AUDIO_VALUES[property]
   );
@@ -272,7 +273,7 @@ export const resolveSoundBoundaryEffect = ({
 
   const resourceId = selection.resourceId;
   const resourcePath = `resources.audioEffects.${resourceId}`;
-  const resource = resources.audioEffects?.[resourceId];
+  const resource = getOwnProperty(resources.audioEffects, resourceId);
   if (!resource) {
     throw new Error(
       `[${selectionPath}.resourceId]\n[${resourcePath}] Unknown audio effect resource "${resourceId}".`,
@@ -301,7 +302,7 @@ export const resolveSoundBoundaryEffect = ({
 
 export const applyAudioEffectEndpoints = ({ bgm, resources = {} }) => {
   const resourceId = bgm?.audioEffects?.resourceId;
-  const resource = resources.audioEffects?.[resourceId];
+  const resource = getOwnProperty(resources.audioEffects, resourceId);
   const propertyTracks =
     resource?.type === "update"
       ? resource.tween
@@ -371,7 +372,7 @@ export const resolveAudioEffect = ({
   const actionPath = occurrence.actionPath ?? "bgm";
   const resourceId = selection.resourceId;
   const resourcePath = `resources.audioEffects.${resourceId}`;
-  const resource = resources.audioEffects?.[resourceId];
+  const resource = getOwnProperty(resources.audioEffects, resourceId);
   if (!resource) {
     throw new Error(
       `[${actionPath}.audioEffects.resourceId]\n[${resourcePath}] Unknown audio effect resource "${resourceId}".`,
@@ -527,8 +528,8 @@ export const resolveAudioEffects = (options) => {
   const createSingleSoundBgm = (bgm, resources, channel, sound) => {
     if (!Array.isArray(bgm?.sounds)) return bgm;
     const index = channel?.children?.indexOf(sound) ?? -1;
-    const authored = bgm.sounds.filter(
-      (item) => resources.sounds?.[item.resourceId],
+    const authored = bgm.sounds.filter((item) =>
+      getOwnProperty(resources.sounds, item.resourceId),
     )[index];
     return { ...bgm, sounds: authored ? [authored] : [] };
   };
