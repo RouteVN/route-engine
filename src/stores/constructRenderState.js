@@ -28,6 +28,36 @@ const jemplFunctions = {
 
 const LOOP_DIRECTIVE_RE =
   /^\$for\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s*,\s*([A-Za-z_][A-Za-z0-9_]*))?\s+in\s+(.+?)(?::)?$/;
+const INCOMPLETE_WHEN_OPERATOR_RE =
+  /(?:==|!=|>=|<=|&&|\|\||\bin\b|[<>]|[+-])\s*$/;
+
+const assertCompleteWhenConditions = (node, path = "template") => {
+  if (Array.isArray(node)) {
+    node.forEach((item, index) =>
+      assertCompleteWhenConditions(item, `${path}[${index}]`),
+    );
+    return;
+  }
+
+  if (!node || typeof node !== "object") {
+    return;
+  }
+
+  if (typeof node.$when === "string") {
+    const match = node.$when.trim().match(INCOMPLETE_WHEN_OPERATOR_RE);
+    if (match) {
+      throw new Error(
+        `Malformed $when condition at "${path}": missing an operand after "${match[0].trim()}".`,
+      );
+    }
+  }
+
+  Object.entries(node).forEach(([key, value]) => {
+    if (key !== "$when") {
+      assertCompleteWhenConditions(value, `${path}.${key}`);
+    }
+  });
+};
 
 const normalizeLoopDirectives = (node) => {
   if (Array.isArray(node)) {
@@ -71,6 +101,7 @@ const normalizeLoopDirectives = (node) => {
 };
 
 const renderLayoutTemplate = (template, templateData) => {
+  assertCompleteWhenConditions(template);
   const options = { functions: jemplFunctions };
   return parseAndRender(
     normalizeLoopDirectives(template),
