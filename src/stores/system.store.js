@@ -54,6 +54,7 @@ const DEFAULT_NEXT_LINE_CONFIG = {
 };
 
 const CURRENT_SAVE_FORMAT_VERSION = 1;
+const DEFAULT_SAVE_SLOT_PAGE_SIZE = 6;
 const RANDOM_OUTCOME_VERSION = 1;
 const CHOICE_INTERACTION_SOURCE = "choice";
 const FORM_INTERACTION_SOURCE = "form";
@@ -3815,7 +3816,10 @@ export const selectPreviousPresentationState = ({ state }) => {
  *   ]
  * }
  */
-export const selectSaveSlotPage = ({ state }, { slotsPerPage = 6 } = {}) => {
+export const selectSaveSlotPage = (
+  { state },
+  { slotsPerPage = DEFAULT_SAVE_SLOT_PAGE_SIZE } = {},
+) => {
   const runtime = selectRuntime({ state });
   const saveLoadPagination = runtime.saveLoadPagination ?? 1;
   const startSlot = (saveLoadPagination - 1) * slotsPerPage + 1;
@@ -3857,6 +3861,30 @@ export const shouldSettleCurrentLinePresentation = (state) => {
   );
 };
 
+const getSaveSlotPageSize = (state, presentationState) => {
+  const layouts = state.projectData.resources?.layouts ?? {};
+  const overlayLayoutIds = [...(state.global.overlayStack ?? [])]
+    .reverse()
+    .map((overlay) => overlay?.resourceId);
+  const layoutIds = [...overlayLayoutIds, presentationState.layout?.resourceId];
+
+  for (const layoutId of layoutIds) {
+    if (
+      typeof layoutId !== "string" ||
+      !Object.prototype.hasOwnProperty.call(layouts, layoutId)
+    ) {
+      continue;
+    }
+
+    const paginationSize = layouts[layoutId]?.paginationSize;
+    if (Number.isInteger(paginationSize) && paginationSize > 0) {
+      return paginationSize;
+    }
+  }
+
+  return DEFAULT_SAVE_SLOT_PAGE_SIZE;
+};
+
 export const selectRenderState = ({ state }, options = {}) => {
   const presentationState = selectPresentationState({ state });
   const previousPresentationState = selectPreviousPresentationState({ state });
@@ -3893,7 +3921,10 @@ export const selectRenderState = ({ state }, options = {}) => {
 
   const allVariables = selectAllVariables({ state });
 
-  const { saveSlots } = selectSaveSlotPage({ state });
+  const { saveSlots } = selectSaveSlotPage(
+    { state },
+    { slotsPerPage: getSaveSlotPageSize(state, presentationState) },
+  );
   const settleCurrentLinePresentation =
     shouldSettleCurrentLinePresentation(state);
 

@@ -236,6 +236,8 @@ Current save/load-related selectors are:
 
 `selectSaveSlotPage` is a UI helper for paginated save/load screens. It flattens the current page into slot UI items based on the `loadPage` variable.
 
+An active save/load layout can set `resources.layouts.<layoutId>.paginationSize` to a positive integer. During rendering, the topmost overlay layout that sets this field takes precedence, followed by the current presentation layout. If neither defines a page size, the engine uses six slots. Direct calls to `selectSaveSlotPage({ slotsPerPage })` can still supply an explicit size.
+
 ### Effects
 
 The save/load path crosses the store boundary through effects:
