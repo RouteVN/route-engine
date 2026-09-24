@@ -807,6 +807,32 @@ describe("projectData schema", () => {
     );
   });
 
+  it("accepts spritesheet animation frame names", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        spritesheets: {
+          animatedSky: {
+            fileId: "animated-sky.png",
+            width: 32,
+            height: 32,
+            jsonData: {
+              frames: {
+                10: { frame: { x: 0, y: 0, w: 32, h: 32 } },
+                2: { frame: { x: 32, y: 0, w: 32, h: 32 } },
+              },
+            },
+            animations: {
+              calm: { frames: ["10", "2"] },
+            },
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
   it("accepts structured and legacy particle resources", () => {
     const projectData = createMinimalProjectData({
       resources: {

@@ -1,10 +1,10 @@
 ---
-title: Visual Spritesheet Default Animation
-description: A spritesheet visual without animationName uses its first declared animation.
+title: Visual Spritesheet Named Frames
+description: A spritesheet visual selects named frames despite array-like atlas keys.
 specs:
   - animationName is intentionally omitted from the visual item
-  - the schema permits the omission
-  - the fighter must still render using the first animation
+  - the animation frames name their atlas entries
+  - integer-like atlas keys do not change the selected frame names
 skipInitialScreenshot: true
 viewport:
   id: capture
@@ -46,13 +46,19 @@ resources:
       height: 240
       jsonData:
         frames:
-          rollSequence0000.png:
+          "10":
             frame: { x: 483, y: 692, w: 169, h: 226 }
             rotated: false
             trimmed: true
             spriteSourceSize: { x: 3, y: 4, w: 169, h: 226 }
             sourceSize: { w: 175, h: 240 }
-          rollSequence0001.png:
+          "2":
+            frame: { x: 468, y: 2, w: 169, h: 226 }
+            rotated: false
+            trimmed: true
+            spriteSourceSize: { x: 3, y: 4, w: 169, h: 226 }
+            sourceSize: { w: 175, h: 240 }
+          "1":
             frame: { x: 468, y: 2, w: 169, h: 226 }
             rotated: false
             trimmed: true
@@ -64,7 +70,7 @@ resources:
           scale: "1"
       animations:
         idle:
-          frames: [0, 1]
+          frames: ["10", "2"]
           animationSpeed: 0.1
           loop: true
   transforms:
