@@ -487,6 +487,52 @@ out:
           content: "No choices available"
   animations: []
 ---
+case: interpolates choice item content with variables
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: "choiceLayout"
+        items:
+          - id: "choice1"
+            content: "Hello ${variables.name}"
+            events:
+              click:
+                payload:
+                  action: "choose"
+    resources:
+      layouts:
+        choiceLayout:
+          elements:
+            - id: "choice-content"
+              type: "text"
+              content: "${choice.items[0].content}"
+            - id: "choice-id"
+              type: "text"
+              content: "${choice.items[0].id}"
+    variables:
+      name: "Ada"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "choice-content"
+          type: "text"
+          content: "Hello Ada"
+        - id: "choice-id"
+          type: "text"
+          content: "choice1"
+  animations: []
+---
 case: null resources - return unchanged state
 in:
   - elements:

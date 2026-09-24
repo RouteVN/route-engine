@@ -3698,27 +3698,34 @@ export const addChoices = (
     const layout = resources?.layouts?.[presentationState.choice.resourceId];
     if (layout && layout.elements) {
       const wrappedTemplate = { elements: layout.elements };
+      const templateData = createLayoutTemplateData({
+        variables,
+        imageGallery,
+        musicRoom,
+        sceneReplay,
+        runtime,
+        saveSlots,
+        dialogueState: presentationState.dialogue,
+        isLineCompleted,
+        autoMode,
+        skipMode,
+        isChoiceVisible: isChoiceVisible ?? !!presentationState.choice,
+        isFormVisible,
+        canRollback,
+        form,
+        characters: resources.characters || {},
+        skipTransitionsAndAnimations,
+      });
       const result = renderLayoutTemplate(wrappedTemplate, {
-        ...createLayoutTemplateData({
-          variables,
-          imageGallery,
-          musicRoom,
-          sceneReplay,
-          runtime,
-          saveSlots,
-          dialogueState: presentationState.dialogue,
-          isLineCompleted,
-          autoMode,
-          skipMode,
-          isChoiceVisible: isChoiceVisible ?? !!presentationState.choice,
-          isFormVisible,
-          canRollback,
-          form,
-          characters: resources.characters || {},
-          skipTransitionsAndAnimations,
-        }),
+        ...templateData,
         choice: {
-          items: presentationState.choice?.items ?? [],
+          items: (presentationState.choice?.items ?? []).map((item) => {
+            if (typeof item?.content !== "string") return item;
+            return {
+              ...item,
+              content: renderLayoutTemplate(item.content, templateData),
+            };
+          }),
         },
       });
       const choiceElements = tagBypassChoice(
