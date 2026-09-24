@@ -2,6 +2,7 @@ import { createSystemStore } from "./stores/system.store.js";
 import { normalizeNamespace } from "./indexedDbPersistence.js";
 import {
   evaluateRouteCondition,
+  getOwnProperty,
   isComputedVariableConfig,
   processActionTemplates,
   RUN_STORE_TRANSACTION,
@@ -1810,8 +1811,10 @@ export default function createRouteEngine(options) {
       if (typeof payload.variableId !== "string" || !payload.variableId) {
         throw new Error("integer random action requires variableId");
       }
-      const variableConfig =
-        _canonicalProjectData?.resources?.variables?.[payload.variableId];
+      const variableConfig = getOwnProperty(
+        _canonicalProjectData?.resources?.variables,
+        payload.variableId,
+      );
       if (
         !variableConfig ||
         variableConfig.type !== "number" ||
