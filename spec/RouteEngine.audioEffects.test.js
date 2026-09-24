@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 
 const createProjectData = () => ({
@@ -113,6 +113,111 @@ const enterNextLine = (engine) => {
 };
 
 describe("RouteEngine audioEffects occurrences", () => {
+  it("skips an update effect when a line starts music", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene.sections.section.lines[0].actions.bgm.audioEffects =
+      { resourceId: "smooth" };
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      const engine = createEngine({ projectData });
+
+      expect(warn).toHaveBeenCalledOnce();
+      expect(warn.mock.calls[0][0]).toContain("changes source identity");
+      expect(engine.selectRenderState().audioEffects).toBeUndefined();
+      expect(engine.selectPresentationState().bgm.volume).toBe(80);
+      expect(engine.selectRenderState().audio[0].children[0].src).toBe(
+        "old.ogg",
+      );
+      engine.handleLineActions();
+      expect(warn).toHaveBeenCalledOnce();
+      expect(engine.selectPresentationState().bgm.volume).toBe(80);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it("skips a transition effect when a line retains the same music", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene.sections.section.lines[1].actions.bgm = {
+      volume: 30,
+      audioEffects: { resourceId: "crossfade" },
+      sounds: [{ id: "main", resourceId: "old" }],
+    };
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      const engine = createEngine({ projectData });
+      enterNextLine(engine);
+
+      expect(warn).toHaveBeenCalledOnce();
+      expect(warn.mock.calls[0][0]).toContain("only updates a retained sound");
+      expect(engine.selectRenderState().audioEffects).toBeUndefined();
+      expect(engine.selectPresentationState().bgm.volume).toBe(30);
+      expect(engine.selectRenderState().audio[0].children[0].src).toBe(
+        "old.ogg",
+      );
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it("warns when a transition leaves retained music unchanged", () => {
+    const projectData = createProjectData();
+    projectData.resources.audioEffects.noChange = {
+      type: "transition",
+      next: { volume: { keyframes: [{ value: 80, duration: 100 }] } },
+    };
+    projectData.story.scenes.scene.sections.section.lines[1].actions.bgm = {
+      volume: 80,
+      audioEffects: { resourceId: "noChange" },
+      sounds: [{ id: "main", resourceId: "old" }],
+    };
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      const engine = createEngine({ projectData });
+      enterNextLine(engine);
+
+      expect(warn).toHaveBeenCalledOnce();
+      expect(warn.mock.calls[0][0]).toContain("only updates a retained sound");
+      expect(engine.selectRenderState().audioEffects).toBeUndefined();
+      expect(engine.selectPresentationState().bgm.volume).toBe(80);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it("keeps skipped music values until another BGM action starts", () => {
+    const projectData = createProjectData();
+    const lines = projectData.story.scenes.scene.sections.section.lines;
+    lines[0].actions.bgm.audioEffects = { resourceId: "smooth" };
+    lines[1].actions = {};
+    lines[2].actions.bgm = {
+      volume: 60,
+      audioEffects: { resourceId: "crossfade" },
+      sounds: [{ id: "main", resourceId: "next" }],
+    };
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      const engine = createEngine({ projectData });
+      enterNextLine(engine);
+
+      expect(engine.selectPresentationState().bgm.volume).toBe(80);
+      expect(engine.selectRenderState().audio[0].children[0].volume).toBe(80);
+
+      enterNextLine(engine);
+      expect(warn).toHaveBeenCalledOnce();
+      expect(engine.selectRenderState().audioEffects).toHaveLength(1);
+      expect(engine.selectRenderState().audio[0].children[0].src).toBe(
+        "next.ogg",
+      );
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
   it("treats the initial BGM as an entry-only transition", () => {
     const projectData = createProjectData();
     projectData.story.scenes.scene.sections.section.lines[0].actions.bgm.audioEffects =
@@ -652,7 +757,7 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(engine.selectRenderState().audioEffects).toBeUndefined();
   });
 
-  it("recovers after a rejected line batch without leaking runtime or occurrence state", () => {
+  it("continues line actions after skipping an incompatible effect", () => {
     const projectData = createProjectData();
     projectData.story.scenes.scene.sections.section.lines[1] = {
       id: "invalid-update",
@@ -680,29 +785,34 @@ describe("RouteEngine audioEffects occurrences", () => {
       ],
     };
     const engine = createEngine({ projectData });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    expect(() => enterNextLine(engine)).toThrow(
-      "only updates a retained sound",
-    );
-    expect(engine.selectRuntime().musicVolume).toBe(50);
-    expect(engine.selectRenderState().audioEffects).toBeUndefined();
+    try {
+      expect(() => enterNextLine(engine)).not.toThrow();
+      expect(warn).toHaveBeenCalledOnce();
+      expect(warn.mock.calls[0][0]).toContain("only updates a retained sound");
+      expect(engine.selectRuntime().musicVolume).toBe(25);
+      expect(engine.selectRenderState().audioEffects).toBeUndefined();
 
-    expect(() =>
-      engine.handleAction("sectionTransition", { sectionId: "recovery" }),
-    ).not.toThrow();
-    const recoveredEffect = engine.selectRenderState().audioEffects?.[0];
-    expect(recoveredEffect?.id).toMatch(/:audio2$/);
-    expect(recoveredEffect).toMatchObject({
-      properties: {
-        volume: {
-          update: {
-            keyframes: expect.arrayContaining([
-              expect.objectContaining({ value: 30 }),
-            ]),
+      expect(() =>
+        engine.handleAction("sectionTransition", { sectionId: "recovery" }),
+      ).not.toThrow();
+      const recoveredEffect = engine.selectRenderState().audioEffects?.[0];
+      expect(recoveredEffect?.id).toMatch(/:audio3$/);
+      expect(recoveredEffect).toMatchObject({
+        properties: {
+          volume: {
+            update: {
+              keyframes: expect.arrayContaining([
+                expect.objectContaining({ value: 30 }),
+              ]),
+            },
           },
         },
-      },
-    });
+      });
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it("uses the owning scene id in line-authored effect diagnostics", () => {
@@ -810,12 +920,18 @@ describe("RouteEngine audioEffects occurrences", () => {
         runtime: { skipTransitionsAndAnimations: true },
       },
     });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    expect(() => enterNextLine(engine)).not.toThrow();
-    expect(engine.selectRenderState().audioEffects).toBeUndefined();
-    expect(engine.selectRenderState().audio[0].children[0]).not.toHaveProperty(
-      "beginEffect",
-    );
+    try {
+      expect(() => enterNextLine(engine)).not.toThrow();
+      expect(warn).toHaveBeenCalledOnce();
+      expect(engine.selectRenderState().audioEffects).toBeUndefined();
+      expect(
+        engine.selectRenderState().audio[0].children[0],
+      ).not.toHaveProperty("beginEffect");
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it("removes boundary effects from a retained sound when skipping is enabled", () => {

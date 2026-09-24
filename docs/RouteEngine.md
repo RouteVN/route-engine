@@ -2122,6 +2122,9 @@ Engine audio is authored with `sounds` and rendered as Route Graphics
   channel IDs must be unique within the SFX action.
 - BGM `audioEffects` updates fan out across retained sounds. Transitions target
   only added, removed, or source-replaced sounds.
+- At line entry, an update selected for newly started music or a transition
+  selected for retained music is skipped with a warning. The BGM action still
+  applies its authored mix.
 
 ```yaml
 actions:

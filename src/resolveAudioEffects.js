@@ -1,5 +1,7 @@
 import { createBgmSoundRenderId } from "./audioIds.js";
 
+export class IncompatibleBgmAudioEffectError extends Error {}
+
 const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
 
 const DEFAULT_AUDIO_VALUES = Object.freeze({
@@ -364,6 +366,7 @@ export const resolveAudioEffect = ({
   nextChannel,
   previousBgm,
   nextBgm,
+  rejectNoopTransition = false,
 }) => {
   if (!occurrence?.selection) return null;
 
@@ -398,8 +401,8 @@ export const resolveAudioEffect = ({
 
   if (resource.type === "transition") {
     if (sameSource) {
-      if (sameGraph) return null;
-      throw new Error(
+      if (sameGraph && !rejectNoopTransition) return null;
+      throw new IncompatibleBgmAudioEffectError(
         `[${actionPath}.audioEffects]\n[${resourcePath}] Audio effect resource "${resourceId}" has type "transition", but the BGM action only updates a retained sound. Use an update resource.`,
       );
     }
@@ -460,7 +463,7 @@ export const resolveAudioEffect = ({
     );
   }
   if (!previousSound || !nextSound || !sameSource) {
-    throw new Error(
+    throw new IncompatibleBgmAudioEffectError(
       `[${actionPath}.audioEffects]\n[${resourcePath}] Audio effect resource "${resourceId}" has type "update", but the BGM action changes source identity. Use a transition resource.`,
     );
   }

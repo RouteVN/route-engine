@@ -3858,7 +3858,13 @@ export const shouldSettleCurrentLinePresentation = (state) => {
 };
 
 export const selectRenderState = ({ state }, options = {}) => {
-  const presentationState = selectPresentationState({ state });
+  const selectedPresentationState = selectPresentationState({ state });
+  const presentationState = options.bgmPresentationOverride
+    ? {
+        ...selectedPresentationState,
+        bgm: options.bgmPresentationOverride,
+      }
+    : selectedPresentationState;
   const previousPresentationState = selectPreviousPresentationState({ state });
   const authoredCurrentLineActions =
     selectCurrentLine({ state })?.actions ?? {};
