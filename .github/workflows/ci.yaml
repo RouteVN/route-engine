@@ -75,6 +75,8 @@ jobs:
             item: robustness/playback-runtime-derived-auto-text.yaml
           - id: playback-section-reentry
             item: robustness/playback-section-reentry-first-line.yaml
+          - id: section-media-continuity
+            item: robustness/section-media-continuity.yaml
           - id: playback-skip-authored
             item: robustness/playback-skip-authored-co-due.yaml
           - id: save-load-timers
