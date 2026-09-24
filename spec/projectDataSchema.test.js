@@ -467,6 +467,58 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
+  it.each(["underline", "none"])(
+    "accepts %s text decoration in text style resources",
+    (textDecoration) => {
+      const projectData = createMinimalProjectData({
+        resources: {
+          textStyles: {
+            body: {
+              fontId: "fontMain",
+              colorId: "fg",
+              fontSize: 24,
+              fontWeight: "400",
+              fontStyle: "normal",
+              lineHeight: 1.2,
+              textDecoration,
+            },
+          },
+        },
+      });
+
+      expect(validateProjectData(projectData)).toBe(true);
+      expect(validateProjectData.errors).toBeNull();
+    },
+  );
+
+  it("rejects unknown text decoration values in text style resources", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        textStyles: {
+          body: {
+            fontId: "fontMain",
+            colorId: "fg",
+            fontSize: 24,
+            fontWeight: "400",
+            fontStyle: "normal",
+            lineHeight: 1.2,
+            textDecoration: "blink",
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/resources/textStyles/body/textDecoration",
+          keyword: "enum",
+        }),
+      ]),
+    );
+  });
+
   it("rejects removed layout.transitions resources", () => {
     const projectData = createMinimalProjectData({
       resources: {

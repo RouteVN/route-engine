@@ -948,6 +948,10 @@ const resolveTextStyleResource = (resources = {}, textStyleId) => {
     resolvedTextStyle.wordWrapWidth = textStyleResource.wordWrapWidth;
   }
 
+  if (textStyleResource.textDecoration !== undefined) {
+    resolvedTextStyle.textDecoration = textStyleResource.textDecoration;
+  }
+
   if (textStyleResource.strokeColorId) {
     const strokeColorResource =
       resources.colors?.[textStyleResource.strokeColorId];
