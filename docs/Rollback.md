@@ -5,6 +5,10 @@ This document defines the intended product behavior and engine model for rollbac
 It is the behavior contract for the current rollback implementation. Sections
 that describe future rollback policies are explicitly labeled as future work.
 
+For the proposed conditional-choice fallback and before-selection decision
+boundary, see [Conditional Choices and Decision Rollback](ConditionalChoices.md).
+That proposal changes choice rollback semantics and is not implemented yet.
+
 ## Purpose
 
 Rollback is a core reading control in a visual novel.
