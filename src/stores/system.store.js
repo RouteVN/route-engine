@@ -3666,17 +3666,23 @@ export const selectAutoForwardTimerDelay = ({ state }) =>
     speed: selectRuntimeValueFromState(state, "autoForwardSpeed"),
   });
 
-export const selectPresentationChanges = ({ state }) => {
+export const selectPresentationChanges = ({ state }, options = {}) => {
   const previousPresentationState = selectPreviousPresentationState({ state });
   const currentLine = selectCurrentLine({ state });
   const currentLineActions = currentLine?.actions ?? {};
 
-  const presentationStateAfterLineActions = constructPresentationState(
+  let presentationStateAfterLineActions = constructPresentationState(
     [previousPresentationState ?? {}, currentLineActions],
     {
       resources: state.projectData.resources,
     },
   );
+  if (options.bgmPresentationOverride) {
+    presentationStateAfterLineActions = {
+      ...presentationStateAfterLineActions,
+      bgm: options.bgmPresentationOverride,
+    };
+  }
 
   return diffPresentationState(
     previousPresentationState ?? {},
@@ -3858,7 +3864,13 @@ export const shouldSettleCurrentLinePresentation = (state) => {
 };
 
 export const selectRenderState = ({ state }, options = {}) => {
-  const presentationState = selectPresentationState({ state });
+  const selectedPresentationState = selectPresentationState({ state });
+  const presentationState = options.bgmPresentationOverride
+    ? {
+        ...selectedPresentationState,
+        bgm: options.bgmPresentationOverride,
+      }
+    : selectedPresentationState;
   const previousPresentationState = selectPreviousPresentationState({ state });
   const authoredCurrentLineActions =
     selectCurrentLine({ state })?.actions ?? {};
