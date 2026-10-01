@@ -136,6 +136,8 @@ Different sections may reuse a line ID.
 An initialization or action dispatch may process at most 1,000 synchronous
 effect batches before yielding back to the host. Exceeding that limit throws
 an error naming the current section and line and invalidates playback timers.
+The error has `code: "routing_cycle"` and `pointer: { sectionId, lineId }`
+for that line; identify it by `code` rather than by message text.
 This bounds immediate routing cycles, including conditional cycles. Each
 completed dispatch gets a fresh budget, so loops that pause for player input
 continue to work. After a limit error, the host can reinitialize, dispose, or
