@@ -218,6 +218,30 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(engine.selectRenderState().audio).toEqual([]);
   });
 
+  it("stops a removed BGM sound without an effect while another keeps playing", () => {
+    const projectData = createProjectData();
+    projectData.resources.audioEffects.hold = {
+      type: "update",
+      tween: { volume: { keyframes: [{ value: 80, duration: 500 }] } },
+    };
+    const lines = projectData.story.scenes.scene.sections.section.lines;
+    lines[0].actions.bgm.sounds.push({ id: "ambience", resourceId: "next" });
+    lines[1].actions.bgm = {
+      volume: 80,
+      audioEffects: { resourceId: "hold" },
+      sounds: [{ id: "main", resourceId: "old" }],
+    };
+    const engine = createEngine({ projectData });
+
+    expect(() => enterNextLine(engine)).not.toThrow();
+    expect(engine.selectRenderState().audioEffects).toBeUndefined();
+    expect(
+      engine
+        .selectRenderState()
+        .audio[0].children.map((sound) => [sound.id, sound.volume]),
+    ).toEqual([["bgm:main", 80]]);
+  });
+
   it("compiles a channel transition across multiple BGM sounds", () => {
     const projectData = createProjectData();
     const lines = projectData.story.scenes.scene.sections.section.lines;

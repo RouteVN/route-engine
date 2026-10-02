@@ -355,51 +355,48 @@ const getTopLevelTransitionSoundGraph = (sound) => {
   return graph;
 };
 
-// Compile one authored property track for a lifecycle phase. An exit track
-// animates the outgoing sound. Enter and update tracks animate the incoming
-// sound and must end at its persistent mix.
+// Compile one authored property track on one side of a handoff. `side` is the
+// sound with its BGM and resources: the outgoing side for an exit track, the
+// incoming side otherwise. `baselineBgm` holds the channel pan that relative
+// pan keyframes start from. Enter and update tracks must end at the incoming
+// sound's persistent mix.
 const compileLifecycleTrack = ({
   phase,
+  side,
+  baselineBgm,
   authored,
   property,
   propertyPath,
   actionPath,
-  previousSound,
-  nextSound,
-  previousBgm,
-  nextBgm,
-  previousResources,
-  nextResources,
   speed,
 }) => {
-  const outgoing = phase === "exit";
-  const renderedSound = outgoing ? previousSound : nextSound;
   const track = compileChannelProperty({
     authored,
-    bgm: outgoing ? previousBgm : nextBgm,
-    baselineBgm: phase === "update" ? previousBgm : undefined,
+    bgm: side.bgm,
+    baselineBgm,
     property,
     propertyPath,
-    renderedSound,
-    resources: outgoing ? previousResources : nextResources,
+    renderedSound: side.sound,
+    resources: side.resources,
     speed,
   });
-  if (!outgoing) {
+  if (phase !== "exit") {
     settlePropertyEndpoint({
       actionPath,
       compiled: track,
       property,
       propertyPath,
-      renderedSound,
+      renderedSound: side.sound,
     });
   }
   return track;
 };
 
-// An update resource animates one sound, as a visual update animation does
-// when its element appears, changes, or is removed: a retained sound updates,
-// an added or source-replaced sound plays the tween as its incoming track, and
-// a removed sound plays it as its outgoing track.
+// The phase an update resource plays on one sound, as a visual update
+// animation does when its element appears, changes, or is removed: a retained
+// sound updates, an added or source-replaced sound plays the tween as its
+// incoming track, and a removed sound plays it as its outgoing track.
+// resolveAudioEffects passes removed sounds only when a line stops them all.
 const getUpdatePhase = (previousSound, nextSound) => {
   if (!nextSound) return "exit";
   if (!previousSound || !isSameSourceIdentity(previousSound, nextSound)) {
@@ -443,16 +440,12 @@ export const resolveAudioEffect = ({
   }
 
   const targetId = previousSound?.id ?? nextSound.id;
-  const trackContext = {
-    actionPath,
-    previousSound,
-    nextSound,
-    previousBgm,
-    nextBgm,
-    previousResources,
-    nextResources,
-    speed,
+  const previous = {
+    sound: previousSound,
+    bgm: previousBgm,
+    resources: previousResources,
   };
+  const next = { sound: nextSound, bgm: nextBgm, resources: nextResources };
   const properties = {};
 
   if (resource.type === "transition") {
@@ -474,22 +467,28 @@ export const resolveAudioEffect = ({
         : undefined;
       if (previousTrack) {
         lifecycle.exit = compileLifecycleTrack({
-          ...trackContext,
           phase: "exit",
+          side: previous,
+          baselineBgm: previousBgm,
           authored: previousTrack,
           property,
           propertyPath: `${resourcePath}.prev.${property}`,
+          actionPath,
+          speed,
         });
       }
 
       const nextTrack = nextSound ? resource.next?.[property] : undefined;
       if (nextTrack) {
         lifecycle.enter = compileLifecycleTrack({
-          ...trackContext,
           phase: "enter",
+          side: next,
+          baselineBgm: nextBgm,
           authored: nextTrack,
           property,
           propertyPath: `${resourcePath}.next.${property}`,
+          actionPath,
+          speed,
         });
       }
 
@@ -499,14 +498,21 @@ export const resolveAudioEffect = ({
     }
   } else if (resource.type === "update") {
     const phase = getUpdatePhase(previousSound, nextSound);
+    // Relative pan continues from the channel as it was before the line; a
+    // channel that only starts now has its own pan.
+    const baselineBgm =
+      phase === "enter" ? (previousBgm ?? nextBgm) : previousBgm;
     for (const property of AUDIO_EFFECT_PROPERTIES) {
       if (!hasOwn(resource.tween, property)) continue;
       const track = compileLifecycleTrack({
-        ...trackContext,
         phase,
+        side: phase === "exit" ? previous : next,
+        baselineBgm,
         authored: resource.tween[property],
         property,
         propertyPath: `${resourcePath}.tween.${property}`,
+        actionPath,
+        speed,
       });
 
       // A retained update only animates values that change.

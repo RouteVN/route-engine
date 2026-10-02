@@ -1332,6 +1332,93 @@ describe("resolveAudioEffect", () => {
     });
   });
 
+  describe("relative pan in an update played as an incoming track", () => {
+    const panResources = {
+      sounds: { old: { fileId: "old.ogg" }, next: { fileId: "new.ogg" } },
+      audioEffects: {
+        panSweep: {
+          type: "update",
+          tween: {
+            pan: {
+              keyframes: [
+                { value: 0.2, relative: true, duration: 100 },
+                { value: 0.5, duration: 200 },
+              ],
+            },
+          },
+        },
+      },
+    };
+    const resolvePan = ({ previousBgm, previousChannel }) =>
+      resolveAudioEffects({
+        occurrence: { ...occurrence, selection: { resourceId: "panSweep" } },
+        resources: panResources,
+        previousBgm,
+        nextBgm: { pan: 0.5, sounds: [{ id: "main", resourceId: "next" }] },
+        previousChannel,
+        nextChannel: {
+          ...oldChannel,
+          children: [{ ...oldChannel.children[0], src: "new.ogg", pan: 0.5 }],
+        },
+      })[0].properties.pan.enter.keyframes.map((keyframe) => keyframe.value);
+
+    it("continues from the channel pan before a source change", () => {
+      expect(
+        resolvePan({
+          previousBgm: {
+            pan: -0.4,
+            sounds: [{ id: "main", resourceId: "old" }],
+          },
+          previousChannel: {
+            ...oldChannel,
+            children: [{ ...oldChannel.children[0], pan: -0.4 }],
+          },
+        }),
+      ).toEqual([-0.2, 0.5]);
+    });
+
+    it("starts from the new channel pan when music starts", () => {
+      expect(
+        resolvePan({ previousBgm: undefined, previousChannel: null }),
+      ).toEqual([0.7, 0.5]);
+    });
+  });
+
+  it("plays a playback-rate update as the incoming track of new music", () => {
+    const effect = resolveWith({
+      selection: { resourceId: "speedUp" },
+      resources: {
+        audioEffects: {
+          speedUp: {
+            type: "update",
+            tween: {
+              playbackRate: {
+                initialValue: 1,
+                keyframes: [{ value: 1.5, duration: 300 }],
+              },
+            },
+          },
+        },
+      },
+      previousChannel: null,
+      nextChannel: {
+        ...oldChannel,
+        children: [{ ...oldChannel.children[0], playbackRate: 1.5 }],
+      },
+    });
+
+    expect(effect.properties).toEqual({
+      playbackRate: {
+        enter: {
+          initialValue: 1,
+          keyframes: [
+            { value: 1.5, delay: 0, duration: 300, easing: "linear" },
+          ],
+        },
+      },
+    });
+  });
+
   it("writes update endpoints across a multi-sound BGM channel", () => {
     const bgm = {
       volume: 80,

@@ -1338,12 +1338,15 @@ Animation selections use `animations.resourceId` plus optional
 render-scoped behavior when omitted.
 
 BGM update effects use numeric keyframes for `volume`, `pan`, and
-`playbackRate`. The final keyframe must be absolute. Its value becomes the
-persistent BGM value after the effect finishes; intermediate keyframes only
-shape the tween. An update is applied to every retained BGM sound and requires
-the same sound IDs and source identities on both sides. Channel-level volume
-and pan keyframes are flattened into each rendered sound while preserving that
-sound's authored or resource-level volume and pan.
+`playbackRate`. The final keyframe must be absolute. When the line keeps or
+starts music, its value becomes the persistent BGM value after the effect
+finishes; intermediate keyframes only shape the tween. Retained sounds play the
+update as an update, added or source-replaced sounds as their incoming track,
+and, when the line stops every BGM sound, those sounds as their outgoing track
+(see Audio Channels). Relative pan keyframes continue from the channel pan
+before the line, or from the new channel pan when music starts. Channel-level
+volume and pan keyframes are flattened into each rendered sound while
+preserving that sound's authored or resource-level volume and pan.
 
 ### Visual Layers
 
@@ -2129,7 +2132,8 @@ Engine audio is authored with `sounds` and rendered as Route Graphics
   keyframes must still match the sound's persistent mix. When the line stops
   every sound, each one plays the update as its outgoing (`exit`) track, so an
   update that fades to 0 fades the music out. A sound removed while others play
-  or enter stops without an effect. Transitions target only added, removed, or
+  or enter stops without an effect; if those others do not change, the update
+  has no effect at all. Transitions target only added, removed, or
   source-replaced sounds.
 
 ```yaml

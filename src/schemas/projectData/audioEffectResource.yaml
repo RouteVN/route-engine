@@ -40,7 +40,7 @@ $defs:
       - easeInOutElastic
   keyframeValue:
     type: number
-    description: Numeric tween value; the final absolute value becomes the persistent BGM property value
+    description: Numeric tween value; when the line keeps or starts music, the final absolute value becomes the persistent BGM property value
   keyframe:
     type: object
     required: [value, duration]
