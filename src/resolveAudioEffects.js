@@ -459,11 +459,42 @@ export const resolveAudioEffect = ({
       `[${resourcePath}.type] Unsupported audio effect type "${resource.type}".`,
     );
   }
-  if (!previousSound || !nextSound || !sameSource) {
-    throw new Error(
-      `[${actionPath}.audioEffects]\n[${resourcePath}] Audio effect resource "${resourceId}" has type "update", but the BGM action changes source identity. Use a transition resource.`,
-    );
+  // An update effect animates the music the line plays. Music that stops has
+  // no outgoing track to animate, so it stops as it would without an effect.
+  if (!nextSound) return null;
+  // Music that starts or changes source plays the update as its incoming
+  // track, as visual elements play an update animation when they appear.
+  if (!previousSound || !sameSource) {
+    const properties = {};
+    for (const property of AUDIO_EFFECT_PROPERTIES) {
+      if (!hasOwn(resource.tween, property)) continue;
+      const propertyPath = `${resourcePath}.tween.${property}`;
+      const enter = compileChannelProperty({
+        authored: resource.tween[property],
+        bgm: nextBgm,
+        property,
+        propertyPath,
+        renderedSound: nextSound,
+        resources: nextResources,
+        speed,
+      });
+      settlePropertyEndpoint({
+        actionPath,
+        compiled: enter,
+        property,
+        propertyPath,
+        renderedSound: nextSound,
+      });
+      properties[property] = { enter };
+    }
+    if (Object.keys(properties).length === 0) return null;
+
+    return {
+      ...createBaseEffect(occurrence, targetId),
+      properties,
+    };
   }
+
   const properties = {};
   for (const property of AUDIO_EFFECT_PROPERTIES) {
     if (!hasOwn(resource.tween, property)) continue;
@@ -581,23 +612,14 @@ export const resolveAudioEffects = (options) => {
   const nextById = new Map(nextSounds.map((sound) => [sound.id, sound]));
 
   if (resource.type === "update") {
-    const targets = nextSounds.map((nextSound) => ({
-      previousSound: previousById.get(nextSound.id),
-      nextSound,
-    }));
-    const missingPreviousSound = targets.find(
-      ({ previousSound }) => !previousSound,
+    // Every sound the line plays: retained sounds update, and new or
+    // replaced sounds enter. Removed sounds stop without an effect.
+    return resolveTargets(
+      nextSounds.map((nextSound) => ({
+        previousSound: previousById.get(nextSound.id),
+        nextSound,
+      })),
     );
-    if (missingPreviousSound) {
-      return resolveTargets([missingPreviousSound]);
-    }
-    const removedSound = previousSounds.find(
-      (previousSound) => !nextById.has(previousSound.id),
-    );
-    if (removedSound) {
-      return resolveTargets([{ previousSound: removedSound }]);
-    }
-    return resolveTargets(targets);
   }
 
   const targets = [];
