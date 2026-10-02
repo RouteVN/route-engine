@@ -1,0 +1,96 @@
+---
+title: Audio Effects Update Stop
+description: An update audio effect on a line that stops the music has no outgoing track, so the music stops without an effect.
+skipInitialScreenshot: true
+specs:
+  - the music plays without an effect
+  - stopping it with an update effect does not throw and emits no effect
+steps:
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.0.src
+    value: 3ka3s
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.length
+    value: 0
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect
+    value: null
+  - action: assert
+    type: js
+    global: __vtAudioEffectOccurrenceCount
+    value: 0
+---
+screen:
+  width: 640
+  height: 360
+resources:
+  sounds:
+    theme:
+      fileId: 3ka3s
+  audioEffects:
+    fade-up:
+      type: update
+      tween:
+        volume:
+          initialValue: 0
+          keyframes:
+            - { value: 70, duration: 800, easing: easeOutSine }
+  colors:
+    advance:
+      hex: "#10131A"
+    stopped:
+      hex: "#421B1B"
+  controls:
+    advance:
+      elements:
+        - id: advance
+          type: rect
+          width: 640
+          height: 360
+          colorId: advance
+          click:
+            payload:
+              actions:
+                nextLine: {}
+    stopped:
+      elements:
+        - id: stopped
+          type: rect
+          width: 640
+          height: 360
+          colorId: stopped
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: theme
+              actions:
+                control:
+                  resourceId: advance
+                bgm:
+                  volume: 70
+                  sounds:
+                    - id: main
+                      resourceId: theme
+            - id: stop
+              actions:
+                control:
+                  resourceId: stopped
+                bgm:
+                  audioEffects:
+                    resourceId: fade-up
+                  sounds: []
