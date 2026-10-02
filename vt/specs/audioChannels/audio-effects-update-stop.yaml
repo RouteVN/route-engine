@@ -1,10 +1,11 @@
 ---
 title: Audio Effects Update Stop
-description: An update audio effect on a line that stops the music has no outgoing track, so the music stops without an effect.
+description: An update audio effect on a line that stops the music plays as the sound's outgoing track, so an update to volume 0 fades the music out.
 skipInitialScreenshot: true
 specs:
   - the music plays without an effect
-  - stopping it with an update effect does not throw and emits no effect
+  - stopping it with an update effect does not throw
+  - the engine emits one exit track built from the update tween
 steps:
   - action: wait
     ms: 250
@@ -23,12 +24,16 @@ steps:
     value: 0
   - action: assert
     type: js
-    global: __vtLastAudioEffect
-    value: null
+    global: __vtLastAudioEffect.targetId
+    value: bgm:main
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.properties.volume.exit.keyframes.0.value
+    value: 0
   - action: assert
     type: js
     global: __vtAudioEffectOccurrenceCount
-    value: 0
+    value: 1
 ---
 screen:
   width: 640
@@ -38,13 +43,12 @@ resources:
     theme:
       fileId: 3ka3s
   audioEffects:
-    fade-up:
+    fade-out:
       type: update
       tween:
         volume:
-          initialValue: 0
           keyframes:
-            - { value: 70, duration: 800, easing: easeOutSine }
+            - { value: 0, duration: 800, easing: easeInSine }
   colors:
     advance:
       hex: "#10131A"
@@ -92,5 +96,5 @@ story:
                   resourceId: stopped
                 bgm:
                   audioEffects:
-                    resourceId: fade-up
+                    resourceId: fade-out
                   sounds: []

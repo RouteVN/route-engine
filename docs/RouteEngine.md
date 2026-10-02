@@ -2122,13 +2122,15 @@ Engine audio is authored with `sounds` and rendered as Route Graphics
   stable and globally unique.
 - Canonical sound IDs must be unique within their channel, and canonical SFX
   channel IDs must be unique within the SFX action.
-- BGM `audioEffects` updates fan out across the sounds the line plays. A
-  retained sound plays the update as an update. An added or source-replaced
-  sound plays it as its incoming (`enter`) track, as a visual update animation
-  plays when its element appears; its final keyframes must still match the
-  sound's persistent mix. A removed sound stops without an update effect,
-  because an update has no outgoing track. Transitions target only added,
-  removed, or source-replaced sounds.
+- BGM `audioEffects` updates animate one track per sound, like the visual
+  update fallback in `AnimationModel.md`, preferring the sounds the line
+  plays. A retained sound plays the update as an update. An added or
+  source-replaced sound plays it as its incoming (`enter`) track, and its final
+  keyframes must still match the sound's persistent mix. When the line stops
+  every sound, each one plays the update as its outgoing (`exit`) track, so an
+  update that fades to 0 fades the music out. A sound removed while others play
+  or enter stops without an effect. Transitions target only added, removed, or
+  source-replaced sounds.
 
 ```yaml
 actions:

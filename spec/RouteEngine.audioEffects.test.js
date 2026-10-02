@@ -175,9 +175,10 @@ describe("RouteEngine audioEffects occurrences", () => {
       properties: {
         volume: {
           enter: {
-            keyframes: expect.arrayContaining([
-              expect.objectContaining({ value: 30 }),
-            ]),
+            keyframes: [
+              expect.objectContaining({ value: 50, duration: 400 }),
+              expect.objectContaining({ value: 30, duration: 600 }),
+            ],
           },
         },
       },
@@ -187,6 +188,34 @@ describe("RouteEngine audioEffects occurrences", () => {
       src: "next.ogg",
       volume: 30,
     });
+  });
+
+  it("plays an update effect as the outgoing track when a line stops the BGM", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene.sections.section.lines[1].actions.bgm = {
+      audioEffects: { resourceId: "smooth" },
+      sounds: [],
+    };
+    const engine = createEngine({ projectData });
+
+    expect(() => enterNextLine(engine)).not.toThrow();
+    const effect = engine.selectRenderState().audioEffects?.[0];
+
+    expect(effect).toMatchObject({
+      targetId: "bgm:main",
+      properties: {
+        volume: {
+          exit: {
+            keyframes: [
+              expect.objectContaining({ value: 50, duration: 400 }),
+              expect.objectContaining({ value: 30, duration: 600 }),
+            ],
+          },
+        },
+      },
+    });
+    expect(Object.keys(effect.properties.volume)).toEqual(["exit"]);
+    expect(engine.selectRenderState().audio).toEqual([]);
   });
 
   it("compiles a channel transition across multiple BGM sounds", () => {

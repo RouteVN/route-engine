@@ -686,8 +686,28 @@ describe("resolveAudioEffect", () => {
     ).toThrow("must match the persistent BGM volume value");
   });
 
-  it("lets music stop without an update effect", () => {
-    expect(resolveWith({ nextChannel: null })).toBeNull();
+  it("plays an update as the outgoing track when music stops", () => {
+    const effect = resolveWith({ nextChannel: null });
+
+    expect(effect.properties).toEqual({
+      volume: {
+        exit: {
+          keyframes: [
+            { value: 50, delay: 0, duration: 50, easing: "linear" },
+            { value: 30, delay: 0, duration: 100, easing: "linear" },
+          ],
+        },
+      },
+    });
+  });
+
+  it("validates an update played on music that stops", () => {
+    expect(() =>
+      resolveWith({
+        selection: { resourceId: "smooth", playback: { speed: 0 } },
+        nextChannel: null,
+      }),
+    ).toThrow("must be a finite number greater than 0");
   });
 
   it.each([0, -1, Number.POSITIVE_INFINITY, Number.NaN])(
@@ -1085,15 +1105,69 @@ describe("resolveAudioEffect", () => {
     expect(new Set(effects.map((effect) => effect.id)).size).toBe(2);
   });
 
-  it("lets every BGM sound stop without an update effect", () => {
+  it("plays an update as the outgoing track of every stopped BGM sound", () => {
+    const previousChannel = {
+      ...oldChannel,
+      children: [
+        oldChannel.children[0],
+        { ...oldChannel.children[0], id: "bgm:ambience", src: "a.ogg" },
+      ],
+    };
+
+    const effects = resolveAudioEffects({
+      occurrence: { ...occurrence, selection: { resourceId: "smooth" } },
+      resources: { audioEffects: { smooth: updateResource } },
+      previousChannel,
+      nextChannel: { ...oldChannel, children: [] },
+    });
+
+    expect(effects.map((effect) => effect.targetId)).toEqual([
+      "bgm:main",
+      "bgm:ambience",
+    ]);
+    effects.forEach((effect) => {
+      expect(Object.keys(effect.properties.volume)).toEqual(["exit"]);
+    });
+  });
+
+  it("prefers current BGM sounds over removed ones for an update preset", () => {
+    const previousChannel = {
+      ...oldChannel,
+      children: [
+        oldChannel.children[0],
+        { ...oldChannel.children[0], id: "bgm:removed", src: "removed.ogg" },
+      ],
+    };
+    const nextChannel = {
+      ...oldChannel,
+      children: [
+        { ...oldChannel.children[0], volume: 30 },
+        {
+          ...oldChannel.children[0],
+          id: "bgm:added",
+          src: "added.ogg",
+          volume: 30,
+        },
+      ],
+    };
+
+    const effects = resolveAudioEffects({
+      occurrence: { ...occurrence, selection: { resourceId: "smooth" } },
+      resources: { audioEffects: { smooth: updateResource } },
+      previousChannel,
+      nextChannel,
+    });
+
     expect(
-      resolveAudioEffects({
-        occurrence: { ...occurrence, selection: { resourceId: "smooth" } },
-        resources: { audioEffects: { smooth: updateResource } },
-        previousChannel: oldChannel,
-        nextChannel: { ...oldChannel, children: [] },
-      }),
-    ).toEqual([]);
+      effects.map((effect) => [
+        effect.id,
+        effect.targetId,
+        Object.keys(effect.properties.volume),
+      ]),
+    ).toEqual([
+      ["audio-effect:engine:g1:l2:audio1", "bgm:main", ["update"]],
+      ["audio-effect:engine:g1:l2:audio1:1", "bgm:added", ["enter"]],
+    ]);
   });
 
   it("normalizes channel updates per sound without flattening the local mix", () => {
