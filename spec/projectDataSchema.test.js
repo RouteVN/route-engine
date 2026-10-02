@@ -772,6 +772,84 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
+  it("accepts character variables and numeric font weights", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        characters: {
+          protagonist: {
+            name: "Protagonist",
+            variables: { expression: "smile", affinity: 3 },
+          },
+        },
+        textStyles: {
+          dialogue: {
+            fontId: "body",
+            colorId: "white",
+            fontSize: 24,
+            fontWeight: 400,
+            fontStyle: "normal",
+            lineHeight: 1,
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it.each([
+    [
+      "update translation tracks",
+      {
+        type: "update",
+        tween: {
+          translateX: { keyframes: [{ value: 20, duration: 100 }] },
+          translateY: { keyframes: [{ value: -10, duration: 100 }] },
+        },
+      },
+    ],
+    [
+      "automatic tween timing",
+      {
+        type: "update",
+        tween: { alpha: { auto: { duration: 200, delay: 25 } } },
+      },
+    ],
+    [
+      "keyframe timing and start value",
+      {
+        type: "update",
+        tween: {
+          alpha: {
+            keyframes: [{ startValue: 0, value: 1, delay: 25, duration: 200 }],
+          },
+        },
+      },
+    ],
+    [
+      "mask array",
+      {
+        type: "transition",
+        mask: [
+          {
+            kind: "single",
+            texture: "iris",
+            progress: { keyframes: [{ value: 1, duration: 200 }] },
+          },
+        ],
+      },
+    ],
+    ["empty draft transition", { type: "transition" }],
+  ])("accepts an animation with %s", (_label, animation) => {
+    const projectData = createMinimalProjectData({
+      resources: { animations: { opening: animation } },
+    });
+
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
   it("requires width and height on spritesheet resources", () => {
     const projectData = createMinimalProjectData({
       resources: {
