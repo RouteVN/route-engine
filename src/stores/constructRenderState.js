@@ -2503,6 +2503,7 @@ const createDialogueTemplateData = ({
 
   return {
     characterId: dialogueState.characterId,
+    reading: dialogueState.reading,
     persistCharacter: dialogueState.persistCharacter,
     persistSprite: dialogueState.persistSprite,
     character,
@@ -4728,7 +4729,45 @@ const addVisualsBehindDialogue = addVisualsForLayer(
 const addVisualsBehindChoice = addVisualsForLayer(VISUAL_LAYER.BEHIND_CHOICE);
 const addVisualsForeground = addVisualsForLayer(VISUAL_LAYER.FOREGROUND);
 
+const resolveReadingSource = (params) => {
+  const dialogueState = params.presentationState?.dialogue;
+  if (!dialogueState || dialogueState.mode === "nvl") return undefined;
+  const dialogue = createDialogueTemplateData({
+    dialogueState,
+    characters: params.resources?.characters,
+    variables: params.variables,
+    runtime: params.runtime,
+  });
+  if (!dialogue?.content.every((part) => typeof part.text === "string")) {
+    return undefined;
+  }
+  const text = dialogue.content.map((part) => part.text).join("");
+  const speaker = dialogue.character.name ?? "";
+  if (
+    !text ||
+    text.length > 4096 ||
+    typeof speaker !== "string" ||
+    speaker.length > 240
+  ) {
+    return undefined;
+  }
+  return { text, speaker, role: speaker ? "dialogue" : "narration" };
+};
+
 export const constructRenderState = (params) => {
+  if (params.resolveDialogueReading) {
+    const dialogueState = params.presentationState?.dialogue;
+    const reading = params.resolveDialogueReading(resolveReadingSource(params));
+    if (dialogueState) {
+      params = {
+        ...params,
+        presentationState: {
+          ...params.presentationState,
+          dialogue: { ...dialogueState, reading },
+        },
+      };
+    }
+  }
   const actions = [
     addControl,
     addVisualsBehindBackground,

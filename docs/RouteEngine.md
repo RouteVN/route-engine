@@ -42,9 +42,7 @@ engine.init({
   namespace: "my-visual-novel",
   initialState: {
     projectData: {
-      resources: {
-        /* images, audio, etc */
-      },
+      resources: {/* images, audio, etc */},
       story: {
         initialSceneId: "scene1",
         scenes: {
@@ -53,9 +51,7 @@ engine.init({
             sections: {
               section1: {
                 initialLineId: "line1", // optional, otherwise first line is used
-                lines: [
-                  /* section lines */
-                ],
+                lines: [/* section lines */],
               },
             },
           },
@@ -627,6 +623,45 @@ const renderState = engine.selectRenderState();
 //   audio: [{ id: 'channel:bgm', type: 'audio-channel', children: [...] }]
 // }
 ```
+
+Standard ADV dialogue layouts may carry `reading: "${dialogue.reading}"` on
+their dialogue text node. `selectRenderState()` and `prepareRenderState()`
+resolve this optional renderer metadata from the same interpolated content and
+speaker used for the visible layout:
+
+```js
+{
+  version: 1,
+  occurrenceId: "opaque-engine-playback-identity",
+  sourceRevision: 0,
+  role: "dialogue", // "narration" when there is no resolved speaker
+  speaker: "Ada",
+  text: "Exact resolved base text\nwith authored separators"
+}
+```
+
+`text` concatenates the resolved styled segments without inserting separators,
+normalizing whitespace, or adding ruby annotations. UTF-16 offsets into this
+string are the renderer's source coordinate system. Metadata is omitted for
+NVL, inactive dialogue, empty/non-string source text, more than 4,096 UTF-16
+source units, or more than 240 UTF-16 speaker units. A layout must explicitly
+forward the metadata; ordinary UI labels do not acquire dialogue semantics.
+
+Occurrence identity belongs to the engine instance, runtime generation, and
+playback line entry. Repeated identical lines, same-line jumps, rollback, load,
+story restart and reinitialization receive fresh occurrences. Render requests,
+reveal completion, visibility, and layout changes preserve the occurrence.
+`sourceRevision` starts at zero for an occurrence and increases when the
+resolved base text, speaker, or role changes, including variable/localization
+or character-name replacements. It is independent of the render identifier
+and reveal progress. Metadata is render-only and is not saved in project,
+presentation, or persistence state; callers receive independent snapshots.
+
+This is private engine-to-renderer source metadata, not a public reading
+snapshot: it can contain unrevealed text. A browser player may expose only the
+renderer-confirmed revealed prefix from the matching committed occurrence and
+source revision. Hidden, clipped, stale, unsupported, or uncommitted content
+must not become publicly readable merely because this metadata exists.
 
 ### `selectPresentationState()`
 

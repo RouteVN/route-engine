@@ -3898,6 +3898,7 @@ export const selectRenderState = ({ state }, options = {}) => {
     shouldSettleCurrentLinePresentation(state);
 
   const renderState = constructRenderState({
+    resolveDialogueReading: options?.resolveDialogueReading,
     presentationState,
     previousBgmRender: options?.previousBgmRender,
     previousPresentationState: previousPresentationStateForRender,

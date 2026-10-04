@@ -142,6 +142,7 @@ export default function createRouteEngine(options) {
   let _lifecycleGeneration = 0;
   let _isActive = false;
   let _renderSequence = 0;
+  let _dialogueReadingSource;
   let _namespace = null;
   let _actionDispatchDepth = 0;
   let _isProcessingPendingEffects = false;
@@ -628,6 +629,7 @@ export default function createRouteEngine(options) {
     _lifecycleGeneration += 1;
     _isActive = true;
     _renderSequence = 0;
+    _dialogueReadingSource = undefined;
     _namespace = normalizeNamespace(namespace);
     _actionDispatchDepth = 0;
     _isProcessingPendingEffects = false;
@@ -671,6 +673,7 @@ export default function createRouteEngine(options) {
 
     _isActive = false;
     _lifecycleGeneration += 1;
+    _dialogueReadingSource = undefined;
     _systemStore?.clearPendingEffects?.();
     _actionDispatchDepth = 0;
     _isProcessingPendingEffects = false;
@@ -709,6 +712,22 @@ export default function createRouteEngine(options) {
     return _systemStore.selectSectionLineChanges(payload);
   };
 
+  const resolveDialogueReading = (source) => {
+    const occurrenceId = `${_engineInstanceId}:g${_lifecycleGeneration}:l${_systemStore.selectPlaybackLineEntryId()}`;
+    const previous = _dialogueReadingSource;
+    const sameOccurrence = previous?.occurrenceId === occurrenceId;
+    const unchanged =
+      sameOccurrence &&
+      previous.source?.text === source?.text &&
+      previous.source?.speaker === source?.speaker &&
+      previous.source?.role === source?.role;
+    const sourceRevision = sameOccurrence
+      ? previous.sourceRevision + (unchanged ? 0 : 1)
+      : 0;
+    _dialogueReadingSource = { occurrenceId, sourceRevision, source };
+    return source && { version: 1, occurrenceId, sourceRevision, ...source };
+  };
+
   const buildRenderState = (options = {}) => {
     assertActive("rendering");
     _renderSequence += 1;
@@ -730,6 +749,7 @@ export default function createRouteEngine(options) {
           )
         : new Map();
     const renderState = _systemStore.selectRenderState({
+      resolveDialogueReading,
       previousBgmRender: captureCommittedBgmRender(),
       activePersistentAnimations: collectSessionAnimations(
         activePersistentAnimationSessions,
