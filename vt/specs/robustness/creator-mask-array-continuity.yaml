@@ -1,0 +1,123 @@
+---
+title: Creator Mask Array Continuity
+description:
+  An authored mask array remains active after real elapsed time and a click
+  advances to an unrelated line. The renderer snapshot uses a controlled animation
+  time.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 120
+  - action: click
+    x: 830
+    y: 470
+  - action: wait
+    ms: 250
+  - action: click
+    x: 830
+    y: 470
+  - action: wait
+    ms: 120
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: continued
+  - action: assert
+    type: js
+    global: __vtLastRenderState.animations.length
+    value: 1
+  - action: assert
+    type: js
+    global: __vtLastRenderState.animations.0.type
+    value: transition
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 5000
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  colors:
+    white:
+      hex: "#FFFFFF"
+    button:
+      hex: "#4D4D4D"
+  layouts:
+    marker:
+      elements:
+        - id: square
+          type: rect
+          width: 200
+          height: 200
+          colorId: white
+  transforms:
+    start:
+      x: 80
+      y: 150
+    end:
+      x: 650
+      y: 150
+  controls:
+    next:
+      elements:
+        - id: next
+          type: rect
+          x: 750
+          y: 440
+          width: 160
+          height: 65
+          colorId: button
+          click:
+            payload:
+              actions:
+                nextLine: {}
+  animations:
+    motion:
+      type: transition
+      mask:
+        - kind: single
+          texture: mask-diagonal
+          channel: red
+          softness: 0.06
+          progress:
+            initialValue: 0
+            keyframes:
+              - duration: 10000
+                value: 1
+                easing: linear
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: initial
+              actions:
+                control:
+                  resourceId: next
+            - id: animated
+              actions:
+                visual:
+                  items:
+                    - id: marker
+                      resourceId: marker
+                      transformId: start
+                      animations:
+                        resourceId: motion
+                        playback:
+                          continuity: persistent
+            - id: continued
+              actions: {}

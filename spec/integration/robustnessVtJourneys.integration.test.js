@@ -1,7 +1,10 @@
 import { readFileSync } from "node:fs";
 import { loadAll } from "js-yaml";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createEngineIntegrationHarness } from "./helpers/createEngineIntegrationHarness.js";
+import {
+  createEngineIntegrationHarness,
+  findRenderElement,
+} from "./helpers/createEngineIntegrationHarness.js";
 import {
   createExpectedErrorHandler,
   dispatchEngineActionsEvent,
@@ -156,5 +159,23 @@ describe("robustness VT companion journeys", () => {
       "history-row-0": "Source speaker: Source first.",
       "history-row-1": "Source speaker: Source second.",
     });
+  });
+
+  it("keeps the exact VT zero-length loop item visible without scheduling animations", () => {
+    const h = setup("zero-length-playback-loop");
+    const renderState = h.renderStates.at(-1);
+
+    expect(renderState.animations).toEqual([]);
+    expect(
+      findRenderElement(renderState.elements, "visual-marker"),
+    ).toMatchObject({
+      id: "visual-marker",
+      type: "container",
+    });
+    expect(h.checkpoint()).toMatchObject({
+      pendingEffects: [],
+      timerCount: 0,
+    });
+    expect(h.getError()).toBeUndefined();
   });
 });

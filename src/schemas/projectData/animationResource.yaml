@@ -5,53 +5,65 @@ type: object
 required:
   - type
 $defs:
+  milliseconds:
+    type: integer
+    minimum: 0
+    maximum: 9007199254740991
+  easing:
+    type: string
+    description: Easing function to use.
+    enum:
+      - linear
+      - easeInQuad
+      - easeOutQuad
+      - easeInOutQuad
+      - easeInCubic
+      - easeOutCubic
+      - easeInOutCubic
+      - easeInQuart
+      - easeOutQuart
+      - easeInOutQuart
+      - easeInQuint
+      - easeOutQuint
+      - easeInOutQuint
+      - easeInSine
+      - easeOutSine
+      - easeInOutSine
+      - easeInExpo
+      - easeOutExpo
+      - easeInOutExpo
+      - easeInCirc
+      - easeOutCirc
+      - easeInOutCirc
+      - easeInBack
+      - easeOutBack
+      - easeInOutBack
+      - easeInBounce
+      - easeOutBounce
+      - easeInOutBounce
+      - easeInElastic
+      - easeOutElastic
+      - easeInOutElastic
   keyframe:
     type: object
     required:
       - value
       - duration
     properties:
+      startValue:
+        type: number
+        description: Optional starting value for this keyframe.
       value:
         type: number
         description: The target value for this keyframe.
       duration:
         type: number
         description: Duration to reach this value in milliseconds.
+      delay:
+        $ref: "#/$defs/milliseconds"
+        description: Delay before this keyframe in milliseconds.
       easing:
-        type: string
-        description: Easing function to use.
-        enum:
-          - linear
-          - easeInQuad
-          - easeOutQuad
-          - easeInOutQuad
-          - easeInCubic
-          - easeOutCubic
-          - easeInOutCubic
-          - easeInQuart
-          - easeOutQuart
-          - easeInOutQuart
-          - easeInQuint
-          - easeOutQuint
-          - easeInOutQuint
-          - easeInSine
-          - easeOutSine
-          - easeInOutSine
-          - easeInExpo
-          - easeOutExpo
-          - easeInOutExpo
-          - easeInCirc
-          - easeOutCirc
-          - easeInOutCirc
-          - easeInBack
-          - easeOutBack
-          - easeInOutBack
-          - easeInBounce
-          - easeOutBounce
-          - easeInOutBounce
-          - easeInElastic
-          - easeOutElastic
-          - easeInOutElastic
+        $ref: "#/$defs/easing"
       relative:
         type: boolean
         description: Whether the value is relative to the previous keyframe value.
@@ -59,6 +71,7 @@ $defs:
     additionalProperties: false
   tweenProperty:
     type: object
+    description: Update-animation tween track. Route Graphics resolves an auto track from the element target state and rejects mixing auto with keyframes or initialValue.
     properties:
       initialValue:
         type: number
@@ -68,13 +81,49 @@ $defs:
         minItems: 1
         items:
           $ref: "#/$defs/keyframe"
-    required:
-      - keyframes
+      auto:
+        type: object
+        required: [duration]
+        properties:
+          duration:
+            $ref: "#/$defs/milliseconds"
+          delay:
+            $ref: "#/$defs/milliseconds"
+          easing:
+            $ref: "#/$defs/easing"
+        additionalProperties: false
+    oneOf:
+      - required: [keyframes]
+        not:
+          required: [auto]
+      - required: [auto]
+        not:
+          anyOf:
+            - required: [initialValue]
+            - required: [keyframes]
+    additionalProperties: false
+  keyframeTweenProperty:
+    type: object
+    description: Transition tween track. Route Graphics only accepts keyframe timing on transition surfaces and mask progress, not auto tracks.
+    properties:
+      initialValue:
+        type: number
+        description: Optional initial value before the first keyframe.
+      keyframes:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/keyframe"
+    required: [keyframes]
     additionalProperties: false
   updateTween:
     type: object
     properties:
       alpha:
+        $ref: "#/$defs/tweenProperty"
+      translateX:
+        $ref: "#/$defs/tweenProperty"
+      translateY:
         $ref: "#/$defs/tweenProperty"
       x:
         $ref: "#/$defs/tweenProperty"
@@ -92,17 +141,17 @@ $defs:
     type: object
     properties:
       translateX:
-        $ref: "#/$defs/tweenProperty"
+        $ref: "#/$defs/keyframeTweenProperty"
       translateY:
-        $ref: "#/$defs/tweenProperty"
+        $ref: "#/$defs/keyframeTweenProperty"
       alpha:
-        $ref: "#/$defs/tweenProperty"
+        $ref: "#/$defs/keyframeTweenProperty"
       scaleX:
-        $ref: "#/$defs/tweenProperty"
+        $ref: "#/$defs/keyframeTweenProperty"
       scaleY:
-        $ref: "#/$defs/tweenProperty"
+        $ref: "#/$defs/keyframeTweenProperty"
       rotation:
-        $ref: "#/$defs/tweenProperty"
+        $ref: "#/$defs/keyframeTweenProperty"
     additionalProperties: false
     minProperties: 1
   transitionSide:
@@ -114,7 +163,7 @@ $defs:
         $ref: "#/$defs/transitionTween"
     additionalProperties: false
   maskProgress:
-    $ref: "#/$defs/tweenProperty"
+    $ref: "#/$defs/keyframeTweenProperty"
   compositeMaskItem:
     type: object
     required:
@@ -206,7 +255,17 @@ properties:
   next:
     $ref: "#/$defs/transitionSide"
   mask:
-    $ref: "#/$defs/mask"
+    description: The array form supports single masks. Legacy object definitions remain unchanged; unsupported composite and legacy sequence definitions must not be added through arrays.
+    oneOf:
+      - $ref: "#/$defs/mask"
+      - type: array
+        minItems: 1
+        items:
+          allOf:
+            - $ref: "#/$defs/mask"
+            - properties:
+                kind:
+                  const: single
 allOf:
   - if:
       properties:
