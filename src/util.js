@@ -1324,6 +1324,9 @@ const evaluateComputedOperator = (operator, operands, context) => {
       );
       return left * right;
     }
+    // Dividing by zero gives 0, as does the remainder of a division by
+    // zero, so a ratio such as hits / attempts has a value before its
+    // divisor is set instead of stopping the story.
     case "div": {
       const [left, right] = evaluateNumericOperandList(
         operator,
@@ -1331,7 +1334,7 @@ const evaluateComputedOperator = (operator, operands, context) => {
         context,
         2,
       );
-      return left / right;
+      return right === 0 ? 0 : left / right;
     }
     case "mod": {
       const [left, right] = evaluateNumericOperandList(
@@ -1340,7 +1343,7 @@ const evaluateComputedOperator = (operator, operands, context) => {
         context,
         2,
       );
-      return left % right;
+      return right === 0 ? 0 : left % right;
     }
     case "neg": {
       const [value] = evaluateNumericOperandList(
