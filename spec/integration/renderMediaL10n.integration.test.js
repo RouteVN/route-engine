@@ -701,7 +701,7 @@ describe("L10n packages through initialization, rendering, and actions", () => {
               type: "line.action",
               lineId: "entry",
               actionType: "control",
-              payload: {},
+              payload: { resourceId: 42 },
             },
           ],
         },
