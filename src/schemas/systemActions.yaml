@@ -3,6 +3,39 @@ title: System Actions Schema
 description: Schema for authored/public system actions in the Route Engine runtime
 type: object
 definitions:
+  settingsBinding:
+    type: string
+    pattern: '^\$\{(?:variables|runtime)\.[^{}]+\}$'
+
+  numericSettingValue:
+    oneOf:
+      - type: number
+      - $ref: "#/definitions/settingsBinding"
+
+  nonnegativeSettingValue:
+    oneOf:
+      - type: number
+        minimum: 0
+      - $ref: "#/definitions/settingsBinding"
+
+  percentageSettingValue:
+    oneOf:
+      - type: number
+        minimum: 0
+        maximum: 100
+      - $ref: "#/definitions/settingsBinding"
+
+  booleanSettingValue:
+    oneOf:
+      - type: boolean
+      - $ref: "#/definitions/settingsBinding"
+
+  paginationSettingValue:
+    oneOf:
+      - type: integer
+        minimum: 1
+      - $ref: "#/definitions/settingsBinding"
+
   unambiguousNavigationActions:
     description: An action batch may contain at most one direct navigation action.
     oneOf:
@@ -140,11 +173,11 @@ properties:
         type: object
         properties:
           enabled:
-            type: boolean
+            $ref: "#/definitions/booleanSettingValue"
             default: true
             description: Allow manual advance via user input
           requireLineCompleted:
-            type: boolean
+            $ref: "#/definitions/booleanSettingValue"
             default: false
             description: Only allow manual advance after line completion
         additionalProperties: false
@@ -152,7 +185,7 @@ properties:
         type: object
         properties:
           enabled:
-            type: boolean
+            $ref: "#/definitions/booleanSettingValue"
             default: false
             description: Enable auto-advance
           trigger:
@@ -161,8 +194,7 @@ properties:
             default: fromComplete
             description: When to start timing for auto advance
           delay:
-            type: number
-            minimum: 0
+            $ref: "#/definitions/nonnegativeSettingValue"
             default: 1000
             description: Delay in milliseconds before advancing
         additionalProperties: false
@@ -232,7 +264,7 @@ properties:
     description: Set dialogue reveal speed
     properties:
       value:
-        type: number
+        $ref: "#/definitions/numericSettingValue"
     required: [value]
     additionalProperties: false
 
@@ -241,8 +273,7 @@ properties:
     description: Set the minimum auto mode delay in milliseconds before length-based reading time is added
     properties:
       value:
-        type: number
-        minimum: 0
+        $ref: "#/definitions/nonnegativeSettingValue"
     required: [value]
     additionalProperties: false
 
@@ -251,9 +282,7 @@ properties:
     description: Set the global auto mode speed from 0 (slowest) to 100 (fastest)
     properties:
       value:
-        type: number
-        minimum: 0
-        maximum: 100
+        $ref: "#/definitions/percentageSettingValue"
     required: [value]
     additionalProperties: false
 
@@ -262,7 +291,7 @@ properties:
     description: Set whether skip mode should include unseen text
     properties:
       value:
-        type: boolean
+        $ref: "#/definitions/booleanSettingValue"
     required: [value]
     additionalProperties: false
 
@@ -271,7 +300,7 @@ properties:
     description: Set whether transitions and animations should be skipped
     properties:
       value:
-        type: boolean
+        $ref: "#/definitions/booleanSettingValue"
     required: [value]
     additionalProperties: false
 
@@ -292,9 +321,7 @@ properties:
     description: Set effective SFX volume
     properties:
       value:
-        type: number
-        minimum: 0
-        maximum: 100
+        $ref: "#/definitions/percentageSettingValue"
     required: [value]
     additionalProperties: false
 
@@ -303,9 +330,7 @@ properties:
     description: Set effective music volume
     properties:
       value:
-        type: number
-        minimum: 0
-        maximum: 100
+        $ref: "#/definitions/percentageSettingValue"
     required: [value]
     additionalProperties: false
 
@@ -314,7 +339,7 @@ properties:
     description: Set whether all sound output is muted
     properties:
       value:
-        type: boolean
+        $ref: "#/definitions/booleanSettingValue"
     required: [value]
     additionalProperties: false
 
@@ -323,8 +348,7 @@ properties:
     description: Set the current save/load pagination page
     properties:
       value:
-        type: integer
-        minimum: 1
+        $ref: "#/definitions/paginationSettingValue"
     required: [value]
     additionalProperties: false
 

@@ -20,6 +20,21 @@ out:
   height: 50
   fill: "#112233"
 ---
+case: resolves an own prototype-named color resource
+in:
+  - type: "rect"
+    width: 100
+    height: 50
+    colorId: "constructor"
+  - colors:
+      constructor:
+        hex: "#112233"
+out:
+  type: "rect"
+  width: 100
+  height: 50
+  fill: "#112233"
+---
 case: resolves nested interaction colorIds for rect elements
 in:
   - id: "button"
@@ -104,6 +119,15 @@ in:
     colorId: "missing"
   - colors: {}
 throws: 'Color "missing" not found'
+---
+case: missing prototype color resource throws clear error
+in:
+  - type: "rect"
+    width: 100
+    height: 50
+    colorId: "constructor"
+  - colors: {}
+throws: 'Color "constructor" not found'
 ---
 case: colorId must resolve to a non-empty string
 in:
