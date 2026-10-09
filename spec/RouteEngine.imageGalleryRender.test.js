@@ -549,4 +549,80 @@ describe("RouteEngine image-gallery render API", () => {
       children: [],
     });
   });
+
+  it("renders $each with an absent gallery as an empty loop", () => {
+    const projectData = createProjectData({ includeImageGallery: false });
+    projectData.resources.layouts.galleryHud.elements = [
+      {
+        id: "gallery-grid",
+        type: "container",
+        children: [
+          {
+            $each: "group in imageGallery.pageGroups",
+            id: "gallery-group-${group.groupId}",
+            type: "text",
+            content: "${group.groupId}",
+          },
+        ],
+      },
+    ];
+
+    const engine = createEngine(projectData);
+
+    expect(engine.selectImageGallery()).toBeNull();
+    expect(() => engine.selectRenderState()).not.toThrow();
+    const layout = findElementById(
+      engine.selectRenderState().elements,
+      "layout-galleryHud",
+    );
+    expect(layout.children).toHaveLength(1);
+    expect(layout.children[0]).toMatchObject({
+      type: "container",
+      children: [],
+    });
+  });
+
+  it("renders nested $each loops and skips a missing source in the current item", () => {
+    const projectData = createProjectData();
+    projectData.resources.layouts.galleryHud.elements = [
+      {
+        id: "gallery-grid",
+        type: "container",
+        children: [
+          {
+            $each: "group, index in imageGallery.pageGroups",
+            id: "gallery-group-${index}-${group.groupId}",
+            type: "container",
+            children: [
+              {
+                $each: "variant in group.variants",
+                id: "gallery-variant-${variant.variantId}",
+                type: "text",
+                content: "${variant.imageId}",
+              },
+              {
+                $each: "variant in group.missingVariants",
+                id: "unexpected-${variant.variantId}",
+                type: "text",
+                content: "${variant.imageId}",
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const renderState = createEngine(projectData).selectRenderState();
+
+    const layout = findElementById(renderState.elements, "layout-galleryHud");
+    expect(layout.children).toHaveLength(1);
+    const grid = layout.children[0];
+    expect(grid.children).toHaveLength(1);
+    const group = grid.children[0];
+    expect(group.children).toHaveLength(1);
+    expect(group.children[0]).toMatchObject({
+      type: "text",
+      content: "festivalDay",
+    });
+  });
 });
