@@ -11,5 +11,8 @@ export const interpolateDialogueText = (text, data) => {
 
   const rendered = parseAndRender(text, data);
   if (rendered && typeof rendered === "object") return text;
+  if (typeof rendered === "number" || typeof rendered === "boolean") {
+    return String(rendered);
+  }
   return rendered;
 };

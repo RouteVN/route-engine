@@ -204,4 +204,22 @@ describe("robustness VT companion journeys", () => {
       rendered(restarted, "north-arrival", "layout-northArrival")?.content,
     ).toBe("ARRIVED NORTH OUTPOST");
   });
+
+  it("keeps the exact VT zero-length loop item visible without scheduling animations", () => {
+    const h = setup("zero-length-playback-loop");
+    const renderState = h.renderStates.at(-1);
+
+    expect(renderState.animations).toEqual([]);
+    expect(
+      findRenderElement(renderState.elements, "visual-marker"),
+    ).toMatchObject({
+      id: "visual-marker",
+      type: "container",
+    });
+    expect(h.checkpoint()).toMatchObject({
+      pendingEffects: [],
+      timerCount: 0,
+    });
+    expect(h.getError()).toBeUndefined();
+  });
 });
