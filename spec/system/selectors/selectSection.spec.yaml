@@ -1,9 +1,6 @@
 file: "../../../src/stores/system.store.js"
 group: systemStore selectors
-suites:
-  [
-    selectSection,
-  ]
+suites: [selectSection]
 ---
 suite: selectSection
 exportName: selectSection
@@ -74,6 +71,39 @@ in:
                       text: "Hello"
   - sectionId: "nonexistent"
 out: __undefined__
+---
+case: section lookup ignores inherited object properties
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  lines:
+                    - id: "1"
+                      text: "Hello"
+  - sectionId: "toString"
+out: __undefined__
+---
+case: section lookup accepts an own prototype-named property
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                toString:
+                  lines:
+                    - id: "1"
+                      text: "Hello"
+  - sectionId: "toString"
+out:
+  lines:
+    - id: "1"
+      text: "Hello"
 ---
 case: empty project data
 in:
