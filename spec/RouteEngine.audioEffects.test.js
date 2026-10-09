@@ -135,6 +135,113 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(effect.properties.volume).not.toHaveProperty("exit");
   });
 
+  it("plays an update effect on the initial BGM as its incoming track", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene.sections.section.lines[0].actions.bgm.audioEffects =
+      { resourceId: "smooth" };
+
+    const engine = createEngine({ projectData });
+    const effect = engine.selectRenderState().audioEffects?.[0];
+
+    expect(effect).toMatchObject({
+      targetId: "bgm:main",
+      properties: {
+        volume: {
+          enter: {
+            keyframes: [
+              expect.objectContaining({ value: 50 }),
+              expect.objectContaining({ value: 30 }),
+            ],
+          },
+        },
+      },
+    });
+    expect(Object.keys(effect.properties.volume)).toEqual(["enter"]);
+    expect(engine.selectPresentationState().bgm.volume).toBe(30);
+    expect(engine.selectRenderState().audio[0].children[0].volume).toBe(30);
+  });
+
+  it("plays an update effect as the incoming track of a new BGM source", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene.sections.section.lines[1].actions.bgm.audioEffects =
+      { resourceId: "smooth" };
+    const engine = createEngine({ projectData });
+
+    expect(() => enterNextLine(engine)).not.toThrow();
+    const effect = engine.selectRenderState().audioEffects?.[0];
+
+    expect(effect).toMatchObject({
+      targetId: "bgm:main",
+      properties: {
+        volume: {
+          enter: {
+            keyframes: [
+              expect.objectContaining({ value: 50, duration: 400 }),
+              expect.objectContaining({ value: 30, duration: 600 }),
+            ],
+          },
+        },
+      },
+    });
+    expect(Object.keys(effect.properties.volume)).toEqual(["enter"]);
+    expect(engine.selectRenderState().audio[0].children[0]).toMatchObject({
+      src: "next.ogg",
+      volume: 30,
+    });
+  });
+
+  it("plays an update effect as the outgoing track when a line stops the BGM", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene.sections.section.lines[1].actions.bgm = {
+      audioEffects: { resourceId: "smooth" },
+      sounds: [],
+    };
+    const engine = createEngine({ projectData });
+
+    expect(() => enterNextLine(engine)).not.toThrow();
+    const effect = engine.selectRenderState().audioEffects?.[0];
+
+    expect(effect).toMatchObject({
+      targetId: "bgm:main",
+      properties: {
+        volume: {
+          exit: {
+            keyframes: [
+              expect.objectContaining({ value: 50, duration: 400 }),
+              expect.objectContaining({ value: 30, duration: 600 }),
+            ],
+          },
+        },
+      },
+    });
+    expect(Object.keys(effect.properties.volume)).toEqual(["exit"]);
+    expect(engine.selectRenderState().audio).toEqual([]);
+  });
+
+  it("stops a removed BGM sound without an effect while another keeps playing", () => {
+    const projectData = createProjectData();
+    projectData.resources.audioEffects.hold = {
+      type: "update",
+      tween: { volume: { keyframes: [{ value: 80, duration: 500 }] } },
+    };
+    const lines = projectData.story.scenes.scene.sections.section.lines;
+    lines[0].actions.bgm.sounds.push({ id: "ambience", resourceId: "next" });
+    lines[1].actions.bgm = {
+      volume: 80,
+      audioEffects: { resourceId: "hold" },
+      sounds: [{ id: "main", resourceId: "old" }],
+    };
+    const engine = createEngine({ projectData });
+
+    expect(() => enterNextLine(engine)).not.toThrow();
+    expect(engine.selectRenderState().audioEffects).toBeUndefined();
+    expect(
+      engine
+        .selectRenderState()
+        .audio[0].children.map((sound) => [sound.id, sound.volume]),
+    ).toEqual([["bgm:main", 80]]);
+  });
+
   it("compiles a channel transition across multiple BGM sounds", () => {
     const projectData = createProjectData();
     const lines = projectData.story.scenes.scene.sections.section.lines;

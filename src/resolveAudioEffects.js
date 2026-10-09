@@ -1,4 +1,5 @@
 import { createBgmSoundRenderId } from "./audioIds.js";
+import { getOwnProperty } from "./util.js";
 
 const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
 
@@ -55,7 +56,7 @@ const getCanonicalSoundProperty = ({
       : bgm?.sounds?.find(
           (sound) => createBgmSoundRenderId(bgm, sound) === renderedSound?.id,
         );
-  const resource = resources.sounds?.[sound?.resourceId];
+  const resource = getOwnProperty(resources.sounds, sound?.resourceId);
   return (
     sound?.[property] ?? resource?.[property] ?? DEFAULT_AUDIO_VALUES[property]
   );
@@ -272,7 +273,7 @@ export const resolveSoundBoundaryEffect = ({
 
   const resourceId = selection.resourceId;
   const resourcePath = `resources.audioEffects.${resourceId}`;
-  const resource = resources.audioEffects?.[resourceId];
+  const resource = getOwnProperty(resources.audioEffects, resourceId);
   if (!resource) {
     throw new Error(
       `[${selectionPath}.resourceId]\n[${resourcePath}] Unknown audio effect resource "${resourceId}".`,
@@ -301,7 +302,7 @@ export const resolveSoundBoundaryEffect = ({
 
 export const applyAudioEffectEndpoints = ({ bgm, resources = {} }) => {
   const resourceId = bgm?.audioEffects?.resourceId;
-  const resource = resources.audioEffects?.[resourceId];
+  const resource = getOwnProperty(resources.audioEffects, resourceId);
   const propertyTracks =
     resource?.type === "update"
       ? resource.tween
@@ -355,6 +356,56 @@ const getTopLevelTransitionSoundGraph = (sound) => {
   return graph;
 };
 
+// Compile one authored property track on one side of a handoff. `side` is the
+// sound with its BGM and resources: the outgoing side for an exit track, the
+// incoming side otherwise. `baselineBgm` holds the channel pan that relative
+// pan keyframes start from. Enter and update tracks must end at the incoming
+// sound's persistent mix.
+const compileLifecycleTrack = ({
+  phase,
+  side,
+  baselineBgm,
+  authored,
+  property,
+  propertyPath,
+  actionPath,
+  speed,
+}) => {
+  const track = compileChannelProperty({
+    authored,
+    bgm: side.bgm,
+    baselineBgm,
+    property,
+    propertyPath,
+    renderedSound: side.sound,
+    resources: side.resources,
+    speed,
+  });
+  if (phase !== "exit") {
+    settlePropertyEndpoint({
+      actionPath,
+      compiled: track,
+      property,
+      propertyPath,
+      renderedSound: side.sound,
+    });
+  }
+  return track;
+};
+
+// The phase an update resource plays on one sound, as a visual update
+// animation does when its element appears, changes, or is removed: a retained
+// sound updates, an added or source-replaced sound plays the tween as its
+// incoming track, and a removed sound plays it as its outgoing track.
+// resolveAudioEffects passes removed sounds only when a line stops them all.
+const getUpdatePhase = (previousSound, nextSound) => {
+  if (!nextSound) return "exit";
+  if (!previousSound || !isSameSourceIdentity(previousSound, nextSound)) {
+    return "enter";
+  }
+  return "update";
+};
+
 export const resolveAudioEffect = ({
   occurrence,
   resources = {},
@@ -371,7 +422,7 @@ export const resolveAudioEffect = ({
   const actionPath = occurrence.actionPath ?? "bgm";
   const resourceId = selection.resourceId;
   const resourcePath = `resources.audioEffects.${resourceId}`;
-  const resource = resources.audioEffects?.[resourceId];
+  const resource = getOwnProperty(resources.audioEffects, resourceId);
   if (!resource) {
     throw new Error(
       `[${actionPath}.audioEffects.resourceId]\n[${resourcePath}] Unknown audio effect resource "${resourceId}".`,
@@ -390,55 +441,55 @@ export const resolveAudioEffect = ({
   }
 
   const targetId = previousSound?.id ?? nextSound.id;
-  const sameSource = isSameSourceIdentity(previousSound, nextSound);
-  const sameGraph = isSameValue(
-    getTopLevelTransitionSoundGraph(previousSound),
-    getTopLevelTransitionSoundGraph(nextSound),
-  );
+  const previous = {
+    sound: previousSound,
+    bgm: previousBgm,
+    resources: previousResources,
+  };
+  const next = { sound: nextSound, bgm: nextBgm, resources: nextResources };
+  const properties = {};
 
   if (resource.type === "transition") {
-    if (sameSource) {
+    if (isSameSourceIdentity(previousSound, nextSound)) {
+      const sameGraph = isSameValue(
+        getTopLevelTransitionSoundGraph(previousSound),
+        getTopLevelTransitionSoundGraph(nextSound),
+      );
       if (sameGraph) return null;
       throw new Error(
         `[${actionPath}.audioEffects]\n[${resourcePath}] Audio effect resource "${resourceId}" has type "transition", but the BGM action only updates a retained sound. Use an update resource.`,
       );
     }
 
-    const properties = {};
     for (const property of AUDIO_EFFECT_PROPERTIES) {
       const lifecycle = {};
       const previousTrack = previousSound
         ? resource.prev?.[property]
         : undefined;
       if (previousTrack) {
-        lifecycle.exit = compileChannelProperty({
+        lifecycle.exit = compileLifecycleTrack({
+          phase: "exit",
+          side: previous,
+          baselineBgm: previousBgm,
           authored: previousTrack,
-          bgm: previousBgm,
           property,
           propertyPath: `${resourcePath}.prev.${property}`,
-          renderedSound: previousSound,
-          resources: previousResources,
+          actionPath,
           speed,
         });
       }
 
       const nextTrack = nextSound ? resource.next?.[property] : undefined;
       if (nextTrack) {
-        lifecycle.enter = compileChannelProperty({
+        lifecycle.enter = compileLifecycleTrack({
+          phase: "enter",
+          side: next,
+          baselineBgm: nextBgm,
           authored: nextTrack,
-          bgm: nextBgm,
           property,
           propertyPath: `${resourcePath}.next.${property}`,
-          renderedSound: nextSound,
-          resources: nextResources,
-          speed,
-        });
-        settlePropertyEndpoint({
           actionPath,
-          compiled: lifecycle.enter,
-          property,
-          propertyPath: `${resourcePath}.next.${property}`,
-          renderedSound: nextSound,
+          speed,
         });
       }
 
@@ -446,54 +497,39 @@ export const resolveAudioEffect = ({
         properties[property] = lifecycle;
       }
     }
-    if (Object.keys(properties).length === 0) return null;
+  } else if (resource.type === "update") {
+    const phase = getUpdatePhase(previousSound, nextSound);
+    // Relative pan continues from the channel as it was before the line; a
+    // channel that only starts now has its own pan.
+    const baselineBgm =
+      phase === "enter" ? (previousBgm ?? nextBgm) : previousBgm;
+    for (const property of AUDIO_EFFECT_PROPERTIES) {
+      if (!hasOwn(resource.tween, property)) continue;
+      const track = compileLifecycleTrack({
+        phase,
+        side: phase === "exit" ? previous : next,
+        baselineBgm,
+        authored: resource.tween[property],
+        property,
+        propertyPath: `${resourcePath}.tween.${property}`,
+        actionPath,
+        speed,
+      });
 
-    return {
-      ...createBaseEffect(occurrence, targetId),
-      properties,
-    };
-  }
-
-  if (resource.type !== "update") {
+      // A retained update only animates values that change.
+      if (
+        phase === "update" &&
+        (previousSound[property] ?? DEFAULT_AUDIO_VALUES[property]) ===
+          (nextSound[property] ?? DEFAULT_AUDIO_VALUES[property])
+      ) {
+        continue;
+      }
+      properties[property] = { [phase]: track };
+    }
+  } else {
     throw new Error(
       `[${resourcePath}.type] Unsupported audio effect type "${resource.type}".`,
     );
-  }
-  if (!previousSound || !nextSound || !sameSource) {
-    throw new Error(
-      `[${actionPath}.audioEffects]\n[${resourcePath}] Audio effect resource "${resourceId}" has type "update", but the BGM action changes source identity. Use a transition resource.`,
-    );
-  }
-  const properties = {};
-  for (const property of AUDIO_EFFECT_PROPERTIES) {
-    if (!hasOwn(resource.tween, property)) continue;
-    const propertyPath = `${resourcePath}.tween.${property}`;
-    const update = compileChannelProperty({
-      property,
-      authored: resource.tween[property],
-      speed,
-      propertyPath,
-      baselineBgm: previousBgm,
-      bgm: nextBgm,
-      resources: nextResources,
-      renderedSound: nextSound,
-    });
-    const nextValue = nextSound[property] ?? DEFAULT_AUDIO_VALUES[property];
-    settlePropertyEndpoint({
-      actionPath,
-      compiled: update,
-      property,
-      propertyPath,
-      renderedSound: nextSound,
-    });
-
-    const previousValue =
-      previousSound[property] ?? DEFAULT_AUDIO_VALUES[property];
-    if (previousValue === nextValue) continue;
-
-    properties[property] = {
-      update,
-    };
   }
 
   if (Object.keys(properties).length === 0) return null;
@@ -527,8 +563,8 @@ export const resolveAudioEffects = (options) => {
   const createSingleSoundBgm = (bgm, resources, channel, sound) => {
     if (!Array.isArray(bgm?.sounds)) return bgm;
     const index = channel?.children?.indexOf(sound) ?? -1;
-    const authored = bgm.sounds.filter(
-      (item) => resources.sounds?.[item.resourceId],
+    const authored = bgm.sounds.filter((item) =>
+      getOwnProperty(resources.sounds, item.resourceId),
     )[index];
     return { ...bgm, sounds: authored ? [authored] : [] };
   };
@@ -578,28 +614,25 @@ export const resolveAudioEffects = (options) => {
   const previousById = new Map(
     previousSounds.map((sound) => [sound.id, sound]),
   );
-  const nextById = new Map(nextSounds.map((sound) => [sound.id, sound]));
 
   if (resource.type === "update") {
-    const targets = nextSounds.map((nextSound) => ({
-      previousSound: previousById.get(nextSound.id),
-      nextSound,
-    }));
-    const missingPreviousSound = targets.find(
-      ({ previousSound }) => !previousSound,
-    );
-    if (missingPreviousSound) {
-      return resolveTargets([missingPreviousSound]);
+    // Like a visual update animation, prefer the current sounds: retained
+    // sounds update, and added or replaced sounds enter. Removed sounds play
+    // the update as their outgoing track only when the line stops them all.
+    if (nextSounds.length === 0) {
+      return resolveTargets(
+        previousSounds.map((previousSound) => ({ previousSound })),
+      );
     }
-    const removedSound = previousSounds.find(
-      (previousSound) => !nextById.has(previousSound.id),
+    return resolveTargets(
+      nextSounds.map((nextSound) => ({
+        previousSound: previousById.get(nextSound.id),
+        nextSound,
+      })),
     );
-    if (removedSound) {
-      return resolveTargets([{ previousSound: removedSound }]);
-    }
-    return resolveTargets(targets);
   }
 
+  const nextById = new Map(nextSounds.map((sound) => [sound.id, sound]));
   const targets = [];
   for (const previousSound of previousSounds) {
     const nextSound = nextById.get(previousSound.id);
