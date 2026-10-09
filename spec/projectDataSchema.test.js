@@ -829,6 +829,15 @@ describe("projectData schema", () => {
       },
     ],
     [
+      "automatic tween timing with an easing from the renderer enum",
+      {
+        type: "update",
+        tween: {
+          alpha: { auto: { duration: 200, easing: "easeInOutQuad" } },
+        },
+      },
+    ],
+    [
       "keyframe timing and start value",
       {
         type: "update",
@@ -852,7 +861,24 @@ describe("projectData schema", () => {
         ],
       },
     ],
-    ["empty draft transition", { type: "transition" }],
+    [
+      "mask object alongside a surface",
+      {
+        type: "transition",
+        prev: {
+          tween: {
+            alpha: {
+              keyframes: [{ value: 0, duration: 200 }],
+            },
+          },
+        },
+        mask: {
+          kind: "single",
+          texture: "iris",
+          progress: { keyframes: [{ value: 1, duration: 200 }] },
+        },
+      },
+    ],
   ])("accepts an animation with %s", (_label, animation) => {
     const projectData = createMinimalProjectData({
       resources: { animations: { opening: animation } },
@@ -860,6 +886,114 @@ describe("projectData schema", () => {
 
     expect(validateProjectData(projectData)).toBe(true);
     expect(validateProjectData.errors).toBeNull();
+  });
+
+  it.each([
+    [
+      "an empty draft transition",
+      {
+        type: "transition",
+      },
+    ],
+    [
+      "a transition with an empty transition-only payload",
+      {
+        type: "transition",
+        complete: { payload: {} },
+      },
+    ],
+    [
+      "auto mixed with keyframes",
+      {
+        type: "update",
+        tween: {
+          alpha: {
+            keyframes: [{ value: 1, duration: 200 }],
+            auto: { duration: 200 },
+          },
+        },
+      },
+    ],
+    [
+      "auto mixed with keyframes and initialValue",
+      {
+        type: "update",
+        tween: {
+          alpha: {
+            initialValue: 0,
+            keyframes: [{ value: 1, duration: 200 }],
+            auto: { duration: 200 },
+          },
+        },
+      },
+    ],
+    [
+      "auto mixed with initialValue",
+      {
+        type: "update",
+        tween: {
+          alpha: {
+            initialValue: 0,
+            auto: { duration: 200 },
+          },
+        },
+      },
+    ],
+    [
+      "auto on a transition surface tween",
+      {
+        type: "transition",
+        next: {
+          tween: { alpha: { auto: { duration: 200 } } },
+        },
+      },
+    ],
+    [
+      "auto on mask progress",
+      {
+        type: "transition",
+        mask: {
+          kind: "single",
+          texture: "iris",
+          progress: { auto: { duration: 200 } },
+        },
+      },
+    ],
+    [
+      "an auto easing outside the renderer enum",
+      {
+        type: "update",
+        tween: {
+          alpha: { auto: { duration: 200, easing: "nonesuch" } },
+        },
+      },
+    ],
+    [
+      "a composite mask inside a mask array",
+      {
+        type: "transition",
+        mask: [
+          {
+            kind: "single",
+            texture: "iris",
+            progress: { keyframes: [{ value: 1, duration: 200 }] },
+          },
+          {
+            kind: "composite",
+            combine: "max",
+            items: [{ texture: "iris", channel: "red" }],
+            progress: { keyframes: [{ value: 1, duration: 200 }] },
+          },
+        ],
+      },
+    ],
+  ])("rejects an animation with %s", (_label, animation) => {
+    const projectData = createMinimalProjectData({
+      resources: { animations: { opening: animation } },
+    });
+
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).not.toBeNull();
   });
 
   it("requires width and height on spritesheet resources", () => {
