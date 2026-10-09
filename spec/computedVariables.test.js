@@ -1428,6 +1428,59 @@ describe("computed variables", () => {
     expect(store.selectAllVariables().hpPercent).toBe(80);
   });
 
+  it("gives 0 when dividing by zero, and for the remainder of that division", () => {
+    const projectData = createProjectData({
+      hits: { type: "number", scope: "context", default: 3 },
+      attempts: { type: "number", scope: "context", default: 0 },
+      accuracy: {
+        type: "number",
+        scope: "context",
+        computed: {
+          expr: {
+            div: [{ var: "variables.hits" }, { var: "variables.attempts" }],
+          },
+        },
+      },
+      leftover: {
+        type: "number",
+        scope: "context",
+        computed: {
+          expr: {
+            mod: [{ var: "variables.hits" }, { var: "variables.attempts" }],
+          },
+        },
+      },
+      zeroOverZero: {
+        type: "number",
+        scope: "context",
+        computed: { expr: { div: [0, 0] } },
+      },
+      overNegativeZero: {
+        type: "number",
+        scope: "context",
+        computed: { expr: { div: [5, { neg: [0] }] } },
+      },
+    });
+
+    expect(
+      resolveComputedVariables({
+        projectData,
+        variables: { hits: 3, attempts: 0 },
+      }),
+    ).toMatchObject({
+      accuracy: 0,
+      leftover: 0,
+      zeroOverZero: 0,
+      overNegativeZero: 0,
+    });
+    expect(
+      resolveComputedVariables({
+        projectData,
+        variables: { hits: 3, attempts: 4 },
+      }),
+    ).toMatchObject({ accuracy: 0.75, leftover: 3 });
+  });
+
   it("exposes the computed variable resolver as a public helper", () => {
     const projectData = createProjectData({
       hp: {
