@@ -69,6 +69,8 @@ jobs:
             item: robustness/duplicate-line-update-rejection.yaml
           - id: form-mixed-action-guard
             item: robustness/form-mixed-action-guard.yaml
+          - id: literal-dialogue-entry
+            item: robustness/literal-dialogue-entry.yaml
           - id: l10n-roundtrip
             item: robustness/l10n-layout-roundtrip.yaml
           - id: particle-texture

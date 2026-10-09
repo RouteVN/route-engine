@@ -165,4 +165,81 @@ describe("RouteEngine action templating", () => {
 
     expect(engine.selectSystemState().contexts[0].variables.score).toBe(11);
   });
+
+  it("leaves literal loop path references in presentation text alone", () => {
+    let engine;
+    const handlePendingEffects = (pendingEffects) => {
+      pendingEffects.forEach((effect) => {
+        if (effect.name === "handleLineActions") {
+          engine.handleLineActions();
+        }
+      });
+    };
+
+    engine = createRouteEngine({ handlePendingEffects });
+    const projectData = createMinimalProjectData();
+    engine.init({
+      initialState: {
+        global: {},
+        projectData: {
+          ...projectData,
+          resources: {
+            ...projectData.resources,
+            layouts: {
+              dialogueLayout: {
+                elements: [
+                  {
+                    id: "dialogue-text",
+                    type: "text",
+                    content: "${dialogue.content[0].text}",
+                  },
+                ],
+              },
+            },
+          },
+          story: {
+            initialSceneId: "scene1",
+            scenes: {
+              scene1: {
+                initialSectionId: "section1",
+                sections: {
+                  section1: {
+                    lines: [
+                      {
+                        id: "line1",
+                        actions: {
+                          dialogue: {
+                            ui: { resourceId: "dialogueLayout" },
+                            content: [{ text: "Literal #{item}" }],
+                          },
+                        },
+                      },
+                      {
+                        id: "line2",
+                        actions: {
+                          dialogue: { content: [{ text: "The door opened." }] },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const story = engine
+      .selectRenderState()
+      .elements.find((element) => element.id === "story");
+    expect(story.children[0].content).toBe("Literal #{item}");
+
+    engine.handleAction("markLineCompleted", {});
+    engine.handleAction("nextLine", {});
+    const nextStory = engine
+      .selectRenderState()
+      .elements.find((element) => element.id === "story");
+    expect(nextStory.children[0].content).toBe("The door opened.");
+  });
 });

@@ -1,0 +1,111 @@
+---
+title: Literal Dialogue Entry
+description: Literal loop-marker text enters and renders without unused action templating; clicking Next advances normally.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 250
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.dialogueText
+    value: "Literal #{item}"
+  - action: screenshot
+  - action: click
+    x: 800
+    y: 430
+  - action: wait
+    ms: 250
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: opened
+  - action: assert
+    type: js
+    global: __vtCheckpoint.dialogueText
+    value: The door opened.
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    foreground:
+      hex: "#FFFFFF"
+    button:
+      hex: "#4D4D4D"
+  textStyles:
+    body:
+      fontId: default
+      colorId: foreground
+      fontSize: 48
+      lineHeight: 1.2
+    button:
+      fontId: default
+      colorId: foreground
+      fontSize: 32
+  layouts:
+    dialogueLayout:
+      elements:
+        - id: dialogue
+          type: text
+          x: 80
+          y: 180
+          width: 800
+          content: "${dialogue.content[0].text}"
+          textStyleId: body
+  controls:
+    navigation:
+      elements:
+        - id: next-button
+          type: rect
+          x: 710
+          y: 390
+          width: 180
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: next-label
+          type: text
+          x: 755
+          y: 410
+          content: Next
+          textStyleId: button
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: literal
+              actions:
+                control:
+                  resourceId: navigation
+                dialogue:
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Literal #{item}"
+            - id: opened
+              actions:
+                dialogue:
+                  content:
+                    - text: The door opened.
