@@ -45,6 +45,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - id: creator-auto-animation-continuity
+            item: robustness/creator-auto-animation-continuity.yaml
+          - id: creator-delayed-keyframe-continuity
+            item: robustness/creator-delayed-keyframe-continuity.yaml
+          - id: creator-mask-array-continuity
+            item: robustness/creator-mask-array-continuity.yaml
           - id: alpha-opacity-compat
             item: robustness/alpha-opacity-compat.yaml
           - id: async-stale-click
@@ -75,18 +81,24 @@ jobs:
             item: robustness/playback-runtime-derived-auto-text.yaml
           - id: playback-section-reentry
             item: robustness/playback-section-reentry-first-line.yaml
+          - id: section-media-continuity
+            item: robustness/section-media-continuity.yaml
           - id: playback-skip-authored
             item: robustness/playback-skip-authored-co-due.yaml
           - id: save-load-timers
             item: robustness/save-load-skip-timer-cleanup.yaml
           - id: routing-cycle-recovery
             item: robustness/routing-cycle-recovery.yaml
+          - id: scalar-dialogue-rendering
+            item: robustness/scalar-dialogue-rendering.yaml
           - id: settings-batch
             item: robustness/settings-runtime-batch.yaml
           - id: template-click
             item: robustness/visual-layout-template-click.yaml
           - id: spritesheet-frame-names
             item: robustness/visual-spritesheet-default.yaml
+          - id: layout-each-missing-source
+            item: robustness/layout-each-missing-source.yaml
           - id: layout-guarded-choice
             item: robustness/layout-guarded-choice.yaml
           - id: inline-layout-click
@@ -95,6 +107,8 @@ jobs:
             item: robustness/visual-inline-layout-transition.yaml
           - id: inline-transform-replaces-overrides
             item: robustness/visual-inline-transform-replaces-overrides.yaml
+          - id: zero-length-playback-loop
+            item: robustness/zero-length-playback-loop.yaml
     steps:
       - uses: actions/checkout@v4
         with:

@@ -159,6 +159,10 @@ properties:
             type: string
             minLength: 1
             description: Optional string variable ID used as the character display name at render time. The name field remains the fallback/editor label.
+          variables:
+            type: object
+            description: Character-specific values authored with the resource
+            additionalProperties: true
         additionalProperties: false
     additionalProperties: false
 
@@ -551,7 +555,7 @@ properties:
             type: number
             description: Font size in pixels
           fontWeight:
-            type: string
+            type: [string, number]
             description: CSS font weight
           fontStyle:
             type: string
