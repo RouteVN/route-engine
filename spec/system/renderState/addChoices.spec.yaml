@@ -533,6 +533,159 @@ out:
           content: "choice1"
   animations: []
 ---
+case: interpolates numeric and boolean variables in choice item content
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: "choiceLayout"
+        items:
+          - id: "choice1"
+            content: "Take ${variables.count} paths, locked ${variables.locked}"
+    resources:
+      layouts:
+        choiceLayout:
+          elements:
+            - id: "choice-content"
+              type: "text"
+              content: "${choice.items[0].content}"
+    variables:
+      count: 3
+      locked: true
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "choice-content"
+          type: "text"
+          content: "Take 3 paths, locked true"
+  animations: []
+---
+case: interpolates object variables in choice item content with plain string conversion
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: "choiceLayout"
+        items:
+          - id: "choice1"
+            content: "Cargo ${variables.crate}"
+    resources:
+      layouts:
+        choiceLayout:
+          elements:
+            - id: "choice-content"
+              type: "text"
+              content: "${choice.items[0].content}"
+    variables:
+      crate:
+        size: 2
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "choice-content"
+          type: "text"
+          content: "Cargo [object Object]"
+  animations: []
+---
+case: renders unresolved references in choice item content as empty text
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: "choiceLayout"
+        items:
+          - id: "choice1"
+            content: "Go ${variables.unknown} now"
+    resources:
+      layouts:
+        choiceLayout:
+          elements:
+            - id: "choice-content"
+              type: "text"
+              content: "${choice.items[0].content}"
+    variables:
+      name: "Ada"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "choice-content"
+          type: "text"
+          content: "Go  now"
+  animations: []
+---
+case: passes non-string choice item content through without templating
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: "choiceLayout"
+        items:
+          - id: "choice1"
+            content: 7
+          - id: "choice2"
+    resources:
+      layouts:
+        choiceLayout:
+          elements:
+            - id: "first-item"
+              type: "text"
+              content: "${choice.items[0].content} ${choice.items[1].id}"
+            - id: "raw-content"
+              type: "text"
+              content: "${choice.items[0].content}"
+    variables:
+      choice2: "not used"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "first-item"
+          type: "text"
+          content: "7 choice2"
+        - id: "raw-content"
+          type: "text"
+          content: 7
+  animations: []
+---
 case: null resources - return unchanged state
 in:
   - elements:

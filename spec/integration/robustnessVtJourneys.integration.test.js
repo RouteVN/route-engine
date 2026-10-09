@@ -1,7 +1,10 @@
 import { readFileSync } from "node:fs";
 import { loadAll } from "js-yaml";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createEngineIntegrationHarness } from "./helpers/createEngineIntegrationHarness.js";
+import {
+  createEngineIntegrationHarness,
+  findRenderElement,
+} from "./helpers/createEngineIntegrationHarness.js";
 import {
   createExpectedErrorHandler,
   dispatchEngineActionsEvent,
@@ -47,6 +50,17 @@ const setup = (name) => {
         projectData.resources.layouts[resourceId];
       const element = resource.elements.find(
         (element) => element.id === elementId,
+      );
+      expect(element?.click?.payload).toBeDefined();
+      const renderCount = harness.renderStates.length;
+      await handleEvent("click", structuredClone(element.click.payload));
+      if (harness.renderStates.length > renderCount)
+        harness.completeLatestRender();
+    },
+    clickRendered: async (elementId) => {
+      const element = findRenderElement(
+        harness.renderStates.at(-1)?.elements,
+        elementId,
       );
       expect(element?.click?.payload).toBeDefined();
       const renderCount = harness.renderStates.length;
@@ -155,6 +169,28 @@ describe("robustness VT companion journeys", () => {
     expect(h.checkpoint().textById).toMatchObject({
       "history-row-0": "Source speaker: Source first.",
       "history-row-1": "Source speaker: Source second.",
+    });
+  });
+
+  it("routes each interpolated choice label to its own section through the exact VT project", async () => {
+    const h = setup("choice-interpolated-content-click");
+    expect(h.checkpoint().textById).toMatchObject({
+      "choice-label-0": "Follow ADA north 12km",
+      "choice-label-1": "Rest at the ADA camp",
+    });
+    await h.clickRendered("choice-hit-1");
+    expect(h.checkpoint()).toMatchObject({
+      pointer: { sectionId: "camp", lineId: "camp-arrival" },
+      textById: { "camp-arrival": "ARRIVED SOUTHERN CAMP" },
+      pendingEffects: [],
+    });
+    expect(h.checkpoint().textById["choice-label-1"]).toBeUndefined();
+
+    const restarted = setup("choice-interpolated-content-click");
+    await restarted.clickRendered("choice-hit-0");
+    expect(restarted.checkpoint()).toMatchObject({
+      pointer: { sectionId: "north", lineId: "north-arrival" },
+      textById: { "north-arrival": "ARRIVED NORTH OUTPOST" },
     });
   });
 });

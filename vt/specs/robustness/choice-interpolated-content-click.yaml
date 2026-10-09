@@ -1,0 +1,220 @@
+---
+title: Choice Item Content Interpolation And Click Routing
+description: Choice labels resolve authored variable templates before the choice layout renders them, and clicking a rendered label routes to that item's own section.
+specs:
+  - both choice labels show resolved variable values instead of raw template text
+  - clicking the second rendered choice routes to the camp section only
+  - the camp branch shows its unique arrival content
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 150
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.choice-label-0
+    value: Follow ADA north 12km
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.choice-label-1
+    value: Rest at the ADA camp
+  - action: screenshot
+  - action: click
+    x: 700
+    y: 390
+  - action: wait
+    ms: 150
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value: { sectionId: camp, lineId: camp-arrival }
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.camp-arrival
+    value: ARRIVED SOUTHERN CAMP
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+  backgroundColor: "#000000"
+resources:
+  variables:
+    traveler:
+      type: string
+      scope: context
+      default: ADA
+    distance:
+      type: number
+      scope: context
+      default: 12
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#000000"
+    row:
+      hex: "#4D4D4D"
+    prompt:
+      hex: "#A6A6A6"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    prompt:
+      fontId: default
+      colorId: prompt
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    choice:
+      fontId: default
+      colorId: text
+      fontSize: 34
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+    arrival:
+      fontId: default
+      colorId: text
+      fontSize: 44
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+  layouts:
+    choices:
+      elements:
+        - id: background
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: prompt
+          type: text
+          x: 120
+          y: 60
+          content: SELECT ROUTE
+          textStyleId: prompt
+        - id: choice-row-0
+          type: container
+          x: 120
+          y: 150
+          children:
+            - id: choice-hit-0
+              type: rect
+              x: 0
+              y: 0
+              width: 720
+              height: 120
+              colorId: row
+              click:
+                payload:
+                  actions:
+                    sectionTransition: ${choice.items[0].events.click.actions.sectionTransition}
+            - id: choice-label-0
+              type: text
+              x: 60
+              y: 40
+              content: ${choice.items[0].content}
+              textStyleId: choice
+        - id: choice-row-1
+          type: container
+          x: 120
+          y: 330
+          children:
+            - id: choice-hit-1
+              type: rect
+              x: 0
+              y: 0
+              width: 720
+              height: 120
+              colorId: row
+              click:
+                payload:
+                  actions:
+                    sectionTransition: ${choice.items[1].events.click.actions.sectionTransition}
+            - id: choice-label-1
+              type: text
+              x: 60
+              y: 40
+              content: ${choice.items[1].content}
+              textStyleId: choice
+    northArrival:
+      elements:
+        - id: background
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: north-arrival
+          type: text
+          x: 480
+          y: 250
+          anchorX: 0.5
+          content: ARRIVED NORTH OUTPOST
+          textStyleId: arrival
+    campArrival:
+      elements:
+        - id: background
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: camp-arrival
+          type: text
+          x: 480
+          y: 250
+          anchorX: 0.5
+          content: ARRIVED SOUTHERN CAMP
+          textStyleId: arrival
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Main
+      initialSectionId: chooser
+      sections:
+        chooser:
+          name: Chooser
+          lines:
+            - id: route-choice
+              actions:
+                choice:
+                  resourceId: choices
+                  items:
+                    - id: north
+                      content: Follow ${variables.traveler} north ${variables.distance}km
+                      events:
+                        click:
+                          actions:
+                            sectionTransition:
+                              sectionId: north
+                    - id: camp
+                      content: Rest at the ${variables.traveler} camp
+                      events:
+                        click:
+                          actions:
+                            sectionTransition:
+                              sectionId: camp
+        north:
+          name: North
+          lines:
+            - id: north-arrival
+              actions:
+                layout:
+                  resourceId: northArrival
+        camp:
+          name: Camp
+          lines:
+            - id: camp-arrival
+              actions:
+                layout:
+                  resourceId: campArrival
