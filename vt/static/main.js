@@ -1,7 +1,5 @@
-import {
-  installVideoVolumeProbe,
-  waitForVtVideoTextures,
-} from "./videoVolumeProbe.js";
+import { waitForVtVideoTextures } from "./videoTextureReadiness.js";
+import { installVideoVolumeProbe } from "./videoVolumeProbe.js";
 import { installVideoPlaybackProbe } from "./videoPlaybackProbe.js";
 import { selectVtAssets } from "./selectVtAssets.js";
 import { parse, Ticker } from "./VtDependencies.js";
