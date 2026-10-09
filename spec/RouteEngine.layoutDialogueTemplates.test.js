@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 
+// Layout children render under their owning slot's stable namespace.
+const dialogueElementId = (id) => `dialogue-container--${id}`;
+const layoutElementId = (id) => `layout-conditionalLayout--${id}`;
+
 const findElementById = (elements, id) => {
   for (const element of elements || []) {
     if (element?.id === id) {
@@ -400,10 +404,13 @@ describe("RouteEngine layout dialogue templates", () => {
       engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
     ).toBe("line2");
     expect(
-      findElementById(renderState.elements, "dialogue-present"),
+      findElementById(
+        renderState.elements,
+        layoutElementId("dialogue-present"),
+      ),
     ).toBeNull();
     expect(
-      findElementById(renderState.elements, "always-present"),
+      findElementById(renderState.elements, layoutElementId("always-present")),
     ).toMatchObject({
       content: "No active dialogue",
     });
@@ -430,10 +437,14 @@ describe("RouteEngine layout dialogue templates", () => {
     expect(
       engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
     ).toBe("line2");
-    expect(findElementById(renderState.elements, "speaker")).toMatchObject({
+    expect(
+      findElementById(renderState.elements, dialogueElementId("speaker")),
+    ).toMatchObject({
       content: "Alice",
     });
-    expect(findElementById(renderState.elements, "body")).toMatchObject({
+    expect(
+      findElementById(renderState.elements, dialogueElementId("body")),
+    ).toMatchObject({
       type: "text-revealing",
       content: [
         {
@@ -458,7 +469,10 @@ describe("RouteEngine layout dialogue templates", () => {
     });
 
     expect(
-      findElementById(engine.selectRenderState().elements, "body"),
+      findElementById(
+        engine.selectRenderState().elements,
+        dialogueElementId("body"),
+      ),
     ).toEqual(
       expect.objectContaining({
         content: [
@@ -476,7 +490,10 @@ describe("RouteEngine layout dialogue templates", () => {
     });
 
     expect(
-      findElementById(engine.selectRenderState().elements, "body"),
+      findElementById(
+        engine.selectRenderState().elements,
+        dialogueElementId("body"),
+      ),
     ).toEqual(
       expect.objectContaining({
         content: [
@@ -497,7 +514,10 @@ describe("RouteEngine layout dialogue templates", () => {
     });
 
     expect(
-      findElementById(engine.selectRenderState().elements, "body"),
+      findElementById(
+        engine.selectRenderState().elements,
+        dialogueElementId("body"),
+      ),
     ).toEqual(
       expect.objectContaining({
         content: [
@@ -527,7 +547,12 @@ describe("RouteEngine layout dialogue templates", () => {
     });
 
     expect(engine.selectRuntime().dialogueTextSpeed).toBe(84);
-    expect(findElementById(engine.selectRenderState().elements, "body")).toEqual(
+    expect(
+      findElementById(
+        engine.selectRenderState().elements,
+        dialogueElementId("body"),
+      ),
+    ).toEqual(
       expect.objectContaining({
         speed: 12,
       }),
@@ -540,7 +565,12 @@ describe("RouteEngine layout dialogue templates", () => {
 
     expect(engine.selectPresentationState().dialogue.textSpeed).toBeUndefined();
     expect(engine.selectRuntime().dialogueTextSpeed).toBe(84);
-    expect(findElementById(engine.selectRenderState().elements, "body")).toEqual(
+    expect(
+      findElementById(
+        engine.selectRenderState().elements,
+        dialogueElementId("body"),
+      ),
+    ).toEqual(
       expect.objectContaining({
         speed: 84,
       }),

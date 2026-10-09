@@ -1,0 +1,246 @@
+---
+title: Layout Instance Continuity
+description: >-
+  Two shared layout inputs coexist; typing into the overlay survives unrelated background changes
+  and removing or restoring the sharing main layout, retaining native focus.
+specs:
+  - shared layout occurrences create two independent native inputs
+  - overlay text and focus survive an unrelated background appearing
+  - removing and restoring the sharing main layout preserves the overlay native input
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 250
+  - action: click
+    x: 640
+    "y": 267
+  - action: keypress
+    key: A
+  - action: keypress
+    key: d
+  - action: keypress
+    key: a
+  - action: wait
+    ms: 120
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer.lineId
+    value: continuityLine
+  - action: assert
+    type: js
+    global: __vtCheckpoint.nativeInputs.focusedId
+    value: overlayStack-0--shared-input
+  - action: assert
+    type: js
+    global: __vtCheckpoint.nativeInputs.inputs
+    value:
+      - id: layout-sharedPanel--shared-input
+        value: ""
+        focused: false
+        displayed: true
+      - id: overlayStack-0--shared-input
+        value: Ada
+        focused: true
+        displayed: true
+  - action: screenshot
+  - action: customEvent
+    name: vt:engineActions
+    detail:
+      actions:
+        jumpToLine:
+          lineId: backgroundAdded
+  - action: wait
+    ms: 120
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer.lineId
+    value: backgroundAdded
+  - action: assert
+    type: js
+    global: __vtCheckpoint.nativeInputs.focusedId
+    value: overlayStack-0--shared-input
+  - action: assert
+    type: js
+    global: __vtCheckpoint.nativeInputs.inputs
+    value:
+      - id: layout-sharedPanel--shared-input
+        value: ""
+        focused: false
+        displayed: true
+      - id: overlayStack-0--shared-input
+        value: Ada
+        focused: true
+        displayed: true
+  - action: screenshot
+  - action: customEvent
+    name: vt:engineActions
+    detail:
+      actions:
+        jumpToLine:
+          lineId: mainRemoved
+  - action: wait
+    ms: 120
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer.lineId
+    value: mainRemoved
+  - action: assert
+    type: js
+    global: __vtCheckpoint.nativeInputs.focusedId
+    value: overlayStack-0--shared-input
+  - action: assert
+    type: js
+    global: __vtCheckpoint.nativeInputs.inputs
+    value:
+      - id: layout-sharedPanel--shared-input
+        value: ""
+        focused: false
+        displayed: false
+      - id: overlayStack-0--shared-input
+        value: Ada
+        focused: true
+        displayed: true
+  - action: screenshot
+  - action: customEvent
+    name: vt:engineActions
+    detail:
+      actions:
+        jumpToLine:
+          lineId: mainRestored
+  - action: wait
+    ms: 120
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer.lineId
+    value: mainRestored
+  - action: assert
+    type: js
+    global: __vtCheckpoint.nativeInputs.focusedId
+    value: overlayStack-0--shared-input
+  - action: assert
+    type: js
+    global: __vtCheckpoint.nativeInputs.inputs
+    value:
+      - id: layout-sharedPanel--shared-input
+        value: ""
+        focused: false
+        displayed: true
+      - id: overlayStack-0--shared-input
+        value: Ada
+        focused: true
+        displayed: true
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  layouts:
+    sharedPanel:
+      elements:
+        - id: panel
+          type: rect
+          x: 330
+          "y": 150
+          width: 620
+          height: 300
+          colorId: panelColor
+        - id: panel-title
+          type: text
+          x: 380
+          "y": 176
+          content: Shared panel
+          textStyleId: titleText
+        - id: shared-input
+          type: input
+          x: 380
+          "y": 240
+          width: 520
+          height: 54
+          textStyleId: inputText
+    unrelatedBackdrop:
+      elements:
+        - id: backdrop
+          type: rect
+          x: 0
+          "y": 560
+          width: 1280
+          height: 160
+          colorId: backdropColor
+        - id: backdrop-label
+          type: text
+          x: 900
+          "y": 628
+          content: UNRELATED BACKDROP
+          textStyleId: labelText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    panelColor:
+      hex: "#243B53"
+    backdropColor:
+      hex: "#3D2C8D"
+    textColor:
+      hex: "#F7F7F2"
+    inputTextColor:
+      hex: "#111111"
+  textStyles:
+    titleText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 34
+      lineHeight: 1.2
+    labelText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 22
+      lineHeight: 1.2
+    inputText:
+      fontId: fontDefault
+      colorId: inputTextColor
+      fontSize: 24
+      lineHeight: 1.2
+story:
+  initialSceneId: continuityScene
+  scenes:
+    continuityScene:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: continuityLine
+              actions:
+                layout:
+                  resourceId: sharedPanel
+                pushOverlay:
+                  resourceId: sharedPanel
+                  resourceType: layout
+            - id: backgroundAdded
+              actions:
+                background:
+                  resourceId: unrelatedBackdrop
+                layout:
+                  resourceId: sharedPanel
+            - id: mainRemoved
+              actions:
+                background:
+                  resourceId: unrelatedBackdrop
+                layout: {}
+            - id: mainRestored
+              actions:
+                background: {}
+                layout:
+                  resourceId: sharedPanel

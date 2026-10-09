@@ -548,6 +548,42 @@ resources:
             opacity: 0.9
 ```
 
+#### Layout Element Occurrence IDs
+
+Authored layout element `id`s are not rendered verbatim. Each rendered layout
+instance namespaces its element ids under its owning semantic slot, using the
+slot's own stable root id: `layout-<resourceId>--<authoredId>` for the `layout`
+action, `overlayStack-<index>--<authoredId>` for authored overlay stack
+entries, `bg-cg-background-container--<authoredId>` for layout backgrounds,
+`visual-<itemId>--<authoredId>` for visual items, `dialogue-container--<authoredId>`
+for dialogue UIs, `choice-container--<authoredId>` for choices,
+`form-container--<authoredId>` for forms, `control-<resourceId>--<authoredId>`
+for control layouts, and `confirmDialog--<authoredId>` for confirm dialogs.
+
+The contract is intentionally slot-owned and unconditional:
+
+- an instance's rendered ids depend only on its own slot identity — never on
+  traversal order or on how many other instances currently share the resource —
+  so adding, removing, or re-rendering unrelated layouts, overlays, or
+  conditionals never rekeys another instance's element ids
+- the same layout resource can safely back several slots at once (for example
+  a `layout` action plus a pushed overlay); every occurrence stays unique and
+  addressable
+- native DOM widgets keyed by these ids (such as text inputs) keep their DOM
+  identity, typed value, and focus across unrelated presentation changes
+- slot keys track the supported overlay stack operations: pushing, popping, or
+  replacing the top entry keeps existing entries' indexes, so their namespaced
+  ids are stable
+- authored ids repeated inside one instance receive deterministic `-1`, `-2`,
+  ... suffixes in authored order
+- a literal `--` inside an authored id or resource id is percent-escaped
+  (`%2D%2D`), keeping `--` unambiguous as the namespace separator; ordinary
+  hyphenated ids are unchanged
+
+Root container ids themselves (`layout-<resourceId>`, `overlayStack-<index>`,
+`form-container`, ...) are engine-owned and never renamed, and authored
+resource definitions are never mutated.
+
 #### Background Backing Color
 
 Background actions can set a persistent solid backing color with `colorId`.

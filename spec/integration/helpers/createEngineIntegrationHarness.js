@@ -74,17 +74,24 @@ export const createIntegrationProject = ({
   ...(config === undefined ? {} : { config }),
 });
 
-export const findRenderElement = (elements, id) => {
-  for (const element of elements ?? []) {
-    if (element?.id === id) {
-      return element;
+// Optional owner scoping resolves exactly one physical layout occurrence.
+// It never falls back to a similarly named element in another slot.
+export const findRenderElement = (elements, id, { layoutRootId } = {}) => {
+  const encode = (value) =>
+    encodeURIComponent(value).replaceAll("--", "%2D%2D");
+  const renderedId =
+    layoutRootId === undefined ? id : `${encode(layoutRootId)}--${encode(id)}`;
+  const matches = [];
+  const visit = (items) => {
+    for (const element of items ?? []) {
+      if (element?.id === renderedId) matches.push(element);
+      visit(element?.children);
     }
-    const nested = findRenderElement(element?.children, id);
-    if (nested) {
-      return nested;
-    }
-  }
-  return undefined;
+  };
+  visit(elements);
+  if (matches.length > 1)
+    throw new Error(`Ambiguous render element id "${renderedId}"`);
+  return matches[0];
 };
 
 export const createEngineIntegrationHarness = ({

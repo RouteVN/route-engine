@@ -2,6 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 import createEffectsHandler from "../src/createEffectsHandler.js";
 
+// Layout children render under their owning slot's stable namespace.
+const dialogueElementId = (id) => `dialogue-container--${id}`;
+const overlayElementId = (id) => `overlayStack-0--${id}`;
+
 const createTicker = () => ({
   add: vi.fn(),
   remove: vi.fn(),
@@ -325,12 +329,17 @@ describe("RouteEngine rollback render state", () => {
       engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
     ).toBe("line1");
     expect(
-      findElementById(rollbackRender.elements, "dialogue-text"),
+      findElementById(
+        rollbackRender.elements,
+        dialogueElementId("dialogue-text"),
+      ),
     ).toMatchObject({
       type: "text-revealing",
       revealEffect: "none",
     });
-    expect(findElementById(rollbackRender.elements, "panel-text")).toBeNull();
+    expect(
+      findElementById(rollbackRender.elements, overlayElementId("panel-text")),
+    ).toBeNull();
     expect(rollbackRender.animations).toEqual([]);
   });
 
@@ -367,12 +376,12 @@ describe("RouteEngine rollback render state", () => {
     const overlayRender = routeGraphics.render.mock.calls.at(-1)?.[0];
 
     expect(engine.selectSystemState().global.isLineCompleted).toBe(true);
-    expect(findElementById(overlayRender.elements, "panel-text")).toMatchObject(
-      {
-        type: "text",
-        content: "Overlay panel",
-      },
-    );
+    expect(
+      findElementById(overlayRender.elements, overlayElementId("panel-text")),
+    ).toMatchObject({
+      type: "text",
+      content: "Overlay panel",
+    });
     expect(overlayRender.animations).toEqual([]);
   });
 

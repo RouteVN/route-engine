@@ -464,7 +464,10 @@ describe("RouteEngine line completion flow", () => {
 
     const initialRender = getRenderState(routeGraphics, 0);
     expect(
-      findElementById(initialRender.elements, "dialogue-text"),
+      findElementById(
+        initialRender.elements,
+        "dialogue-container--dialogue-text",
+      ),
     ).toMatchObject({
       type: "text-revealing",
       revealEffect: "typewriter",
@@ -476,7 +479,10 @@ describe("RouteEngine line completion flow", () => {
 
     const completedRender = getRenderState(routeGraphics, 1);
     expect(
-      findElementById(completedRender.elements, "dialogue-text"),
+      findElementById(
+        completedRender.elements,
+        "dialogue-container--dialogue-text",
+      ),
     ).toMatchObject({
       type: "text-revealing",
       revealEffect: "none",
@@ -492,7 +498,10 @@ describe("RouteEngine line completion flow", () => {
       engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
     ).toBe("line2");
     expect(
-      findElementById(advancedRender.elements, "dialogue-text"),
+      findElementById(
+        advancedRender.elements,
+        "dialogue-container--dialogue-text",
+      ),
     ).toMatchObject({
       type: "text-revealing",
       revealEffect: "typewriter",
@@ -537,7 +546,7 @@ describe("RouteEngine line completion flow", () => {
     expect(
       findElementById(
         getLastRenderState(routeGraphics).elements,
-        "dialogue-text",
+        "dialogue-container--dialogue-text",
       ),
     ).toMatchObject({
       revealEffect: "none",
@@ -559,7 +568,7 @@ describe("RouteEngine line completion flow", () => {
     expect(
       findElementById(
         getLastRenderState(routeGraphics).elements,
-        "dialogue-text",
+        "dialogue-container--dialogue-text",
       ),
     ).toMatchObject({
       revealEffect: "typewriter",
@@ -584,7 +593,7 @@ describe("RouteEngine line completion flow", () => {
     expect(
       findElementById(
         getLastRenderState(routeGraphics).elements,
-        "dialogue-text",
+        "dialogue-container--dialogue-text",
       ),
     ).toMatchObject({
       revealEffect: "none",
@@ -601,7 +610,7 @@ describe("RouteEngine line completion flow", () => {
     expect(
       findElementById(
         getLastRenderState(routeGraphics).elements,
-        "dialogue-text",
+        "dialogue-container--dialogue-text",
       ),
     ).toMatchObject({
       revealEffect: "typewriter",
@@ -646,7 +655,10 @@ describe("RouteEngine line completion flow", () => {
 
     const completedRender = getRenderState(routeGraphics, 1);
     expect(
-      findElementById(completedRender.elements, "dialogue-text"),
+      findElementById(
+        completedRender.elements,
+        "dialogue-container--dialogue-text",
+      ),
     ).toMatchObject({
       type: "text-revealing",
       revealEffect: "none",
@@ -661,7 +673,10 @@ describe("RouteEngine line completion flow", () => {
       engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
     ).toBe("line2");
     expect(
-      findElementById(advancedRender.elements, "dialogue-text"),
+      findElementById(
+        advancedRender.elements,
+        "dialogue-container--dialogue-text",
+      ),
     ).toMatchObject({
       type: "text-revealing",
       revealEffect: "typewriter",
@@ -681,7 +696,10 @@ describe("RouteEngine line completion flow", () => {
 
     const line2CompletedRender = getLastRenderState(routeGraphics);
     expect(
-      findElementById(line2CompletedRender.elements, "dialogue-text"),
+      findElementById(
+        line2CompletedRender.elements,
+        "dialogue-container--dialogue-text",
+      ),
     ).toMatchObject({
       type: "text-revealing",
       revealEffect: "none",
@@ -696,7 +714,10 @@ describe("RouteEngine line completion flow", () => {
       engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
     ).toBe("line3");
     expect(
-      findElementById(line3Render.elements, "dialogue-text"),
+      findElementById(
+        line3Render.elements,
+        "dialogue-container--dialogue-text",
+      ),
     ).toMatchObject({
       type: "text-revealing",
       revealEffect: "typewriter",

@@ -1505,6 +1505,35 @@ const collectRenderElementIds = (elements, ids = new Set()) => {
   return ids;
 };
 
+// Stable layout occurrence ids: every authored layout element id is rendered
+// under the namespace of its owning semantic slot (background, layout action,
+// overlay stack entry, visual item, dialogue UI, ...). The namespace is the
+// owner's own stable root id, never a traversal counter or duplicate-ordering
+// heuristic, so an instance's ids depend only on its own slot identity.
+// Adding, removing, or re-rendering unrelated layouts, overlays, or
+// conditionals therefore never rekeys another instance's element ids, and
+// native inputs keyed by those ids keep their DOM identity, typed text, and
+// focus. Authored ids duplicated within one instance get a deterministic
+// "-1", "-2", ... suffix. Root container ids themselves are never renamed.
+// Segment encoding keeps "--" reserved for the namespace separator, so an
+// authored id or slot key containing "--" can never impersonate another
+// slot/id pair, while ordinary hyphenated ids stay readable.
+const encodeLayoutIdSegment = (value) =>
+  encodeURIComponent(value).replaceAll("--", "%2D%2D");
+
+const claimLayoutInstanceNamespace = (layoutInstanceState, slotKey) => {
+  const baseKey = encodeLayoutIdSegment(
+    typeof slotKey === "string" && slotKey.length > 0 ? slotKey : "layout",
+  );
+  let namespace = baseKey;
+  let suffix = 2;
+  while (layoutInstanceState.claimedNamespaces.has(namespace)) {
+    namespace = `${baseKey}-${suffix++}`;
+  }
+  layoutInstanceState.claimedNamespaces.add(namespace);
+  return namespace;
+};
+
 const registerLayoutInstanceElements = ({
   state,
   elements,
@@ -1515,7 +1544,7 @@ const registerLayoutInstanceElements = ({
     return elements;
   }
 
-  const namespace = `layout-instance-${layoutInstanceState.nextInstanceId++}`;
+  const namespace = claimLayoutInstanceNamespace(layoutInstanceState, rootId);
   const occupiedIds = collectRenderElementIds(state.elements);
   if (typeof rootId === "string") {
     occupiedIds.add(rootId);
@@ -1532,19 +1561,17 @@ const registerLayoutInstanceElements = ({
       }
 
       if (typeof element.id === "string") {
-        if (layoutInstanceState.usedIds.has(element.id)) {
-          const baseId = `${namespace}--${element.id}`;
-          let uniqueId = baseId;
-          let suffix = 1;
-          while (
-            layoutInstanceState.usedIds.has(uniqueId) ||
-            occupiedIds.has(uniqueId)
-          ) {
-            uniqueId = `${baseId}-${suffix++}`;
-          }
-          element.id = uniqueId;
+        const baseId = `${namespace}--${encodeLayoutIdSegment(element.id)}`;
+        let uniqueId = baseId;
+        let suffix = 1;
+        while (
+          layoutInstanceState.usedIds.has(uniqueId) ||
+          occupiedIds.has(uniqueId)
+        ) {
+          uniqueId = `${baseId}-${suffix++}`;
         }
-        layoutInstanceState.usedIds.add(element.id);
+        element.id = uniqueId;
+        layoutInstanceState.usedIds.add(uniqueId);
       }
 
       visit(element.children);
@@ -3718,6 +3745,7 @@ export const addDialogue = (
             state,
             elements: result?.elements,
             layoutInstanceState,
+            rootId: "dialogue-container",
           }),
           {
             isLineCompleted,
@@ -3848,6 +3876,7 @@ export const addChoices = (
               state,
               elements: result?.elements,
               layoutInstanceState,
+              rootId: "choice-container",
             }),
             {
               isLineCompleted,
@@ -4929,8 +4958,8 @@ export const constructRenderState = (params) => {
   );
 
   const layoutInstanceState = {
-    nextInstanceId: 0,
     usedIds: new Set(),
+    claimedNamespaces: new Set(),
   };
   const paramsWithLayoutInstanceState = Array.isArray(params)
     ? params.map((item) => ({ ...item, layoutInstanceState }))

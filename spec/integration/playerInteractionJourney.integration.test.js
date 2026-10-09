@@ -102,7 +102,10 @@ describe("player interaction integration journeys", () => {
     const harness = createEngineIntegrationHarness({ projectData });
     harness.completeLatestRender();
     expect(harness.engine.selectIsChoiceVisible()).toBe(true);
-    const choiceButton = findLatestElement(harness, "choice-button");
+    const choiceButton = findLatestElement(
+      harness,
+      "choice-container--choice-button",
+    );
 
     await harness.eventHandler("click", choiceButton.click.payload);
 
@@ -183,14 +186,14 @@ describe("player interaction integration journeys", () => {
     });
     const harness = createEngineIntegrationHarness({ projectData });
     harness.completeLatestRender();
-    const input = findLatestElement(harness, "name-input");
+    const input = findLatestElement(harness, "form-container--name-input");
 
     await harness.eventHandler("change", {
       ...input.change.payload,
       _event: { value: "  Ada  " },
     });
 
-    const submit = findLatestElement(harness, "submit-button");
+    const submit = findLatestElement(harness, "form-container--submit-button");
     await harness.eventHandler("click", submit.click.payload);
 
     expect(harness.getPointer().lineId).toBe("line2");
@@ -354,7 +357,7 @@ describe("player interaction integration journeys", () => {
         },
       },
     });
-    const button = findLatestElement(harness, "confirm-button");
+    const button = findLatestElement(harness, "confirmDialog--confirm-button");
 
     await harness.eventHandler("click", {
       ...button.click.payload,
@@ -439,17 +442,25 @@ describe("player interaction integration journeys", () => {
       resourceId: "menu",
       resourceType: "layout",
     });
-    expect(findLatestElement(harness, "menu-panel")).toBeDefined();
+    expect(
+      findLatestElement(harness, "overlayStack-0--menu-panel"),
+    ).toBeDefined();
 
     harness.engine.handleAction("replaceLastOverlay", {
       resourceId: "details",
       resourceType: "layout",
     });
-    expect(findLatestElement(harness, "menu-panel")).toBeUndefined();
-    expect(findLatestElement(harness, "details-panel")).toBeDefined();
+    expect(
+      findLatestElement(harness, "overlayStack-0--menu-panel"),
+    ).toBeUndefined();
+    expect(
+      findLatestElement(harness, "overlayStack-0--details-panel"),
+    ).toBeDefined();
 
     harness.engine.handleAction("popOverlay", {});
-    expect(findLatestElement(harness, "details-panel")).toBeUndefined();
+    expect(
+      findLatestElement(harness, "overlayStack-0--details-panel"),
+    ).toBeUndefined();
     expect(harness.getState().global.overlayStack).toEqual([]);
   });
 

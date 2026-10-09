@@ -122,7 +122,10 @@ describe("RouteEngine character nameVariableId", () => {
     });
 
     expect(
-      findElementById(engine.selectRenderState().elements, "speaker"),
+      findElementById(
+        engine.selectRenderState().elements,
+        "dialogue-container--speaker",
+      ),
     ).toMatchObject({
       content: "Guest",
     });
@@ -141,7 +144,10 @@ describe("RouteEngine character nameVariableId", () => {
     });
 
     expect(
-      findElementById(engine.selectRenderState().elements, "speaker"),
+      findElementById(
+        engine.selectRenderState().elements,
+        "dialogue-container--speaker",
+      ),
     ).toMatchObject({
       content: "Ada",
     });

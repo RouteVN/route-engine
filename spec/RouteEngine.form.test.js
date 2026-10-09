@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 
+// Form layout children render under the form slot's stable namespace.
+const formElementId = (id) => `form-container--${id}`;
+
 const createProjectData = ({
   includeIntro = false,
   submitActions = { nextLine: {} },
@@ -205,8 +208,14 @@ describe("RouteEngine forms", () => {
   it("renders form inputs with field drafts and formRole submit actions", () => {
     const engine = createEngine();
     const renderState = engine.selectRenderState();
-    const nameInput = findElement(renderState.elements, "name-input");
-    const submitButton = findElement(renderState.elements, "submit-button");
+    const nameInput = findElement(
+      renderState.elements,
+      formElementId("name-input"),
+    );
+    const submitButton = findElement(
+      renderState.elements,
+      formElementId("submit-button"),
+    );
     expect(nameInput).toMatchObject({
       type: "input",
       value: "",
@@ -265,9 +274,18 @@ describe("RouteEngine forms", () => {
   it("submits when clicking a child inside a submit-role container", () => {
     const engine = createEngine({ markLineCompleted: false });
     let renderState = engine.selectRenderState();
-    const nameInput = findElement(renderState.elements, "name-input");
-    const emailInput = findElement(renderState.elements, "email-input");
-    let submitLabel = findElement(renderState.elements, "submit-label");
+    const nameInput = findElement(
+      renderState.elements,
+      formElementId("name-input"),
+    );
+    const emailInput = findElement(
+      renderState.elements,
+      formElementId("email-input"),
+    );
+    let submitLabel = findElement(
+      renderState.elements,
+      formElementId("submit-label"),
+    );
 
     expect(submitLabel.click.payload).toMatchObject({
       _interactionSource: "form",
@@ -297,7 +315,10 @@ describe("RouteEngine forms", () => {
     });
 
     renderState = engine.selectRenderState();
-    submitLabel = findElement(renderState.elements, "submit-label");
+    submitLabel = findElement(
+      renderState.elements,
+      formElementId("submit-label"),
+    );
     engine.handleActions(submitLabel.click.payload.actions);
 
     expect(engine.selectSystemState().contexts[0].pointers.read.lineId).toBe(
@@ -308,9 +329,18 @@ describe("RouteEngine forms", () => {
   it("valid form submit advances even before the form line is marked completed", () => {
     const engine = createEngine({ markLineCompleted: false });
     let renderState = engine.selectRenderState();
-    const nameInput = findElement(renderState.elements, "name-input");
-    const emailInput = findElement(renderState.elements, "email-input");
-    let submitButton = findElement(renderState.elements, "submit-button");
+    const nameInput = findElement(
+      renderState.elements,
+      formElementId("name-input"),
+    );
+    const emailInput = findElement(
+      renderState.elements,
+      formElementId("email-input"),
+    );
+    let submitButton = findElement(
+      renderState.elements,
+      formElementId("submit-button"),
+    );
 
     expect(engine.selectSystemState().global.isLineCompleted).toBe(false);
 
@@ -326,7 +356,10 @@ describe("RouteEngine forms", () => {
     });
 
     renderState = engine.selectRenderState();
-    submitButton = findElement(renderState.elements, "submit-button");
+    submitButton = findElement(
+      renderState.elements,
+      formElementId("submit-button"),
+    );
     engine.handleActions(submitButton.click.payload.actions);
 
     expect(engine.selectSystemState().contexts[0].pointers.read.lineId).toBe(
@@ -392,8 +425,14 @@ describe("RouteEngine forms", () => {
       expect(engine.selectSystemState().global.skipMode).toBe(true);
 
       let renderState = engine.selectRenderState();
-      const nameInput = findElement(renderState.elements, "name-input");
-      const emailInput = findElement(renderState.elements, "email-input");
+      const nameInput = findElement(
+        renderState.elements,
+        formElementId("name-input"),
+      );
+      const emailInput = findElement(
+        renderState.elements,
+        formElementId("email-input"),
+      );
 
       engine.handleActions(nameInput.change.payload.actions, {
         _event: {
@@ -407,7 +446,10 @@ describe("RouteEngine forms", () => {
       });
 
       renderState = engine.selectRenderState();
-      const submitButton = findElement(renderState.elements, "submit-button");
+      const submitButton = findElement(
+        renderState.elements,
+        formElementId("submit-button"),
+      );
       handledEffectNames.length = 0;
       engine.handleActions(submitButton.click.payload.actions);
 
@@ -462,8 +504,14 @@ describe("RouteEngine forms", () => {
     engine.handleAction("setSkipUnseenText", { value: false });
 
     let renderState = engine.selectRenderState();
-    const nameInput = findElement(renderState.elements, "name-input");
-    const emailInput = findElement(renderState.elements, "email-input");
+    const nameInput = findElement(
+      renderState.elements,
+      formElementId("name-input"),
+    );
+    const emailInput = findElement(
+      renderState.elements,
+      formElementId("email-input"),
+    );
     engine.handleActions(nameInput.change.payload.actions, {
       _event: { value: "Ada" },
     });
@@ -473,7 +521,10 @@ describe("RouteEngine forms", () => {
 
     renderState = engine.selectRenderState();
     handledEffectNames.length = 0;
-    const submitButton = findElement(renderState.elements, "submit-button");
+    const submitButton = findElement(
+      renderState.elements,
+      formElementId("submit-button"),
+    );
     engine.handleActions(submitButton.click.payload.actions);
 
     const state = engine.selectSystemState();
@@ -487,8 +538,14 @@ describe("RouteEngine forms", () => {
   it("keeps edits transient until a valid multi-field submit commits variables and runs actions", () => {
     const engine = createEngine();
     let renderState = engine.selectRenderState();
-    let nameInput = findElement(renderState.elements, "name-input");
-    let submitButton = findElement(renderState.elements, "submit-button");
+    let nameInput = findElement(
+      renderState.elements,
+      formElementId("name-input"),
+    );
+    let submitButton = findElement(
+      renderState.elements,
+      formElementId("submit-button"),
+    );
 
     engine.handleActions(nameInput.change.payload.actions, {
       _event: {
@@ -503,8 +560,11 @@ describe("RouteEngine forms", () => {
     engine.handleActions(submitButton.click.payload.actions);
 
     renderState = engine.selectRenderState();
-    nameInput = findElement(renderState.elements, "name-input");
-    const emailInput = findElement(renderState.elements, "email-input");
+    nameInput = findElement(renderState.elements, formElementId("name-input"));
+    const emailInput = findElement(
+      renderState.elements,
+      formElementId("email-input"),
+    );
 
     expect(engine.selectSystemState().contexts[0].pointers.read.lineId).toBe(
       "line1",
@@ -524,7 +584,10 @@ describe("RouteEngine forms", () => {
     });
 
     renderState = engine.selectRenderState();
-    submitButton = findElement(renderState.elements, "submit-button");
+    submitButton = findElement(
+      renderState.elements,
+      formElementId("submit-button"),
+    );
     engine.handleActions(submitButton.click.payload.actions);
 
     const systemState = engine.selectSystemState();

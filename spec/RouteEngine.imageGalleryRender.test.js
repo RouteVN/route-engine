@@ -3,6 +3,10 @@ import { load } from "js-yaml";
 import createRouteEngine from "../src/RouteEngine.js";
 import createEffectsHandler from "../src/createEffectsHandler.js";
 
+// Gallery HUD layout children render under the layout slot's namespace.
+const galleryElementId = (id) =>
+  `layout-galleryHud--${encodeURIComponent(id).replaceAll("--", "%2D%2D")}`;
+
 const findElementById = (elements, id) => {
   for (const element of elements || []) {
     if (element?.id === id) {
@@ -156,7 +160,7 @@ describe("RouteEngine image-gallery render API", () => {
 
     const renderState = engine.selectRenderState();
     expect(
-      findElementById(renderState.elements, "gallery-group"),
+      findElementById(renderState.elements, galleryElementId("gallery-group")),
     ).toMatchObject({
       content: "festival",
     });
@@ -260,14 +264,20 @@ describe("RouteEngine image-gallery render API", () => {
     const renderState = engine.selectRenderState();
     const nightVariant = findElementById(
       renderState.elements,
-      "gallery-variant-festival-night",
+      galleryElementId("gallery-variant-festival-night"),
     );
 
     expect(
-      findElementById(renderState.elements, "gallery-group-festival"),
+      findElementById(
+        renderState.elements,
+        galleryElementId("gallery-group-festival"),
+      ),
     ).not.toBeNull();
     expect(
-      findElementById(renderState.elements, "gallery-variant-festival-day"),
+      findElementById(
+        renderState.elements,
+        galleryElementId("gallery-variant-festival-day"),
+      ),
     ).toMatchObject({ src: "festival-day.jpg" });
     expect(nightVariant).toMatchObject({
       src: "festival-night.jpg",
@@ -283,7 +293,10 @@ describe("RouteEngine image-gallery render API", () => {
       },
     });
     expect(
-      findElementById(renderState.elements, "gallery-variant-sunset-default"),
+      findElementById(
+        renderState.elements,
+        galleryElementId("gallery-variant-sunset-default"),
+      ),
     ).toMatchObject({ src: "sunset.jpg" });
 
     engine.handleActions(nightVariant.click.payload.actions);
@@ -296,7 +309,7 @@ describe("RouteEngine image-gallery render API", () => {
     expect(
       findElementById(
         engine.selectRenderState().elements,
-        "gallery-selected-image",
+        galleryElementId("gallery-selected-image"),
       ),
     ).toMatchObject({
       src: "festival-night.jpg",
@@ -390,8 +403,10 @@ describe("RouteEngine image-gallery render API", () => {
     });
 
     const renderState = engine.selectRenderState();
-    const renderedGroupId = `gallery-group-${templateToken}`;
-    const renderedVariantId = `gallery-variant-${templateToken}-${templateToken}`;
+    const renderedGroupId = galleryElementId(`gallery-group-${templateToken}`);
+    const renderedVariantId = galleryElementId(
+      `gallery-variant-${templateToken}-${templateToken}`,
+    );
     const variant = findElementById(renderState.elements, renderedVariantId);
 
     expect(
@@ -413,7 +428,7 @@ describe("RouteEngine image-gallery render API", () => {
     expect(
       findElementById(
         renderState.elements,
-        "gallery-variant-wrong-target-wrong-target",
+        galleryElementId("gallery-variant-wrong-target-wrong-target"),
       ),
     ).toBeNull();
 
@@ -544,7 +559,10 @@ describe("RouteEngine image-gallery render API", () => {
     expect(engine.selectImageGallery()).toBeNull();
     expect(() => engine.selectRenderState()).not.toThrow();
     expect(
-      findElementById(engine.selectRenderState().elements, "gallery-grid"),
+      findElementById(
+        engine.selectRenderState().elements,
+        galleryElementId("gallery-grid"),
+      ),
     ).toMatchObject({
       children: [],
     });

@@ -1,7 +1,10 @@
 import { readFileSync } from "node:fs";
 import { loadAll } from "js-yaml";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createEngineIntegrationHarness } from "./helpers/createEngineIntegrationHarness.js";
+import {
+  createEngineIntegrationHarness,
+  findRenderElement,
+} from "./helpers/createEngineIntegrationHarness.js";
 import {
   createExpectedErrorHandler,
   dispatchEngineActionsEvent,
@@ -58,6 +61,40 @@ const setup = (name) => {
 };
 
 describe("robustness VT companion journeys", () => {
+  it("preserves the overlay input identity through the exact VT background and shared-layout transitions", () => {
+    const h = setup("layout-instance-continuity");
+    const overlayInput = () =>
+      findRenderElement(h.renderStates.at(-1).elements, "shared-input", {
+        layoutRootId: "overlayStack-0",
+      });
+    const id = overlayInput().id;
+    for (const [lineId, hasMain, hasBackground] of [
+      ["backgroundAdded", true, true],
+      ["mainRemoved", false, true],
+      ["mainRestored", true, false],
+    ]) {
+      h.engine.handleActions({ jumpToLine: { lineId } });
+      h.completeLatestRender();
+      expect(h.checkpoint().pointer.lineId).toBe(lineId);
+      expect(overlayInput().id).toBe(id);
+      expect(
+        Boolean(
+          findRenderElement(h.renderStates.at(-1).elements, "shared-input", {
+            layoutRootId: "layout-sharedPanel",
+          }),
+        ),
+      ).toBe(hasMain);
+      expect(
+        Boolean(
+          findRenderElement(h.renderStates.at(-1).elements, "backdrop", {
+            layoutRootId: "bg-cg-background-container",
+          }),
+        ),
+      ).toBe(hasBackground);
+      expect(h.checkpoint().pendingEffects).toEqual([]);
+    }
+  });
+
   it("rejects the exact VT duplicate project through renderer input and continues playing", async () => {
     const h = setup("duplicate-line-update-rejection");
     await h.click("main", "invalid");
@@ -143,18 +180,18 @@ describe("robustness VT companion journeys", () => {
     const h = setup("cached-backlog-localization");
     await h.click("main", "next");
     expect(h.checkpoint().textById).toMatchObject({
-      "history-row-0": "Source speaker: Source first.",
-      "history-row-1": "Source speaker: Source second.",
+      "overlayStack-0--history-row-0": "Source speaker: Source first.",
+      "overlayStack-0--history-row-1": "Source speaker: Source second.",
     });
     await h.click("history", "translate");
     expect(h.checkpoint().textById).toMatchObject({
-      "history-row-0": "Translated speaker: Translated first.",
-      "history-row-1": "Translated speaker: Translated second.",
+      "overlayStack-0--history-row-0": "Translated speaker: Translated first.",
+      "overlayStack-0--history-row-1": "Translated speaker: Translated second.",
     });
     await h.click("history", "source");
     expect(h.checkpoint().textById).toMatchObject({
-      "history-row-0": "Source speaker: Source first.",
-      "history-row-1": "Source speaker: Source second.",
+      "overlayStack-0--history-row-0": "Source speaker: Source first.",
+      "overlayStack-0--history-row-1": "Source speaker: Source second.",
     });
   });
 });
