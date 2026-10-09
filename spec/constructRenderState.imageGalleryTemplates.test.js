@@ -182,15 +182,15 @@ describe("constructRenderState feature projection template data", () => {
     });
 
     const templateElementIds = [
-      "bg-cg-background-container--gallery-background",
-      "visual-gallery--gallery-visual",
-      "dialogue-container--gallery-dialogue",
-      "choice-container--gallery-choice",
-      "form-container--gallery-form",
-      "control-controlTemplate--gallery-control",
-      "layout-layoutTemplate--gallery-layout",
-      "overlayStack-0--gallery-overlay",
-      "confirmDialog--gallery-confirm",
+      "@layout/bg-cg-background-container--gallery-background",
+      "@layout/visual-gallery--gallery-visual",
+      "@layout/dialogue-container--gallery-dialogue",
+      "@layout/choice-container--gallery-choice",
+      "@layout/form-container--gallery-form",
+      "@layout/control-controlTemplate--gallery-control",
+      "@layout/layout-layoutTemplate--gallery-layout",
+      "@layout/overlayStack-0--gallery-overlay",
+      "@layout/confirmDialog--gallery-confirm",
     ];
 
     for (const id of templateElementIds) {

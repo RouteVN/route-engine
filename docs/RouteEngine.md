@@ -552,15 +552,17 @@ resources:
 
 Authored layout element `id`s are not rendered verbatim. Each rendered layout
 instance namespaces its element ids under its owning semantic slot, using the
-slot's own stable root id: `layout-<resourceId>--<authoredId>` for the `layout`
-action, `overlayStack-<index>--<authoredId>` for authored overlay stack
-entries, `bg-cg-background-container--<authoredId>` for layout backgrounds,
-`visual-<itemId>--<authoredId>` for visual items, `dialogue-container--<authoredId>`
-for dialogue UIs, `choice-container--<authoredId>` for choices,
-`form-container--<authoredId>` for forms, `control-<resourceId>--<authoredId>`
-for control layouts, and `confirmDialog--<authoredId>` for confirm dialogs.
+slot's own stable root id: `@layout/layout-<resourceId>--<authoredId>` for the `layout`
+action, `@layout/overlayStack-<index>--<authoredId>` for authored overlay stack
+entries, `@layout/bg-cg-background-container--<authoredId>` for layout backgrounds,
+`@layout/visual-<itemId>--<authoredId>` for visual items, `@layout/dialogue-container--<authoredId>`
+for dialogue UIs, `@layout/choice-container--<authoredId>` for choices,
+`@layout/form-container--<authoredId>` for forms, `@layout/control-<resourceId>--<authoredId>`
+for control layouts, and `@layout/confirmDialog--<authoredId>` for confirm dialogs.
 
-The contract is intentionally slot-owned and unconditional:
+The reserved `@layout/` prefix separates authored descendants from engine root
+containers, even when a visual or resource id contains `--`. The contract is
+intentionally unconditional:
 
 - an instance's rendered ids depend only on its own slot identity — never on
   traversal order or on how many other instances currently share the resource —
@@ -582,7 +584,7 @@ The contract is intentionally slot-owned and unconditional:
 
 Root container ids themselves (`layout-<resourceId>`, `overlayStack-<index>`,
 `form-container`, ...) are engine-owned and never renamed, and authored
-resource definitions are never mutated.
+resource definitions and variable-bound element objects are never mutated.
 
 #### Background Backing Color
 

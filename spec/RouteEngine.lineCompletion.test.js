@@ -466,7 +466,7 @@ describe("RouteEngine line completion flow", () => {
     expect(
       findElementById(
         initialRender.elements,
-        "dialogue-container--dialogue-text",
+        "@layout/dialogue-container--dialogue-text",
       ),
     ).toMatchObject({
       type: "text-revealing",
@@ -481,7 +481,7 @@ describe("RouteEngine line completion flow", () => {
     expect(
       findElementById(
         completedRender.elements,
-        "dialogue-container--dialogue-text",
+        "@layout/dialogue-container--dialogue-text",
       ),
     ).toMatchObject({
       type: "text-revealing",
@@ -500,7 +500,7 @@ describe("RouteEngine line completion flow", () => {
     expect(
       findElementById(
         advancedRender.elements,
-        "dialogue-container--dialogue-text",
+        "@layout/dialogue-container--dialogue-text",
       ),
     ).toMatchObject({
       type: "text-revealing",
@@ -546,7 +546,7 @@ describe("RouteEngine line completion flow", () => {
     expect(
       findElementById(
         getLastRenderState(routeGraphics).elements,
-        "dialogue-container--dialogue-text",
+        "@layout/dialogue-container--dialogue-text",
       ),
     ).toMatchObject({
       revealEffect: "none",
@@ -568,7 +568,7 @@ describe("RouteEngine line completion flow", () => {
     expect(
       findElementById(
         getLastRenderState(routeGraphics).elements,
-        "dialogue-container--dialogue-text",
+        "@layout/dialogue-container--dialogue-text",
       ),
     ).toMatchObject({
       revealEffect: "typewriter",
@@ -593,7 +593,7 @@ describe("RouteEngine line completion flow", () => {
     expect(
       findElementById(
         getLastRenderState(routeGraphics).elements,
-        "dialogue-container--dialogue-text",
+        "@layout/dialogue-container--dialogue-text",
       ),
     ).toMatchObject({
       revealEffect: "none",
@@ -610,7 +610,7 @@ describe("RouteEngine line completion flow", () => {
     expect(
       findElementById(
         getLastRenderState(routeGraphics).elements,
-        "dialogue-container--dialogue-text",
+        "@layout/dialogue-container--dialogue-text",
       ),
     ).toMatchObject({
       revealEffect: "typewriter",
@@ -657,7 +657,7 @@ describe("RouteEngine line completion flow", () => {
     expect(
       findElementById(
         completedRender.elements,
-        "dialogue-container--dialogue-text",
+        "@layout/dialogue-container--dialogue-text",
       ),
     ).toMatchObject({
       type: "text-revealing",
@@ -675,7 +675,7 @@ describe("RouteEngine line completion flow", () => {
     expect(
       findElementById(
         advancedRender.elements,
-        "dialogue-container--dialogue-text",
+        "@layout/dialogue-container--dialogue-text",
       ),
     ).toMatchObject({
       type: "text-revealing",
@@ -698,7 +698,7 @@ describe("RouteEngine line completion flow", () => {
     expect(
       findElementById(
         line2CompletedRender.elements,
-        "dialogue-container--dialogue-text",
+        "@layout/dialogue-container--dialogue-text",
       ),
     ).toMatchObject({
       type: "text-revealing",
@@ -716,7 +716,7 @@ describe("RouteEngine line completion flow", () => {
     expect(
       findElementById(
         line3Render.elements,
-        "dialogue-container--dialogue-text",
+        "@layout/dialogue-container--dialogue-text",
       ),
     ).toMatchObject({
       type: "text-revealing",

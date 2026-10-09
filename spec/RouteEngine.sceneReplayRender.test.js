@@ -4,9 +4,9 @@ import createRouteEngine from "../src/RouteEngine.js";
 
 // Replay layouts render under the layout slot's stable namespace.
 const menuElementId = (id) =>
-  `layout-replayMenu--${encodeURIComponent(id).replaceAll("--", "%2D%2D")}`;
+  `@layout/layout-replayMenu--${encodeURIComponent(id).replaceAll("--", "%2D%2D")}`;
 const hudElementId = (id) =>
-  `layout-replayHud--${encodeURIComponent(id).replaceAll("--", "%2D%2D")}`;
+  `@layout/layout-replayHud--${encodeURIComponent(id).replaceAll("--", "%2D%2D")}`;
 
 const findElementById = (elements, id) => {
   for (const element of elements || []) {

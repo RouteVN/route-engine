@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 
 // Form layout children render under the form slot's stable namespace.
-const formElementId = (id) => `form-container--${id}`;
+const formElementId = (id) => `@layout/form-container--${id}`;
 
 const createProjectData = ({
   includeIntro = false,

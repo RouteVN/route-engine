@@ -222,7 +222,7 @@ describe("RouteEngine L10n initialization", () => {
     expect(
       findElementById(
         engine.selectRenderState().elements,
-        "dialogue-container--dialogue-body",
+        "@layout/dialogue-container--dialogue-body",
       ),
     ).toMatchObject({
       content: "Hello.",
@@ -282,7 +282,7 @@ describe("RouteEngine L10n initialization", () => {
     expect(
       findElementById(
         engine.selectRenderState().elements,
-        "dialogue-container--dialogue-body",
+        "@layout/dialogue-container--dialogue-body",
       ),
     ).toMatchObject({
       content: "こんにちは。",
@@ -308,7 +308,7 @@ describe("RouteEngine L10n initialization", () => {
     expect(
       findElementById(
         engine.selectRenderState().elements,
-        "dialogue-container--dialogue-body",
+        "@layout/dialogue-container--dialogue-body",
       ),
     ).toMatchObject({
       content: "Hello.",
@@ -333,15 +333,15 @@ describe("RouteEngine L10n initialization", () => {
     const renderState = engine.selectRenderState();
     const sourceOption = findElementById(
       renderState.elements,
-      "layout-localizationMenu--language-",
+      "@layout/layout-localizationMenu--language-",
     );
     const japaneseOption = findElementById(
       renderState.elements,
-      "layout-localizationMenu--language-Japanese",
+      "@layout/layout-localizationMenu--language-Japanese",
     );
     const frenchOption = findElementById(
       renderState.elements,
-      "layout-localizationMenu--language-French",
+      "@layout/layout-localizationMenu--language-French",
     );
 
     expect(sourceOption.click.payload.actions).toEqual({
@@ -358,7 +358,7 @@ describe("RouteEngine L10n initialization", () => {
     expect(
       findElementById(
         renderState.elements,
-        "layout-localizationMenu--selected-language",
+        "@layout/layout-localizationMenu--selected-language",
       ).content,
     ).toBeNull();
     expect(engine.selectRuntime().localizationPackageId).toBeNull();
@@ -384,7 +384,7 @@ describe("RouteEngine L10n initialization", () => {
 
     const japaneseOption = findElementById(
       engine.selectRenderState().elements,
-      "layout-localizationMenu--language-Japanese",
+      "@layout/layout-localizationMenu--language-Japanese",
     );
     engine.handleActions(japaneseOption.click.payload.actions);
 
@@ -392,7 +392,7 @@ describe("RouteEngine L10n initialization", () => {
     expect(
       findElementById(
         engine.selectRenderState().elements,
-        "dialogue-container--dialogue-body",
+        "@layout/dialogue-container--dialogue-body",
       ),
     ).toMatchObject({
       content: "こんにちは。",
@@ -400,7 +400,7 @@ describe("RouteEngine L10n initialization", () => {
     expect(
       findElementById(
         engine.selectRenderState().elements,
-        "layout-localizationMenu--selected-language",
+        "@layout/layout-localizationMenu--selected-language",
       ).content,
     ).toBe("japanese");
     expect(effects).toContainEqual({
@@ -417,7 +417,7 @@ describe("RouteEngine L10n initialization", () => {
     effects.length = 0;
     const sourceOption = findElementById(
       engine.selectRenderState().elements,
-      "layout-localizationMenu--language-",
+      "@layout/layout-localizationMenu--language-",
     );
     engine.handleActions(sourceOption.click.payload.actions);
 
@@ -425,7 +425,7 @@ describe("RouteEngine L10n initialization", () => {
     expect(
       findElementById(
         engine.selectRenderState().elements,
-        "dialogue-container--dialogue-body",
+        "@layout/dialogue-container--dialogue-body",
       ),
     ).toMatchObject({
       content: "Hello.",
@@ -464,7 +464,7 @@ describe("RouteEngine L10n initialization", () => {
     expect(
       findElementById(
         engine.selectRenderState().elements,
-        "dialogue-container--dialogue-body",
+        "@layout/dialogue-container--dialogue-body",
       ),
     ).toMatchObject({
       content: "Hello.",
@@ -668,7 +668,7 @@ describe("RouteEngine L10n initialization", () => {
     expect(
       findElementById(
         engine.selectRenderState().elements,
-        "dialogue-container--dialogue-body",
+        "@layout/dialogue-container--dialogue-body",
       ),
     ).toMatchObject({
       content: "Hello.",
@@ -717,7 +717,7 @@ describe("RouteEngine L10n initialization", () => {
     expect(
       findElementById(
         engine.selectRenderState().elements,
-        "dialogue-container--dialogue-body",
+        "@layout/dialogue-container--dialogue-body",
       ),
     ).toMatchObject({
       content: "こんにちは。",
@@ -734,7 +734,7 @@ describe("RouteEngine L10n initialization", () => {
     expect(
       findElementById(
         engine.selectRenderState().elements,
-        "dialogue-container--dialogue-body",
+        "@layout/dialogue-container--dialogue-body",
       ),
     ).toMatchObject({
       content: "Updated source.",
@@ -762,7 +762,7 @@ describe("RouteEngine L10n initialization", () => {
     expect(
       findElementById(
         engine.selectRenderState().elements,
-        "dialogue-container--dialogue-body",
+        "@layout/dialogue-container--dialogue-body",
       ),
     ).toMatchObject({
       content: "Hello.",

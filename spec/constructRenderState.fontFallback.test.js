@@ -7,7 +7,7 @@ const findTextElement = (renderState) =>
     .find((element) => element.id === "story")
     .children.find((element) => element.id === "layout-font-fallback")
     .children.find(
-      (element) => element.id === "layout-font-fallback--fallback-text",
+      (element) => element.id === "@layout/layout-font-fallback--fallback-text",
     );
 
 describe("constructRenderState font fallbacks", () => {

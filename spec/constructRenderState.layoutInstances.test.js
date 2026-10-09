@@ -63,9 +63,45 @@ describe("constructRenderState layout instances", () => {
     const renderState = render();
 
     expect(elementIds(renderState).sort()).toEqual([
-      "layout-shared--shared-input",
-      "layout-shared--shared-label",
+      "@layout/layout-shared--shared-input",
+      "@layout/layout-shared--shared-label",
     ]);
+  });
+
+  it("keeps descendants disjoint from engine roots in either sibling order", () => {
+    const inputItem = {
+      id: "a",
+      transform: { x: 0, y: 0 },
+      layout: {
+        elements: [{ id: "field", type: "input", field: "name" }],
+      },
+    };
+    const collisionItem = {
+      id: "a--field",
+      transform: { x: 0, y: 0 },
+      layout: {
+        elements: [{ id: "other", type: "text", content: "Other" }],
+      },
+    };
+    for (const items of [
+      [inputItem],
+      [inputItem, collisionItem],
+      [collisionItem, inputItem],
+      [inputItem],
+    ]) {
+      const elements = collectElements(
+        render({ presentationState: { visual: { items } } }).elements,
+      );
+      const ids = elements.map((element) => element.id);
+      expect(new Set(ids).size).toBe(ids.length);
+      expect(elements.find((element) => element.type === "input").id).toBe(
+        "@layout/visual-a--field",
+      );
+      if (items.length > 1) {
+        expect(ids).toContain("visual-a--field");
+        expect(ids).toContain("@layout/visual-a%2D%2Dfield--other");
+      }
+    }
   });
 
   it("keeps root container ids unchanged", () => {
@@ -113,10 +149,10 @@ describe("constructRenderState layout instances", () => {
     const ids = elementIds(renderState).sort();
 
     expect(ids).toEqual([
-      "layout-shared--shared-input",
-      "layout-shared--shared-label",
-      "overlayStack-0--shared-input",
-      "overlayStack-0--shared-label",
+      "@layout/layout-shared--shared-input",
+      "@layout/layout-shared--shared-label",
+      "@layout/overlayStack-0--shared-input",
+      "@layout/overlayStack-0--shared-label",
     ]);
     expect(new Set(ids).size).toBe(ids.length);
     expect(
@@ -161,7 +197,9 @@ describe("constructRenderState layout instances", () => {
     });
 
     expect(elementIds(overlayOnly)).toEqual(
-      elementIds(withMain).filter((id) => id.startsWith("overlayStack-0--")),
+      elementIds(withMain).filter((id) =>
+        id.startsWith("@layout/overlayStack-0--"),
+      ),
     );
   });
 
@@ -175,7 +213,9 @@ describe("constructRenderState layout instances", () => {
     });
 
     expect(
-      elementIds(withMain).filter((id) => id.startsWith("overlayStack-0--")),
+      elementIds(withMain).filter((id) =>
+        id.startsWith("@layout/overlayStack-0--"),
+      ),
     ).toEqual(elementIds(overlayOnly));
   });
 
@@ -197,7 +237,10 @@ describe("constructRenderState layout instances", () => {
     const withoutBackgroundIds = elementIds(withoutBackground).sort();
     const withBackgroundIds = elementIds(withBackground).sort();
     expect(withBackgroundIds).toEqual(
-      [...withoutBackgroundIds, "bg-cg-background-container--bg-art"].sort(),
+      [
+        ...withoutBackgroundIds,
+        "@layout/bg-cg-background-container--bg-art",
+      ].sort(),
     );
     expect(elementIds(removedAgain).sort()).toEqual(withoutBackgroundIds);
   });
@@ -219,7 +262,7 @@ describe("constructRenderState layout instances", () => {
 
     expect(
       elementIds(withChoice).filter(
-        (id) => !id.startsWith("choice-container--"),
+        (id) => !id.startsWith("@layout/choice-container--"),
       ),
     ).toEqual(elementIds(withoutChoice));
   });
@@ -250,11 +293,15 @@ describe("constructRenderState layout instances", () => {
     });
 
     expect(
-      elementIds(withVisual).filter((id) => !id.startsWith("visual-badge--")),
+      elementIds(withVisual).filter(
+        (id) => !id.startsWith("@layout/visual-badge--"),
+      ),
     ).toEqual(elementIds(withoutVisual));
     expect(
-      elementIds(withVisual).find((id) => id.startsWith("visual-badge--")),
-    ).toBe("visual-badge--badge-text");
+      elementIds(withVisual).find((id) =>
+        id.startsWith("@layout/visual-badge--"),
+      ),
+    ).toBe("@layout/visual-badge--badge-text");
   });
 
   it("keeps earlier overlay ids when a new overlay is pushed or the top one pops", () => {
@@ -275,12 +322,14 @@ describe("constructRenderState layout instances", () => {
     });
 
     expect(elementIds(twoOverlays).sort()).toEqual([
-      "overlayStack-0--shared-input",
-      "overlayStack-0--shared-label",
-      "overlayStack-1--panel-note",
+      "@layout/overlayStack-0--shared-input",
+      "@layout/overlayStack-0--shared-label",
+      "@layout/overlayStack-1--panel-note",
     ]);
     expect(elementIds(oneOverlay)).toEqual(
-      elementIds(twoOverlays).filter((id) => id.startsWith("overlayStack-0--")),
+      elementIds(twoOverlays).filter((id) =>
+        id.startsWith("@layout/overlayStack-0--"),
+      ),
     );
     expect(elementIds(popped)).toEqual(elementIds(oneOverlay));
   });
@@ -300,10 +349,10 @@ describe("constructRenderState layout instances", () => {
     const second = elementIds(render(params)).sort();
 
     expect(first).toEqual([
-      "bg-cg-background-container--shared-input",
-      "bg-cg-background-container--shared-label",
-      "dialogue-container--shared-input",
-      "dialogue-container--shared-label",
+      "@layout/bg-cg-background-container--shared-input",
+      "@layout/bg-cg-background-container--shared-label",
+      "@layout/dialogue-container--shared-input",
+      "@layout/dialogue-container--shared-label",
     ]);
     expect(new Set(first).size).toBe(first.length);
     expect(second).toEqual(first);
@@ -326,7 +375,7 @@ describe("constructRenderState layout instances", () => {
     const settled = elementIds(render(params(true))).sort();
 
     expect(revealing).toEqual(settled);
-    expect(revealing).toContain("dialogue-container--reveal-text");
+    expect(revealing).toContain("@layout/dialogue-container--reveal-text");
   });
 
   it("suffixes authored ids duplicated inside one instance deterministically", () => {
@@ -347,12 +396,63 @@ describe("constructRenderState layout instances", () => {
         }),
       ).sort();
 
-    expect(ids()).toEqual(["layout-shared--dup", "layout-shared--dup-1"]);
-    expect(ids()).toEqual(["layout-shared--dup", "layout-shared--dup-1"]);
+    expect(ids()).toEqual([
+      "@layout/layout-shared--dup",
+      "@layout/layout-shared--dup-1",
+    ]);
+    expect(ids()).toEqual([
+      "@layout/layout-shared--dup",
+      "@layout/layout-shared--dup-1",
+    ]);
     expect(resources.layouts.shared.elements.map((e) => e.id)).toEqual([
       "dup",
       "dup",
     ]);
+  });
+
+  it("preserves frozen whole-object template bindings across repeated renders", () => {
+    const source = Object.freeze({
+      id: "group",
+      type: "container",
+      children: Object.freeze([
+        Object.freeze({ id: "field", type: "input", field: "name" }),
+      ]),
+    });
+    const variables = Object.freeze({ items: Object.freeze([source]) });
+    const resources = createResources();
+    resources.layouts.shared.elements = [
+      { "$for item in variables.items": ["${item}"] },
+    ];
+    const before = structuredClone({ resources, variables });
+    const ids = () => elementIds(render({ resources, variables }));
+    expect(ids()).toEqual([
+      "@layout/layout-shared--group",
+      "@layout/layout-shared--field",
+    ]);
+    expect(ids()).toEqual(ids());
+    expect({ resources, variables }).toEqual(before);
+  });
+
+  it("assigns each repeated reference its own occurrence without mutating the source", () => {
+    const source = { id: "field", type: "input", field: "name" };
+    const variables = { items: [source, source] };
+    const resources = createResources();
+    resources.layouts.shared.elements = [
+      { "$for item in variables.items": ["${item}"] },
+    ];
+    const result = render({ resources, variables });
+    const inputs = collectElements(result.elements).filter(
+      (element) => element.type === "input",
+    );
+    expect(inputs.map((element) => element.id)).toEqual([
+      "@layout/layout-shared--field",
+      "@layout/layout-shared--field-1",
+    ]);
+    expect(inputs[0]).not.toBe(inputs[1]);
+    expect(source.id).toBe("field");
+    expect(elementIds(render({ resources, variables }))).toEqual(
+      elementIds(result),
+    );
   });
 
   it("keeps separator ambiguity from creating cross-slot collisions", () => {
@@ -403,14 +503,14 @@ describe("constructRenderState layout instances", () => {
 
     const expected = [
       // Ordinary hyphens stay readable; "--" inside a segment is escaped.
-      "bg-cg-background-container--x%2D%2Dy",
-      "dialogue-container--y",
+      "@layout/bg-cg-background-container--x%2D%2Dy",
+      "@layout/dialogue-container--y",
       // Authored "dup", authored "dup-1", then duplicated "dup": suffixes
       // resolve around the already-occupied "-1" spelling, deterministically.
-      "layout-plain--dup",
-      "layout-plain--dup-1",
-      "layout-plain--dup-2",
-      "layout-plain--hyphen-ok",
+      "@layout/layout-plain--dup",
+      "@layout/layout-plain--dup-1",
+      "@layout/layout-plain--dup-2",
+      "@layout/layout-plain--hyphen-ok",
     ];
 
     expect(ids()).toEqual(expected);

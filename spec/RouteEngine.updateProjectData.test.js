@@ -289,7 +289,7 @@ describe("RouteEngine updateProjectData", () => {
         y: 0,
         children: [
           {
-            id: "dialogue-container--adv-root",
+            id: "@layout/dialogue-container--adv-root",
             type: "text",
             content: "Second",
           },
@@ -390,7 +390,7 @@ describe("RouteEngine updateProjectData", () => {
     expect(
       findElementById(
         engine.selectRenderState().elements,
-        "dialogue-container--speaker",
+        "@layout/dialogue-container--speaker",
       ),
     ).toMatchObject({
       content: "Guest",

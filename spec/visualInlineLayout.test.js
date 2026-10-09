@@ -142,7 +142,7 @@ describe("inline visual layouts", () => {
       alpha: 0.85,
     });
     expect(
-      visual.children.find(({ id }) => id === "visual-status--panel"),
+      visual.children.find(({ id }) => id === "@layout/visual-status--panel"),
     ).toMatchObject({
       fill: "#222222",
       click: {
@@ -156,7 +156,7 @@ describe("inline visual layouts", () => {
       },
     });
     expect(
-      visual.children.find(({ id }) => id === "visual-status--badge"),
+      visual.children.find(({ id }) => id === "@layout/visual-status--badge"),
     ).toMatchObject({
       type: "sprite",
       src: "badge.png",
@@ -164,7 +164,7 @@ describe("inline visual layouts", () => {
       height: 64,
     });
     expect(
-      visual.children.find(({ id }) => id === "visual-status--title"),
+      visual.children.find(({ id }) => id === "@layout/visual-status--title"),
     ).toMatchObject({
       type: "text",
       content: "SCORE: 2",

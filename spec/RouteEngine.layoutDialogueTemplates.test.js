@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 
 // Layout children render under their owning slot's stable namespace.
-const dialogueElementId = (id) => `dialogue-container--${id}`;
-const layoutElementId = (id) => `layout-conditionalLayout--${id}`;
+const dialogueElementId = (id) => `@layout/dialogue-container--${id}`;
+const layoutElementId = (id) => `@layout/layout-conditionalLayout--${id}`;
 
 const findElementById = (elements, id) => {
   for (const element of elements || []) {

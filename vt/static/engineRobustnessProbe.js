@@ -52,7 +52,7 @@ export const readEngineCheckpoint = (
   const ownerPrefix =
     layoutRootId === undefined
       ? null
-      : `${encodeURIComponent(layoutRootId).replaceAll("--", "%2D%2D")}--`;
+      : `@layout/${encodeURIComponent(layoutRootId).replaceAll("--", "%2D%2D")}--`;
   const visit = (value) => {
     if (!value || typeof value !== "object") return;
     if (Array.isArray(value)) {

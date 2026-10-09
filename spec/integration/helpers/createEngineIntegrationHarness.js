@@ -80,7 +80,9 @@ export const findRenderElement = (elements, id, { layoutRootId } = {}) => {
   const encode = (value) =>
     encodeURIComponent(value).replaceAll("--", "%2D%2D");
   const renderedId =
-    layoutRootId === undefined ? id : `${encode(layoutRootId)}--${encode(id)}`;
+    layoutRootId === undefined
+      ? id
+      : `@layout/${encode(layoutRootId)}--${encode(id)}`;
   const matches = [];
   const visit = (items) => {
     for (const element of items ?? []) {

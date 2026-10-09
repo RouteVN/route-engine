@@ -40,8 +40,8 @@ describe("layout occurrence observations", () => {
     const overlay = findRenderElement(renderState.elements, authoredId, {
       layoutRootId: "overlayStack-0",
     });
-    expect(main.id).toBe("layout-shared--name%2D%2D100%25");
-    expect(overlay.id).toBe("overlayStack-0--name%2D%2D100%25");
+    expect(main.id).toBe("@layout/layout-shared--name%2D%2D100%25");
+    expect(overlay.id).toBe("@layout/overlayStack-0--name%2D%2D100%25");
     expect(findRenderElement(renderState.elements, authoredId)).toBeUndefined();
     expect(
       findRenderElement(renderState.elements, authoredId, {
@@ -68,8 +68,8 @@ describe("layout occurrence observations", () => {
 
   it("rejects ambiguous physical lookups rather than selecting an arbitrary instance", () => {
     const elements = [
-      { id: "layout-shared--name" },
-      { id: "layout-shared--name" },
+      { id: "@layout/layout-shared--name" },
+      { id: "@layout/layout-shared--name" },
     ];
     expect(() =>
       findRenderElement(elements, "name", { layoutRootId: "layout-shared" }),

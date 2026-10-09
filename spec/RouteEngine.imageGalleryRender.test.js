@@ -5,7 +5,7 @@ import createEffectsHandler from "../src/createEffectsHandler.js";
 
 // Gallery HUD layout children render under the layout slot's namespace.
 const galleryElementId = (id) =>
-  `layout-galleryHud--${encodeURIComponent(id).replaceAll("--", "%2D%2D")}`;
+  `@layout/layout-galleryHud--${encodeURIComponent(id).replaceAll("--", "%2D%2D")}`;
 
 const findElementById = (elements, id) => {
   for (const element of elements || []) {

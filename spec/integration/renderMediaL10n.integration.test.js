@@ -366,15 +366,15 @@ describe("render, media, and animation contracts through engine effects", () => 
     const firstRender = harness.renderStates.at(-1);
     const badge = findRenderElement(
       firstRender.elements,
-      "visual-status--badge",
+      "@layout/visual-status--badge",
     );
     const score = findRenderElement(
       firstRender.elements,
-      "visual-status--score",
+      "@layout/visual-status--score",
     );
     const increment = findRenderElement(
       firstRender.elements,
-      "visual-status--increment",
+      "@layout/visual-status--increment",
     );
 
     expect(badge).toMatchObject({ type: "sprite", src: "badge.png" });
@@ -392,7 +392,7 @@ describe("render, media, and animation contracts through engine effects", () => 
     expect(
       findRenderElement(
         harness.renderStates.at(-1).elements,
-        "visual-status--score",
+        "@layout/visual-status--score",
       ).content,
     ).toBe("Score 3");
   });
@@ -583,7 +583,7 @@ describe("L10n packages through initialization, rendering, and actions", () => {
     expect(
       findRenderElement(
         renderState.elements,
-        "dialogue-container--dialogue-body",
+        "@layout/dialogue-container--dialogue-body",
       ),
     ).toMatchObject({ content: "Translated dialogue" });
     expect(harness.getState().projectData.story.scenes.scene.name).toBe(
@@ -601,7 +601,7 @@ describe("L10n packages through initialization, rendering, and actions", () => {
     });
     const sourceButton = findRenderElement(
       harness.renderStates.at(-1).elements,
-      "dialogue-container--use-source",
+      "@layout/dialogue-container--use-source",
     );
 
     await harness.eventHandler("click", sourceButton.click.payload);
@@ -613,7 +613,7 @@ describe("L10n packages through initialization, rendering, and actions", () => {
     expect(
       findRenderElement(
         harness.renderStates.at(-1).elements,
-        "dialogue-container--dialogue-body",
+        "@layout/dialogue-container--dialogue-body",
       ),
     ).toMatchObject({ content: "Source dialogue" });
     await vi.waitFor(() => {

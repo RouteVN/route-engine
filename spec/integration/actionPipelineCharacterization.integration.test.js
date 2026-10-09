@@ -87,7 +87,7 @@ describe("action pipeline black-box characterization", () => {
     expect(
       findRenderElement(
         renderEntry.payload.elements,
-        "layout-markerLayout--rendered-marker",
+        "@layout/layout-markerLayout--rendered-marker",
       ),
     ).toMatchObject({ type: "text", content: "Rendered" });
   });

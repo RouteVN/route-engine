@@ -1516,7 +1516,10 @@ const collectRenderElementIds = (elements, ids = new Set()) => {
 // focus. Authored ids duplicated within one instance get a deterministic
 // "-1", "-2", ... suffix. Root container ids themselves are never renamed.
 // Segment encoding keeps "--" reserved for the namespace separator, so an
-// authored id or slot key containing "--" can never impersonate another
+// The @layout/ prefix reserves a separate descendant domain: engine root ids
+// always start with their semantic slot name, even when user-supplied resource
+// or visual ids contain "--". An authored id or slot key containing "--"
+// can never impersonate another
 // slot/id pair, while ordinary hyphenated ids stay readable.
 const encodeLayoutIdSegment = (value) =>
   encodeURIComponent(value).replaceAll("--", "%2D%2D");
@@ -1550,18 +1553,17 @@ const registerLayoutInstanceElements = ({
     occupiedIds.add(rootId);
   }
 
+  // Whole-object template bindings may reuse frozen variable values, including
+  // the same object in several positions. Clone each occurrence separately.
   const visit = (items) => {
-    if (!Array.isArray(items)) {
-      return;
-    }
-
-    for (const element of items) {
+    if (!Array.isArray(items)) return items;
+    return items.map((element) => {
       if (!element || typeof element !== "object" || Array.isArray(element)) {
-        continue;
+        return element;
       }
-
+      const renderedElement = { ...element };
       if (typeof element.id === "string") {
-        const baseId = `${namespace}--${encodeLayoutIdSegment(element.id)}`;
+        const baseId = `@layout/${namespace}--${encodeLayoutIdSegment(element.id)}`;
         let uniqueId = baseId;
         let suffix = 1;
         while (
@@ -1570,16 +1572,17 @@ const registerLayoutInstanceElements = ({
         ) {
           uniqueId = `${baseId}-${suffix++}`;
         }
-        element.id = uniqueId;
+        renderedElement.id = uniqueId;
         layoutInstanceState.usedIds.add(uniqueId);
       }
-
-      visit(element.children);
-    }
+      if (Array.isArray(element.children)) {
+        renderedElement.children = visit(element.children);
+      }
+      return renderedElement;
+    });
   };
 
-  visit(elements);
-  return elements;
+  return visit(elements);
 };
 
 const DEFAULT_BACKGROUND_COLOR = "#000000";

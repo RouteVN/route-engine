@@ -180,18 +180,20 @@ describe("robustness VT companion journeys", () => {
     const h = setup("cached-backlog-localization");
     await h.click("main", "next");
     expect(h.checkpoint().textById).toMatchObject({
-      "overlayStack-0--history-row-0": "Source speaker: Source first.",
-      "overlayStack-0--history-row-1": "Source speaker: Source second.",
+      "@layout/overlayStack-0--history-row-0": "Source speaker: Source first.",
+      "@layout/overlayStack-0--history-row-1": "Source speaker: Source second.",
     });
     await h.click("history", "translate");
     expect(h.checkpoint().textById).toMatchObject({
-      "overlayStack-0--history-row-0": "Translated speaker: Translated first.",
-      "overlayStack-0--history-row-1": "Translated speaker: Translated second.",
+      "@layout/overlayStack-0--history-row-0":
+        "Translated speaker: Translated first.",
+      "@layout/overlayStack-0--history-row-1":
+        "Translated speaker: Translated second.",
     });
     await h.click("history", "source");
     expect(h.checkpoint().textById).toMatchObject({
-      "overlayStack-0--history-row-0": "Source speaker: Source first.",
-      "overlayStack-0--history-row-1": "Source speaker: Source second.",
+      "@layout/overlayStack-0--history-row-0": "Source speaker: Source first.",
+      "@layout/overlayStack-0--history-row-1": "Source speaker: Source second.",
     });
   });
 });

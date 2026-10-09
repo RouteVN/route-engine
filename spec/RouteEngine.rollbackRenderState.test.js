@@ -3,8 +3,8 @@ import createRouteEngine from "../src/RouteEngine.js";
 import createEffectsHandler from "../src/createEffectsHandler.js";
 
 // Layout children render under their owning slot's stable namespace.
-const dialogueElementId = (id) => `dialogue-container--${id}`;
-const overlayElementId = (id) => `overlayStack-0--${id}`;
+const dialogueElementId = (id) => `@layout/dialogue-container--${id}`;
+const overlayElementId = (id) => `@layout/overlayStack-0--${id}`;
 
 const createTicker = () => ({
   add: vi.fn(),

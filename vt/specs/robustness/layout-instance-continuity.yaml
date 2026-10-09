@@ -35,16 +35,16 @@ steps:
   - action: assert
     type: js
     global: __vtCheckpoint.nativeInputs.focusedId
-    value: overlayStack-0--shared-input
+    value: "@layout/overlayStack-0--shared-input"
   - action: assert
     type: js
     global: __vtCheckpoint.nativeInputs.inputs
     value:
-      - id: layout-sharedPanel--shared-input
+      - id: "@layout/layout-sharedPanel--shared-input"
         value: ""
         focused: false
         displayed: true
-      - id: overlayStack-0--shared-input
+      - id: "@layout/overlayStack-0--shared-input"
         value: Ada
         focused: true
         displayed: true
@@ -66,16 +66,16 @@ steps:
   - action: assert
     type: js
     global: __vtCheckpoint.nativeInputs.focusedId
-    value: overlayStack-0--shared-input
+    value: "@layout/overlayStack-0--shared-input"
   - action: assert
     type: js
     global: __vtCheckpoint.nativeInputs.inputs
     value:
-      - id: layout-sharedPanel--shared-input
+      - id: "@layout/layout-sharedPanel--shared-input"
         value: ""
         focused: false
         displayed: true
-      - id: overlayStack-0--shared-input
+      - id: "@layout/overlayStack-0--shared-input"
         value: Ada
         focused: true
         displayed: true
@@ -97,16 +97,16 @@ steps:
   - action: assert
     type: js
     global: __vtCheckpoint.nativeInputs.focusedId
-    value: overlayStack-0--shared-input
+    value: "@layout/overlayStack-0--shared-input"
   - action: assert
     type: js
     global: __vtCheckpoint.nativeInputs.inputs
     value:
-      - id: layout-sharedPanel--shared-input
+      - id: "@layout/layout-sharedPanel--shared-input"
         value: ""
         focused: false
         displayed: false
-      - id: overlayStack-0--shared-input
+      - id: "@layout/overlayStack-0--shared-input"
         value: Ada
         focused: true
         displayed: true
@@ -128,16 +128,16 @@ steps:
   - action: assert
     type: js
     global: __vtCheckpoint.nativeInputs.focusedId
-    value: overlayStack-0--shared-input
+    value: "@layout/overlayStack-0--shared-input"
   - action: assert
     type: js
     global: __vtCheckpoint.nativeInputs.inputs
     value:
-      - id: layout-sharedPanel--shared-input
+      - id: "@layout/layout-sharedPanel--shared-input"
         value: ""
         focused: false
         displayed: true
-      - id: overlayStack-0--shared-input
+      - id: "@layout/overlayStack-0--shared-input"
         value: Ada
         focused: true
         displayed: true
