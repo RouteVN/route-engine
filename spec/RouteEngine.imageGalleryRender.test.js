@@ -571,9 +571,15 @@ describe("RouteEngine image-gallery render API", () => {
 
     expect(engine.selectImageGallery()).toBeNull();
     expect(() => engine.selectRenderState()).not.toThrow();
-    expect(
-      findElementById(engine.selectRenderState().elements, "gallery-grid"),
-    ).toMatchObject({ children: [] });
+    const layout = findElementById(
+      engine.selectRenderState().elements,
+      "layout-galleryHud",
+    );
+    expect(layout.children).toHaveLength(1);
+    expect(layout.children[0]).toMatchObject({
+      type: "container",
+      children: [],
+    });
   });
 
   it("renders nested $each loops and skips a missing source in the current item", () => {
@@ -608,15 +614,15 @@ describe("RouteEngine image-gallery render API", () => {
 
     const renderState = createEngine(projectData).selectRenderState();
 
-    expect(
-      findElementById(renderState.elements, "gallery-group-0-festival"),
-    ).toMatchObject({
-      children: [
-        {
-          id: "gallery-variant-day",
-          content: "festivalDay",
-        },
-      ],
+    const layout = findElementById(renderState.elements, "layout-galleryHud");
+    expect(layout.children).toHaveLength(1);
+    const grid = layout.children[0];
+    expect(grid.children).toHaveLength(1);
+    const group = grid.children[0];
+    expect(group.children).toHaveLength(1);
+    expect(group.children[0]).toMatchObject({
+      type: "text",
+      content: "festivalDay",
     });
   });
 });

@@ -11,6 +11,8 @@ steps:
     ms: 120
   - action: customEvent
     name: vt:checkpoint
+    detail:
+      layoutRootId: bg-cg-background-container
   - action: assert
     type: js
     global: __vtCheckpoint.textById
@@ -26,6 +28,8 @@ steps:
     ms: 120
   - action: customEvent
     name: vt:checkpoint
+    detail:
+      layoutRootId: bg-cg-background-container
   - action: assert
     type: js
     global: __vtCheckpoint.textById.click-label
