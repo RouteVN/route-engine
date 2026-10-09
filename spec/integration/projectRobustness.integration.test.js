@@ -231,6 +231,7 @@ describe("bounded synchronous routing", () => {
 
   it.each([
     ["self-jump", { jumpToLine: { lineId: "loop" } }],
+    ["self section transition", { sectionTransition: { sectionId: "main" } }],
     [
       "conditional cycle",
       {
@@ -248,7 +249,13 @@ describe("bounded synchronous routing", () => {
         createProject([{ id: "loop", actions }]),
       );
       expect(() => guarded.initialize()).toThrow(
-        /exceeded 1000 synchronous effect batches.*main.*loop/,
+        expect.objectContaining({
+          message: expect.stringMatching(
+            /exceeded 1000 synchronous effect batches.*main.*loop/,
+          ),
+          code: "routing_cycle",
+          pointer: { sectionId: "main", lineId: "loop" },
+        }),
       );
       expect(guarded.ticker.size).toBe(0);
       guarded.resetWatchdog();
@@ -283,7 +290,16 @@ describe("bounded synchronous routing", () => {
     expect(guarded.ticker.size).toBe(1);
 
     expect(() => guarded.ticker.tick(1000)).toThrow(
-      /exceeded 1000 synchronous effect batches/,
+      expect.objectContaining({
+        message: expect.stringMatching(
+          /exceeded 1000 synchronous effect batches/,
+        ),
+        code: "routing_cycle",
+        pointer: {
+          sectionId: expect.stringMatching(/^(main|other)$/),
+          lineId: "loop",
+        },
+      }),
     );
     expect(guarded.ticker.size).toBe(0);
     guarded.resetWatchdog();
