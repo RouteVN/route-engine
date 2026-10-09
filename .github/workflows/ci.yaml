@@ -85,6 +85,10 @@ jobs:
             item: robustness/section-media-continuity.yaml
           - id: playback-skip-authored
             item: robustness/playback-skip-authored-co-due.yaml
+          - id: runtime-dialogue-bindings
+            item: robustness/runtime-dialogue-bindings.yaml
+          - id: runtime-dialogue-auto-delay
+            item: robustness/runtime-dialogue-auto-delay.yaml
           - id: save-load-timers
             item: robustness/save-load-skip-timer-cleanup.yaml
           - id: routing-cycle-recovery
