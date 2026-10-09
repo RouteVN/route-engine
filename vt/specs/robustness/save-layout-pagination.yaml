@@ -1,0 +1,248 @@
+---
+title: Save Layout Pagination
+description: >-
+  A four-slot save layout on page two displays slots 5–8, saves the first row, and restores its
+  story state through the same row after advancing.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - &ref_0
+    action: wait
+    ms: 250
+  - action: click
+    x: 170
+    "y": 470
+  - *ref_0
+  - &ref_1
+    action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.slot-label-5
+    value: Slot 5
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.slot-label-8
+    value: Slot 8
+  - &ref_2
+    action: screenshot
+  - action: click
+    x: 430
+    "y": 130
+  - *ref_0
+  - action: click
+    x: 800
+    "y": 470
+  - *ref_0
+  - action: click
+    x: 800
+    "y": 470
+  - *ref_0
+  - *ref_1
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: open
+  - *ref_2
+  - action: click
+    x: 170
+    "y": 470
+  - *ref_0
+  - action: click
+    x: 660
+    "y": 130
+  - *ref_0
+  - *ref_1
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: closed
+  - *ref_2
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    foreground:
+      hex: "#FFFFFF"
+    background:
+      hex: "#000000"
+    button:
+      hex: "#4D4D4D"
+  textStyles:
+    body:
+      fontId: default
+      colorId: foreground
+      fontSize: 32
+  layouts:
+    dialogueLayout:
+      elements:
+        - id: dialogue
+          type: text
+          x: 90
+          "y": 190
+          content: ${dialogue.content[0].text}
+          textStyleId: body
+          width: 800
+    saveGrid:
+      paginationSize: 4
+      elements:
+        - id: save-background
+          type: rect
+          x: 0
+          "y": 0
+          width: 960
+          height: 540
+          colorId: background
+        - id: save-title
+          type: text
+          x: 90
+          "y": 30
+          content: Save / Load — Page 2
+          textStyleId: body
+        - id: slot-rows
+          type: container
+          x: 0
+          "y": 100
+          direction: vertical
+          gapY: 15
+          children:
+            - $for slot, i in saveSlots:
+                - id: slot-row-${slot.slotId}
+                  type: container
+                  x: 0
+                  "y": 0
+                  children:
+                    - id: slot-label-${slot.slotId}
+                      type: text
+                      x: 90
+                      "y": 10
+                      content: Slot ${slot.slotId}
+                      textStyleId: body
+                    - id: save-${slot.slotId}
+                      type: rect
+                      x: 340
+                      "y": 0
+                      width: 190
+                      height: 60
+                      colorId: button
+                      click:
+                        payload:
+                          actions:
+                            saveSlot:
+                              slotId: ${slot.slotId}
+                    - id: save-${slot.slotId}-label
+                      type: text
+                      x: 360
+                      "y": 12
+                      content: Save
+                      textStyleId: body
+                    - id: load-${slot.slotId}
+                      type: rect
+                      x: 570
+                      "y": 0
+                      width: 190
+                      height: 60
+                      colorId: button
+                      click:
+                        payload:
+                          actions:
+                            loadSlot:
+                              slotId: ${slot.slotId}
+                    - id: load-${slot.slotId}-label
+                      type: text
+                      x: 590
+                      "y": 12
+                      content: Load
+                      textStyleId: body
+        - id: close
+          type: rect
+          x: 710
+          "y": 440
+          width: 180
+          height: 60
+          colorId: button
+          click:
+            payload:
+              actions:
+                popOverlay: {}
+        - id: close-label
+          type: text
+          x: 730
+          "y": 452
+          content: Close
+          textStyleId: body
+  controls:
+    navigation:
+      elements:
+        - id: saves
+          type: rect
+          x: 70
+          "y": 440
+          width: 220
+          height: 60
+          colorId: button
+          click:
+            payload:
+              actions:
+                setSaveLoadPagination:
+                  value: 2
+                pushOverlay:
+                  resourceId: saveGrid
+                  resourceType: layout
+        - id: saves-label
+          type: text
+          x: 90
+          "y": 452
+          content: Save / Load
+          textStyleId: body
+        - id: next
+          type: rect
+          x: 710
+          "y": 440
+          width: 180
+          height: 60
+          colorId: button
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: next-label
+          type: text
+          x: 730
+          "y": 452
+          content: Next
+          textStyleId: body
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: closed
+              actions:
+                control:
+                  resourceId: navigation
+                dialogue:
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: The door is closed.
+            - id: open
+              actions:
+                dialogue:
+                  content:
+                    - text: The door is open.
