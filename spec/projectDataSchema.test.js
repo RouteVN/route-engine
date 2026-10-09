@@ -467,6 +467,18 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
+  it("accepts an empty control action to clear the active control", () => {
+    const projectData = createMinimalProjectData();
+    projectData.story.scenes.scene1.sections.section1.lines[0].actions = {
+      control: {},
+    };
+
+    expect(validatePresentationActions({ control: {} })).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
   it("rejects removed layout.transitions resources", () => {
     const projectData = createMinimalProjectData({
       resources: {
@@ -3915,5 +3927,50 @@ describe("projectData schema", () => {
     });
     expect(validateProjectData(projectData)).toBe(false);
     expect(validateProjectData.errors).not.toBeNull();
+  });
+
+  it.each([
+    ["setDialogueTextSpeed", "value", "${variables.textSpeed}"],
+    ["setAutoForwardDelay", "value", "${variables.autoDelay}"],
+    ["setAutoForwardSpeed", "value", "${variables.autoSpeed}"],
+    ["setSkipUnseenText", "value", "${variables.skipUnseen}"],
+    ["setSkipTransitionsAndAnimations", "value", "${variables.skipAnimations}"],
+    ["setSoundVolume", "value", "${variables.soundVolume}"],
+    ["setMusicVolume", "value", "${variables.musicVolume}"],
+    ["setMuteAll", "value", "${variables.muted}"],
+    ["setSaveLoadPagination", "value", "${variables.page}"],
+  ])("accepts a complete binding for %s", (action, field, binding) => {
+    expect(validateSystemActions({ [action]: { [field]: binding } })).toBe(
+      true,
+    );
+    expect(validateSystemActions.errors).toBeNull();
+  });
+
+  it("accepts complete bindings in nested line settings", () => {
+    expect(
+      validateSystemActions({
+        setNextLineConfig: {
+          manual: {
+            enabled: "${variables.manualEnabled}",
+            requireLineCompleted: "${variables.requireComplete}",
+          },
+          auto: {
+            enabled: "${variables.autoEnabled}",
+            delay: "${variables.autoDelay}",
+          },
+        },
+      }),
+    ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
+  });
+
+  it.each([
+    { setMusicVolume: { value: "Volume ${variables.musicVolume}" } },
+    { setMuteAll: { value: "${variables.muted} extra" } },
+    { setAutoForwardSpeed: { value: 101 } },
+    { setSaveLoadPagination: { value: 0 } },
+  ])("rejects an invalid settings value %#", (actions) => {
+    expect(validateSystemActions(actions)).toBe(false);
+    expect(validateSystemActions.errors).not.toBeNull();
   });
 });

@@ -934,7 +934,7 @@ describe("RouteEngine L10n initialization", () => {
                     type: "line.action",
                     lineId: "greeting",
                     actionType: "control",
-                    payload: {},
+                    payload: { resourceId: 42 },
                   },
                 ],
               }),
@@ -943,6 +943,45 @@ describe("RouteEngine L10n initialization", () => {
         },
       }),
     ).toThrow(/does not match the control presentation-action schema/);
+  });
+
+  it("accepts a localized empty control action", () => {
+    const projectData = createProjectData();
+    projectData.resources.controls = {
+      sourceControl: { elements: [] },
+    };
+    projectData.story.scenes[
+      "chapter-one"
+    ].sections.introduction.lines[0].actions.control = {
+      resourceId: "sourceControl",
+    };
+    const engine = createEngine();
+
+    engine.init({
+      initialState: {
+        projectData,
+        l10nData: {
+          packages: {
+            japanese: createPackage({
+              patches: [
+                {
+                  type: "line.action",
+                  lineId: "greeting",
+                  actionType: "control",
+                  payload: {},
+                },
+              ],
+            }),
+          },
+        },
+        global: { runtime: { localizationPackageId: "japanese" } },
+      },
+    });
+
+    expect(
+      engine.selectSystemState().projectData.story.scenes["chapter-one"]
+        .sections.introduction.lines[0].actions.control,
+    ).toEqual({});
   });
 
   it("rejects incomplete resource payloads during engine initialization", () => {
