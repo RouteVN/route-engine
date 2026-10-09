@@ -106,6 +106,7 @@ const enterDestinationByChoice = async (harness) => {
   const button = findRenderElement(
     harness.renderStates.at(-1)?.elements,
     "choice-button",
+    { layoutRootId: "choice-container" },
   );
 
   await harness.eventHandler("click", button.click.payload);
