@@ -1,0 +1,156 @@
+---
+title: Layout Each Missing Source
+description: A background layout skips absent root and nested each sources while rendering valid nested items and retaining clickable controls.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 120
+  - action: customEvent
+    name: vt:checkpoint
+    detail:
+      layoutRootId: bg-cg-background-container
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById
+    value:
+      title: Missing each sources render empty
+      variant-day: "0: day"
+      click-label: "CLICKS 0"
+  - action: screenshot
+  - action: click
+    x: 480
+    y: 410
+  - action: wait
+    ms: 120
+  - action: customEvent
+    name: vt:checkpoint
+    detail:
+      layoutRootId: bg-cg-background-container
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.click-label
+    value: CLICKS 1
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pendingEffects
+    value: []
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  variables:
+    clicks:
+      type: number
+      scope: context
+      default: 0
+  images:
+    day:
+      fileId: mask-diagonal
+      width: 512
+      height: 512
+  imageGallery:
+    pageSize: 1
+    groups:
+      - id: festival
+        variants:
+          - id: day
+            imageId: day
+  layouts:
+    background:
+      elements:
+        - id: fill
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: title
+          type: text
+          x: 480
+          y: 80
+          anchorX: 0.5
+          content: Missing each sources render empty
+          textStyleId: title
+        - $each: item in choice.items
+          id: unexpected-root-${item.id}
+          type: rect
+          width: 960
+          height: 540
+          colorId: unexpected
+        - $each: group, index in imageGallery.pageGroups
+          id: group-${group.groupId}
+          type: container
+          children:
+            - $each: variant in group.variants
+              id: variant-${variant.variantId}
+              type: text
+              x: 480
+              y: 210
+              anchorX: 0.5
+              content: "${index}: ${variant.variantId}"
+              textStyleId: title
+            - $each: missing in group.missingVariants
+              id: unexpected-nested-${missing.id}
+              type: rect
+              width: 960
+              height: 540
+              colorId: unexpected
+        - id: click-button
+          type: rect
+          x: 280
+          y: 360
+          width: 400
+          height: 100
+          colorId: button
+          click:
+            payload:
+              actions:
+                updateVariable:
+                  id: incrementClicks
+                  operations:
+                    - variableId: clicks
+                      op: increment
+                      value: 1
+        - id: click-label
+          type: text
+          x: 480
+          y: 410
+          anchorX: 0.5
+          anchorY: 0.5
+          content: CLICKS ${variables.clicks}
+          textStyleId: title
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    button:
+      hex: "#166534"
+    text:
+      hex: "#FFFFFF"
+    unexpected:
+      hex: "#FF0000"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 34
+      lineHeight: 1.2
+story:
+  initialSceneId: scene
+  scenes:
+    scene:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: each
+              actions:
+                background:
+                  resourceId: background

@@ -1,0 +1,200 @@
+---
+title: Scalar Dialogue Rendering
+description: >-
+  Numeric zero and seven plus false and true remain visible through both plain and typewriter
+  dialogue; a real Next click continues the story. Unit tests enforce string types because Route
+  Graphics also coerces raw scalars.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 1200
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: screenshot
+  - action: click
+    x: 800
+    "y": 450
+  - action: wait
+    ms: 250
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: continued
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    foreground:
+      hex: "#FFFFFF"
+    button:
+      hex: "#4D4D4D"
+  textStyles:
+    body:
+      fontId: default
+      colorId: foreground
+      fontSize: 44
+  variables:
+    zero:
+      type: number
+      scope: context
+      default: 0
+    seven:
+      type: number
+      scope: context
+      default: 7
+    "off":
+      type: boolean
+      scope: context
+      default: false
+    "on":
+      type: boolean
+      scope: context
+      default: true
+  layouts:
+    scalars:
+      elements:
+        - id: plain-title
+          type: text
+          x: 80
+          "y": 70
+          content: Plain text
+          textStyleId: body
+        - id: plain-zero
+          type: text
+          x: 80
+          "y": 140
+          content: ${dialogue.content[0].text}
+          textStyleId: body
+        - id: plain-seven
+          type: text
+          x: 290
+          "y": 140
+          content: ${dialogue.content[1].text}
+          textStyleId: body
+        - id: plain-off
+          type: text
+          x: 500
+          "y": 140
+          content: ${dialogue.content[2].text}
+          textStyleId: body
+        - id: plain-on
+          type: text
+          x: 710
+          "y": 140
+          content: ${dialogue.content[3].text}
+          textStyleId: body
+        - id: reveal-title
+          type: text
+          x: 80
+          "y": 240
+          content: Revealing text
+          textStyleId: body
+        - id: reveal-zero
+          type: text-revealing
+          x: 80
+          "y": 310
+          content:
+            - text: ${dialogue.content[0].text}
+          textStyleId: body
+          speed: 10
+          revealEffect: typewriter
+        - id: reveal-seven
+          type: text-revealing
+          x: 290
+          "y": 310
+          content:
+            - text: ${dialogue.content[1].text}
+          textStyleId: body
+          speed: 10
+          revealEffect: typewriter
+        - id: reveal-off
+          type: text-revealing
+          x: 500
+          "y": 310
+          content:
+            - text: ${dialogue.content[2].text}
+          textStyleId: body
+          speed: 10
+          revealEffect: typewriter
+        - id: reveal-on
+          type: text-revealing
+          x: 710
+          "y": 310
+          content:
+            - text: ${dialogue.content[3].text}
+          textStyleId: body
+          speed: 10
+          revealEffect: typewriter
+    continued:
+      elements:
+        - id: continued
+          type: text
+          x: 80
+          "y": 190
+          content: ${dialogue.content[0].text}
+          textStyleId: body
+  controls:
+    navigation:
+      elements:
+        - id: next
+          type: rect
+          x: 710
+          "y": 415
+          width: 180
+          height: 75
+          colorId: button
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: next-label
+          type: text
+          x: 755
+          "y": 430
+          content: Next
+          textStyleId: body
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: scalars
+              actions:
+                control:
+                  resourceId: navigation
+                dialogue:
+                  ui:
+                    resourceId: scalars
+                  content:
+                    - text: ${variables.zero}
+                    - text: ${variables.seven}
+                    - text: ${variables.off}
+                    - text: ${variables.on}
+            - id: continued
+              actions:
+                dialogue:
+                  ui:
+                    resourceId: continued
+                  content:
+                    - text: The story continues.
