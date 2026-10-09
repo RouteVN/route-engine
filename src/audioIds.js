@@ -1,3 +1,5 @@
+import { getOwnProperty } from "./util.js";
+
 export const escapeAudioIdComponent = (component) =>
   String(component).replaceAll("%", "%25").replaceAll(":", "%3A");
 
@@ -41,11 +43,13 @@ export const resolveBgmSoundRenderIds = ({
   resources,
   previousBgmRender,
 }) => {
-  const sounds = getBgmSounds(bgm).filter(
-    (sound) => resources.sounds?.[sound.resourceId],
+  const sounds = getBgmSounds(bgm).filter((sound) =>
+    getOwnProperty(resources.sounds, sound.resourceId),
   );
   const previousSounds = getBgmSounds(previousBgmRender?.bgm)
-    .filter((sound) => previousBgmRender.resources?.sounds?.[sound.resourceId])
+    .filter((sound) =>
+      getOwnProperty(previousBgmRender.resources?.sounds, sound.resourceId),
+    )
     .map((sound, index) => ({
       sound,
       renderId: previousBgmRender.channel?.children[index]?.id,
