@@ -95,6 +95,8 @@ jobs:
             item: robustness/visual-inline-layout-transition.yaml
           - id: inline-transform-replaces-overrides
             item: robustness/visual-inline-transform-replaces-overrides.yaml
+          - id: zero-length-playback-loop
+            item: robustness/zero-length-playback-loop.yaml
     steps:
       - uses: actions/checkout@v4
         with:

@@ -28,6 +28,7 @@ const createLoopPlayback = (persistent) => {
 const createProjectData = ({
   persistent = false,
   nextLineActions = {},
+  keyframes = [{ duration: 1000, value: 300 }],
 } = {}) => ({
   screen: {
     width: 1920,
@@ -65,7 +66,7 @@ const createProjectData = ({
         tween: {
           x: {
             initialValue: 100,
-            keyframes: [{ duration: 1000, value: 300 }],
+            keyframes,
           },
         },
       },
@@ -475,5 +476,97 @@ describe("RouteEngine animation playback loop", () => {
 
     expect(engine.selectRuntime().skipTransitionsAndAnimations).toBe(true);
     expect(routeGraphics.render.mock.calls.at(-1)?.[0].animations).toEqual([]);
+  });
+
+  describe("loop duration boundaries", () => {
+    const createLoopEngine = (keyframes) => {
+      const routeGraphics = {
+        render: vi.fn(),
+      };
+
+      let engine;
+      const effectsHandler = createEffectsHandler({
+        getEngine: () => engine,
+        routeGraphics,
+        ticker: createTicker(),
+        persistence: createPersistence(),
+      });
+      engine = createRouteEngine({
+        handlePendingEffects: effectsHandler,
+      });
+
+      return {
+        routeGraphics,
+        init: () =>
+          engine.init({
+            initialState: {
+              projectData: createProjectData({ keyframes }),
+            },
+          }),
+      };
+    };
+
+    const getRenderedVisualItemIds = (renderState) =>
+      (renderState?.elements ?? [])
+        .find((element) => element.id === "story")
+        ?.children.map((child) => child.id) ?? [];
+
+    it("renders the visual item without animations for a zero-duration loop", () => {
+      const { routeGraphics, init } = createLoopEngine([
+        { duration: 0, value: 300 },
+      ]);
+
+      expect(init).not.toThrow();
+
+      const renderState = routeGraphics.render.mock.calls.at(-1)?.[0];
+      expect(renderState.animations).toEqual([]);
+      expect(getRenderedVisualItemIds(renderState)).toEqual(["visual-marker"]);
+    });
+
+    it("emits the loop when a zero-duration keyframe precedes a positive one", () => {
+      const { routeGraphics, init } = createLoopEngine([
+        { duration: 0, value: 150 },
+        { duration: 500, value: 300 },
+      ]);
+
+      expect(init).not.toThrow();
+
+      const renderState = routeGraphics.render.mock.calls.at(-1)?.[0];
+      expect(renderState.animations).toEqual([
+        expect.objectContaining({
+          id: "marker-animation-update",
+          playback: {
+            loop: true,
+          },
+        }),
+      ]);
+    });
+
+    it.each([
+      {
+        name: "negative",
+        keyframes: [{ duration: -500, value: 300 }],
+        malformed: "tween.x.keyframes[0].duration is -500",
+      },
+      {
+        name: "NaN",
+        keyframes: [{ duration: Number.NaN, value: 300 }],
+        malformed: "tween.x.keyframes[0].duration is NaN",
+      },
+      {
+        name: "Infinity",
+        keyframes: [{ duration: Number.POSITIVE_INFINITY, value: 300 }],
+        malformed: "tween.x.keyframes[0].duration is Infinity",
+      },
+    ])(
+      "rejects engine initialization for a loop with a $name duration",
+      ({ keyframes, malformed }) => {
+        const { init } = createLoopEngine(keyframes);
+
+        expect(init).toThrow(
+          `[visual.items[marker].animations.playback] playback.loop requires every keyframe duration to be a finite number of at least 0, but ${malformed}.`,
+        );
+      },
+    );
   });
 });

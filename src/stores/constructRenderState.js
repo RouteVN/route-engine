@@ -150,6 +150,12 @@ const createAnimationInstance = ({
           `[${animationPath}.playback] animation.complete is not allowed when playback.loop is true because a loop never completes.`,
         );
       }
+      if (normalizedPlayback.loop === true) {
+        assertWellFormedLoopingKeyframeDurations(normalized, animationPath);
+      }
+      if (normalizedPlayback.loop === true && authoredDurationMs === 0) {
+        return null;
+      }
       if (
         normalizedPlayback.loop === true &&
         (!Number.isFinite(authoredDurationMs) || authoredDurationMs <= 0)
@@ -368,6 +374,58 @@ const getAuthoredAnimationDurationMs = (animationInstance) =>
     getTweenDurationMs(animationInstance?.next?.tween),
     getTweenPropertyDurationMs(animationInstance?.mask?.progress),
   );
+
+const getAnimationTimelineKeyframeLists = (animationInstance) => {
+  const keyframeLists = [];
+
+  const tweens = [
+    ["tween", animationInstance?.tween],
+    ["prev.tween", animationInstance?.prev?.tween],
+    ["next.tween", animationInstance?.next?.tween],
+  ];
+  for (const [tweenLabel, tween] of tweens) {
+    if (!tween || typeof tween !== "object" || Array.isArray(tween)) {
+      continue;
+    }
+
+    for (const [propertyLabel, tweenProperty] of Object.entries(tween)) {
+      if (Array.isArray(tweenProperty?.keyframes)) {
+        keyframeLists.push([
+          `${tweenLabel}.${propertyLabel}.keyframes`,
+          tweenProperty.keyframes,
+        ]);
+      }
+    }
+  }
+
+  const maskProgressKeyframes = animationInstance?.mask?.progress?.keyframes;
+  if (Array.isArray(maskProgressKeyframes)) {
+    keyframeLists.push(["mask.progress.keyframes", maskProgressKeyframes]);
+  }
+
+  return keyframeLists;
+};
+
+const isWellFormedKeyframeDuration = (duration) =>
+  typeof duration === "number" && Number.isFinite(duration) && duration >= 0;
+
+const assertWellFormedLoopingKeyframeDurations = (
+  animationInstance,
+  animationPath,
+) => {
+  for (const [keyframesLabel, keyframes] of getAnimationTimelineKeyframeLists(
+    animationInstance,
+  )) {
+    keyframes.forEach((keyframe, index) => {
+      const duration = keyframe?.duration;
+      if (!isWellFormedKeyframeDuration(duration)) {
+        throw new Error(
+          `[${animationPath}.playback] playback.loop requires every keyframe duration to be a finite number of at least 0, but ${keyframesLabel}[${index}].duration is ${String(duration)}.`,
+        );
+      }
+    });
+  }
+};
 
 export const getAnimationInstanceDurationMs = (animationInstance) => {
   if (
