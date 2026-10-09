@@ -505,7 +505,7 @@ describe("resolveL10nProjectData", () => {
   it.each([
     {
       actionType: "control",
-      payload: {},
+      payload: { resourceId: 42 },
     },
     {
       actionType: "voice",
