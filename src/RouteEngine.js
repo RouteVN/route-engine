@@ -2,6 +2,7 @@ import { createSystemStore } from "./stores/system.store.js";
 import { normalizeNamespace } from "./indexedDbPersistence.js";
 import {
   evaluateRouteCondition,
+  getOwnProperty,
   isComputedVariableConfig,
   processActionTemplates,
   RUN_STORE_TRANSACTION,
@@ -93,6 +94,7 @@ const PLAY_MUSIC_ROOM_TRACK_ACTION_TYPE = "playMusicRoomTrack";
 const START_SCENE_REPLAY_ACTION_TYPE = "startSceneReplay";
 const BGM_RENDER_CHANNEL_ID = "channel:bgm";
 const MAX_SYNCHRONOUS_EFFECT_BATCHES = 1000;
+const ROUTING_CYCLE_ERROR_CODE = "routing_cycle";
 const PLAYBACK_DIRTY_ACTION_TYPES = new Set([
   "startAutoMode",
   "stopAutoMode",
@@ -384,6 +386,12 @@ export default function createRouteEngine(options) {
           const error = new Error(
             `RouteEngine exceeded ${MAX_SYNCHRONOUS_EFFECT_BATCHES} synchronous effect batches at section "${enteredLinePointer?.sectionId}", line "${enteredLinePointer?.lineId}". Check for an immediate routing cycle.`,
           );
+          // Hosts identify this failure by code, not by message text.
+          error.code = ROUTING_CYCLE_ERROR_CODE;
+          error.pointer = {
+            sectionId: enteredLinePointer?.sectionId,
+            lineId: enteredLinePointer?.lineId,
+          };
           // Keep the undelivered work, as for other post-commit failures, but
           // suspend playback until the host corrects or resets the story.
           setAutomaticAttemptErrorClassification(error, "postCommitUnsettled");
@@ -1825,8 +1833,10 @@ export default function createRouteEngine(options) {
       if (typeof payload.variableId !== "string" || !payload.variableId) {
         throw new Error("integer random action requires variableId");
       }
-      const variableConfig =
-        _canonicalProjectData?.resources?.variables?.[payload.variableId];
+      const variableConfig = getOwnProperty(
+        _canonicalProjectData?.resources?.variables,
+        payload.variableId,
+      );
       if (
         !variableConfig ||
         variableConfig.type !== "number" ||
