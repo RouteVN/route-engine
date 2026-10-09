@@ -19,6 +19,8 @@ steps:
   - &ref_1
     action: customEvent
     name: vt:checkpoint
+    detail:
+      layoutRootId: overlayStack-0
   - action: assert
     type: js
     global: __vtCheckpoint.textById.slot-label-5
