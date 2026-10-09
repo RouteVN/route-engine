@@ -611,15 +611,103 @@ describe("resolveAudioEffect", () => {
     ["startAt", 1],
     ["endAt", 10],
     ["startDelayMs", 100],
-  ])("treats a changed %s as a source-identity change", (field, value) => {
-    const nextChannel = {
-      ...oldChannel,
-      children: [{ ...oldChannel.children[0], [field]: value, volume: 30 }],
-    };
+  ])(
+    "plays an update as the incoming track when %s changes",
+    (field, value) => {
+      const nextChannel = {
+        ...oldChannel,
+        children: [{ ...oldChannel.children[0], [field]: value, volume: 30 }],
+      };
 
-    expect(() => resolveWith({ nextChannel })).toThrow(
-      "changes source identity",
-    );
+      const effect = resolveWith({ nextChannel });
+
+      expect(effect).toMatchObject({
+        targetId: "bgm:main",
+        properties: {
+          volume: {
+            enter: {
+              keyframes: [
+                expect.objectContaining({ value: 50, duration: 50 }),
+                expect.objectContaining({ value: 30, duration: 100 }),
+              ],
+            },
+          },
+        },
+      });
+      expect(Object.keys(effect.properties.volume)).toEqual(["enter"]);
+    },
+  );
+
+  it("plays an update as the incoming track when music starts", () => {
+    const effect = resolveWith({
+      selection: { resourceId: "fadeIn", playback: { speed: 2 } },
+      resources: {
+        audioEffects: {
+          fadeIn: {
+            type: "update",
+            tween: {
+              volume: {
+                initialValue: 0,
+                keyframes: [{ value: 30, duration: 800, easing: "easeIn" }],
+              },
+            },
+          },
+        },
+      },
+      previousChannel: null,
+    });
+
+    expect(effect).toEqual({
+      id: "audio-effect:engine:g1:l2:audio1",
+      type: "audio-transition",
+      targetId: "bgm:main",
+      properties: {
+        volume: {
+          enter: {
+            initialValue: 0,
+            keyframes: [
+              { value: 30, delay: 0, duration: 400, easing: "easeIn" },
+            ],
+          },
+        },
+      },
+    });
+  });
+
+  it("requires an update played on incoming music to end at its mix", () => {
+    expect(() =>
+      resolveWith({
+        previousChannel: null,
+        nextChannel: {
+          ...oldChannel,
+          children: [{ ...oldChannel.children[0], volume: 40 }],
+        },
+      }),
+    ).toThrow("must match the persistent BGM volume value");
+  });
+
+  it("plays an update as the outgoing track when music stops", () => {
+    const effect = resolveWith({ nextChannel: null });
+
+    expect(effect.properties).toEqual({
+      volume: {
+        exit: {
+          keyframes: [
+            { value: 50, delay: 0, duration: 50, easing: "linear" },
+            { value: 30, delay: 0, duration: 100, easing: "linear" },
+          ],
+        },
+      },
+    });
+  });
+
+  it("validates an update played on music that stops", () => {
+    expect(() =>
+      resolveWith({
+        selection: { resourceId: "smooth", playback: { speed: 0 } },
+        nextChannel: null,
+      }),
+    ).toThrow("must be a finite number greater than 0");
   });
 
   it.each([0, -1, Number.POSITIVE_INFINITY, Number.NaN])(
@@ -952,6 +1040,136 @@ describe("resolveAudioEffect", () => {
     });
   });
 
+  it("plays an update as the incoming track of a replacement BGM sound", () => {
+    const effects = resolveAudioEffects({
+      occurrence: { ...occurrence, selection: { resourceId: "smooth" } },
+      resources: { audioEffects: { smooth: updateResource } },
+      previousChannel: oldChannel,
+      nextChannel: {
+        ...oldChannel,
+        children: [
+          {
+            ...oldChannel.children[0],
+            id: "bgm:other",
+            src: "other.ogg",
+            volume: 30,
+          },
+        ],
+      },
+    });
+
+    expect(effects).toHaveLength(1);
+    expect(effects[0]).toMatchObject({
+      targetId: "bgm:other",
+      properties: {
+        volume: {
+          enter: {
+            keyframes: [
+              expect.objectContaining({ value: 50 }),
+              expect.objectContaining({ value: 30 }),
+            ],
+          },
+        },
+      },
+    });
+    expect(effects[0].properties.volume).not.toHaveProperty("exit");
+  });
+
+  it("updates retained BGM sounds and enters new ones with one update preset", () => {
+    const nextChannel = {
+      ...oldChannel,
+      children: [
+        { ...oldChannel.children[0], volume: 30 },
+        {
+          ...oldChannel.children[0],
+          id: "bgm:ambience",
+          src: "ambience.ogg",
+          volume: 30,
+        },
+      ],
+    };
+
+    const effects = resolveAudioEffects({
+      occurrence: { ...occurrence, selection: { resourceId: "smooth" } },
+      resources: { audioEffects: { smooth: updateResource } },
+      previousChannel: oldChannel,
+      nextChannel,
+    });
+
+    expect(effects.map((effect) => effect.targetId)).toEqual([
+      "bgm:main",
+      "bgm:ambience",
+    ]);
+    expect(Object.keys(effects[0].properties.volume)).toEqual(["update"]);
+    expect(Object.keys(effects[1].properties.volume)).toEqual(["enter"]);
+    expect(new Set(effects.map((effect) => effect.id)).size).toBe(2);
+  });
+
+  it("plays an update as the outgoing track of every stopped BGM sound", () => {
+    const previousChannel = {
+      ...oldChannel,
+      children: [
+        oldChannel.children[0],
+        { ...oldChannel.children[0], id: "bgm:ambience", src: "a.ogg" },
+      ],
+    };
+
+    const effects = resolveAudioEffects({
+      occurrence: { ...occurrence, selection: { resourceId: "smooth" } },
+      resources: { audioEffects: { smooth: updateResource } },
+      previousChannel,
+      nextChannel: { ...oldChannel, children: [] },
+    });
+
+    expect(effects.map((effect) => effect.targetId)).toEqual([
+      "bgm:main",
+      "bgm:ambience",
+    ]);
+    effects.forEach((effect) => {
+      expect(Object.keys(effect.properties.volume)).toEqual(["exit"]);
+    });
+  });
+
+  it("prefers current BGM sounds over removed ones for an update preset", () => {
+    const previousChannel = {
+      ...oldChannel,
+      children: [
+        oldChannel.children[0],
+        { ...oldChannel.children[0], id: "bgm:removed", src: "removed.ogg" },
+      ],
+    };
+    const nextChannel = {
+      ...oldChannel,
+      children: [
+        { ...oldChannel.children[0], volume: 30 },
+        {
+          ...oldChannel.children[0],
+          id: "bgm:added",
+          src: "added.ogg",
+          volume: 30,
+        },
+      ],
+    };
+
+    const effects = resolveAudioEffects({
+      occurrence: { ...occurrence, selection: { resourceId: "smooth" } },
+      resources: { audioEffects: { smooth: updateResource } },
+      previousChannel,
+      nextChannel,
+    });
+
+    expect(
+      effects.map((effect) => [
+        effect.id,
+        effect.targetId,
+        Object.keys(effect.properties.volume),
+      ]),
+    ).toEqual([
+      ["audio-effect:engine:g1:l2:audio1", "bgm:main", ["update"]],
+      ["audio-effect:engine:g1:l2:audio1:1", "bgm:added", ["enter"]],
+    ]);
+  });
+
   it("normalizes channel updates per sound without flattening the local mix", () => {
     const previousChannel = {
       ...oldChannel,
@@ -1111,6 +1329,93 @@ describe("resolveAudioEffect", () => {
           easing: "linear",
         },
       ],
+    });
+  });
+
+  describe("relative pan in an update played as an incoming track", () => {
+    const panResources = {
+      sounds: { old: { fileId: "old.ogg" }, next: { fileId: "new.ogg" } },
+      audioEffects: {
+        panSweep: {
+          type: "update",
+          tween: {
+            pan: {
+              keyframes: [
+                { value: 0.2, relative: true, duration: 100 },
+                { value: 0.5, duration: 200 },
+              ],
+            },
+          },
+        },
+      },
+    };
+    const resolvePan = ({ previousBgm, previousChannel }) =>
+      resolveAudioEffects({
+        occurrence: { ...occurrence, selection: { resourceId: "panSweep" } },
+        resources: panResources,
+        previousBgm,
+        nextBgm: { pan: 0.5, sounds: [{ id: "main", resourceId: "next" }] },
+        previousChannel,
+        nextChannel: {
+          ...oldChannel,
+          children: [{ ...oldChannel.children[0], src: "new.ogg", pan: 0.5 }],
+        },
+      })[0].properties.pan.enter.keyframes.map((keyframe) => keyframe.value);
+
+    it("continues from the channel pan before a source change", () => {
+      expect(
+        resolvePan({
+          previousBgm: {
+            pan: -0.4,
+            sounds: [{ id: "main", resourceId: "old" }],
+          },
+          previousChannel: {
+            ...oldChannel,
+            children: [{ ...oldChannel.children[0], pan: -0.4 }],
+          },
+        }),
+      ).toEqual([-0.2, 0.5]);
+    });
+
+    it("starts from the new channel pan when music starts", () => {
+      expect(
+        resolvePan({ previousBgm: undefined, previousChannel: null }),
+      ).toEqual([0.7, 0.5]);
+    });
+  });
+
+  it("plays a playback-rate update as the incoming track of new music", () => {
+    const effect = resolveWith({
+      selection: { resourceId: "speedUp" },
+      resources: {
+        audioEffects: {
+          speedUp: {
+            type: "update",
+            tween: {
+              playbackRate: {
+                initialValue: 1,
+                keyframes: [{ value: 1.5, duration: 300 }],
+              },
+            },
+          },
+        },
+      },
+      previousChannel: null,
+      nextChannel: {
+        ...oldChannel,
+        children: [{ ...oldChannel.children[0], playbackRate: 1.5 }],
+      },
+    });
+
+    expect(effect.properties).toEqual({
+      playbackRate: {
+        enter: {
+          initialValue: 1,
+          keyframes: [
+            { value: 1.5, delay: 0, duration: 300, easing: "linear" },
+          ],
+        },
+      },
     });
   });
 

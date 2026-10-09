@@ -1,0 +1,76 @@
+---
+title: Audio Effects Update Initial Entry
+description: An update audio effect on the line that starts the music plays as the sound's incoming track.
+skipInitialScreenshot: true
+specs:
+  - the initial BGM has no outgoing sound, and the line does not throw
+  - the engine emits one entry track built from the update tween
+steps:
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.0.src
+    value: 3ka3s
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.targetId
+    value: bgm:main
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.properties.volume.enter.initialValue
+    value: 0
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.properties.volume.enter.keyframes.0.value
+    value: 70
+  - action: assert
+    type: js
+    global: __vtAudioEffectOccurrenceCount
+    value: 1
+---
+screen:
+  width: 640
+  height: 360
+resources:
+  sounds:
+    theme:
+      fileId: 3ka3s
+  audioEffects:
+    fade-up:
+      type: update
+      tween:
+        volume:
+          initialValue: 0
+          keyframes:
+            - { value: 70, duration: 800, easing: easeOutSine }
+  colors:
+    initial:
+      hex: "#163A2C"
+  controls:
+    initial:
+      elements:
+        - id: initial
+          type: rect
+          width: 640
+          height: 360
+          colorId: initial
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: initial
+              actions:
+                control:
+                  resourceId: initial
+                bgm:
+                  volume: 70
+                  audioEffects:
+                    resourceId: fade-up
+                  sounds:
+                    - id: main
+                      resourceId: theme
