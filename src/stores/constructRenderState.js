@@ -384,7 +384,7 @@ const getTweenDurationMs = (tween) => {
 };
 
 // A mask may be authored as one object or an array; the renderer normalizes
-// both to an array and offsets each mask's progress by the mask delay.
+// both to an array, where the progress tracks run in parallel.
 const getMaskProgressDurationMs = (mask) => {
   if (Array.isArray(mask)) {
     return mask.reduce(
@@ -398,9 +398,7 @@ const getMaskProgressDurationMs = (mask) => {
     return 0;
   }
 
-  return (
-    getFiniteDurationMs(mask.delay) + getTweenPropertyDurationMs(mask.progress)
-  );
+  return getTweenPropertyDurationMs(mask.progress);
 };
 
 const getAuthoredAnimationDurationMs = (animationInstance) =>

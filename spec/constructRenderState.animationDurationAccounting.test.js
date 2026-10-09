@@ -23,6 +23,21 @@ describe("animation instance duration accounting", () => {
     ).toBe(10000);
   });
 
+  it("counts an auto delay even when the tween itself takes zero time", () => {
+    expect(
+      getAnimationInstanceDurationMs({
+        type: "update",
+        tween: { alpha: { auto: { duration: 0, delay: 200 } } },
+      }),
+    ).toBe(200);
+    expect(
+      getAnimationInstanceDurationMs({
+        type: "update",
+        tween: { alpha: { auto: { duration: 0, delay: 0 } } },
+      }),
+    ).toBe(0);
+  });
+
   it("counts every keyframe delay as part of the track lifetime", () => {
     expect(
       getAnimationInstanceDurationMs({

@@ -5,6 +5,10 @@ type: object
 required:
   - type
 $defs:
+  milliseconds:
+    type: integer
+    minimum: 0
+    maximum: 9007199254740991
   easing:
     type: string
     description: Easing function to use.
@@ -56,8 +60,7 @@ $defs:
         type: number
         description: Duration to reach this value in milliseconds.
       delay:
-        type: number
-        minimum: 0
+        $ref: "#/$defs/milliseconds"
         description: Delay before this keyframe in milliseconds.
       easing:
         $ref: "#/$defs/easing"
@@ -83,11 +86,9 @@ $defs:
         required: [duration]
         properties:
           duration:
-            type: number
-            minimum: 0
+            $ref: "#/$defs/milliseconds"
           delay:
-            type: number
-            minimum: 0
+            $ref: "#/$defs/milliseconds"
           easing:
             $ref: "#/$defs/easing"
         additionalProperties: false
@@ -254,19 +255,17 @@ properties:
   next:
     $ref: "#/$defs/transitionSide"
   mask:
-    description: Route Graphics plays single and sequence masks; the array form must not widen the object form to composite masks the renderer rejects.
+    description: The array form supports single masks. Legacy object definitions remain unchanged; unsupported composite and legacy sequence definitions must not be added through arrays.
     oneOf:
       - $ref: "#/$defs/mask"
       - type: array
         minItems: 1
         items:
-          $ref: "#/$defs/mask"
-        not:
-          contains:
-            required: [kind]
-            properties:
-              kind:
-                const: composite
+          allOf:
+            - $ref: "#/$defs/mask"
+            - properties:
+                kind:
+                  const: single
 allOf:
   - if:
       properties:

@@ -1,13 +1,14 @@
 import Ajv from "ajv";
 import { load } from "js-yaml";
 import { readFileSync } from "node:fs";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 // The animation schema must accept exactly the animation shapes Route
 // Graphics 1.43.0 plays. These cases run the real renderer parser (no mocks;
 // only the browser-only Worker constructor is stubbed so the browser bundle
 // imports under Node) side by side with the authored project schema.
-globalThis.Worker = class {};
+vi.stubGlobal("Worker", class {});
+afterAll(() => vi.unstubAllGlobals());
 
 const compileAnimationSchema = () => {
   const schema = load(
@@ -149,6 +150,73 @@ describe("projectData animation schema mirrors the renderer contract", () => {
         },
       },
       "keyframes must be a non-empty array",
+    ],
+    [
+      "fractional auto duration",
+      { type: "update", tween: { x: { auto: { duration: 250.5 } } } },
+      "integer number of milliseconds",
+    ],
+    [
+      "fractional auto delay",
+      {
+        type: "update",
+        tween: { x: { auto: { duration: 200, delay: 50.5 } } },
+      },
+      "integer number of milliseconds",
+    ],
+    [
+      "unsafe auto duration",
+      {
+        type: "update",
+        tween: { x: { auto: { duration: Number.MAX_SAFE_INTEGER + 1 } } },
+      },
+      "integer number of milliseconds",
+    ],
+    [
+      "unsafe auto delay",
+      {
+        type: "update",
+        tween: {
+          x: { auto: { duration: 200, delay: Number.MAX_SAFE_INTEGER + 1 } },
+        },
+      },
+      "integer number of milliseconds",
+    ],
+    [
+      "fractional keyframe delay",
+      {
+        type: "update",
+        tween: { x: { keyframes: [{ value: 1, duration: 200, delay: 50.5 }] } },
+      },
+      "integer number of milliseconds",
+    ],
+    [
+      "unsafe keyframe delay",
+      {
+        type: "update",
+        tween: {
+          x: {
+            keyframes: [
+              { value: 1, duration: 200, delay: Number.MAX_SAFE_INTEGER + 1 },
+            ],
+          },
+        },
+      },
+      "integer number of milliseconds",
+    ],
+    [
+      "a legacy sequence mask inside an array",
+      {
+        type: "transition",
+        mask: [
+          {
+            kind: "sequence",
+            textures: ["mask-diagonal"],
+            progress: { keyframes: [{ value: 1, duration: 200 }] },
+          },
+        ],
+      },
+      "textures is no longer supported",
     ],
     [
       "an auto easing outside the renderer enum",
