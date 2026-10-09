@@ -1,3 +1,5 @@
+import { installVideoPlaybackProbe } from "./videoPlaybackProbe.js";
+import { selectVtAssets } from "./selectVtAssets.js";
 import { parse, Ticker } from "./VtDependencies.js";
 import createRouteEngine, {
   createEffectsHandler,
@@ -329,18 +331,23 @@ const init = async () => {
 
   if (!window?.RTGL_VT_DEBUG) {
     Object.assign(assets, {
-      video_sample: {
-        url: "/public/video_sample.mp4",
-        type: "video/mp4",
-      },
+      video_sample: { url: "/public/video_sample.mp4", type: "video/mp4" },
     });
   }
 
   const assetBufferManager = createAssetBufferManager();
-  await assetBufferManager.load(assets);
+  await assetBufferManager.load(
+    selectVtAssets(assets, projectData, {
+      "video-continuity": {
+        url: "/public/video-continuity.webm",
+        type: "video/webm",
+      },
+    }),
+  );
   const assetBufferMap = assetBufferManager.getBufferMap();
 
   const routeGraphics = createRouteGraphics();
+  if (isVtCaptureMode()) installVideoPlaybackProbe(routeGraphics);
   window.takeVtScreenshotBase64 = async (label) => {
     let base64;
 
