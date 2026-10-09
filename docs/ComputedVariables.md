@@ -333,6 +333,11 @@ mod: [a, b]
 neg: [value]
 ```
 
+Dividing by zero gives `0`: `div: [a, 0]` and `mod: [a, 0]` are `0` for any
+`a`. A ratio such as `div: [hits, attempts]` therefore has a value before its
+divisor is set. Use a branch for a different result, such as `100` while
+`attempts` is `0`.
+
 Numeric helpers:
 
 ```yaml
