@@ -45,6 +45,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - id: video-volume-settings
+            item: robustness/video-volume-settings.yaml
           - id: alpha-opacity-compat
             item: robustness/alpha-opacity-compat.yaml
           - id: async-stale-click

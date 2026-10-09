@@ -1090,8 +1090,8 @@ field-for-field equivalent to the currently installed descriptor.
 | `setAutoForwardSpeed`             | `{ value }`  | Set length-aware auto speed from 0 to 100                   |
 | `setSkipUnseenText`               | `{ value }`  | Set whether skip mode may pass unseen dialogue              |
 | `setSkipTransitionsAndAnimations` | `{ value }`  | Set whether authored transitions and animations are skipped |
-| `setSoundVolume`                  | `{ value }`  | Set Voice/SFX volume from 0 to 100                          |
-| `setMusicVolume`                  | `{ value }`  | Set BGM/music-room volume from 0 to 100                     |
+| `setSoundVolume`                  | `{ value }`  | Set Voice/SFX/visual-video volume from 0 to 100             |
+| `setMusicVolume`                  | `{ value }`  | Set BGM/music-room/background-video volume from 0 to 100    |
 | `setMuteAll`                      | `{ value }`  | Set global audio mute                                       |
 | `updateLocalizationPackage`       | `{ l10nId }` | Select an imported package, or `null` for canonical content |
 | `setSaveLoadPagination`           | `{ value }`  | Set the active context's one-based save/load page           |
@@ -2250,6 +2250,21 @@ channel's authored `muted: true` is combined with the runtime mute.
 
 Legacy single-sound BGM and Voice payloads preserve their previous effective
 volume behavior when compiled into channels.
+
+### Video Audio
+
+Videos cannot author a resource volume: `resources.videos` accepts only
+`fileId`, `fileType`, `width`, and `height`. Their audio follows the runtime
+channel selected by where the video is rendered:
+
+- background videos (`background.resourceId`) follow `runtime.musicVolume`;
+- visual videos (`visual.items[].resourceId`) follow `runtime.soundVolume`.
+
+Both runtime volume preferences default to `50`, preserving the previous video
+output of `50`. Changing either setting updates its playing videos immediately.
+`runtime.muteAll` renders both video kinds at volume `0` while playback
+continues; unmuting restores each channel's current setting without restarting
+the video.
 
 ### Voice Resources
 
