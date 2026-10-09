@@ -152,6 +152,7 @@ describe("runtime dialogue VT companion journeys", () => {
       const revealed = findRenderElement(
         h.renderStates.at(-1).elements,
         "revealing",
+        { layoutRootId: "dialogue-container" },
       );
       expect(revealed.content.map(({ text }) => text).join("")).toBe(
         "Speed 91 units",

@@ -21,6 +21,8 @@ steps:
   - &ref_1
     action: customEvent
     name: vt:checkpoint
+    detail:
+      layoutRootId: dialogue-container
   - action: assert
     type: js
     global: __vtCheckpoint.textById.plain
