@@ -57,10 +57,11 @@ const setup = (name) => {
       if (harness.renderStates.length > renderCount)
         harness.completeLatestRender();
     },
-    clickRendered: async (elementId) => {
+    clickRendered: async (elementId, layoutRootId) => {
       const element = findRenderElement(
         harness.renderStates.at(-1)?.elements,
         elementId,
+        { layoutRootId },
       );
       expect(element?.click?.payload).toBeDefined();
       const renderCount = harness.renderStates.length;
@@ -174,23 +175,33 @@ describe("robustness VT companion journeys", () => {
 
   it("routes each interpolated choice label to its own section through the exact VT project", async () => {
     const h = setup("choice-interpolated-content-click");
-    expect(h.checkpoint().textById).toMatchObject({
-      "choice-label-0": "Follow ADA north 12km",
-      "choice-label-1": "Rest at the ADA camp",
-    });
-    await h.clickRendered("choice-hit-1");
+    const rendered = (harness, id, layoutRootId) =>
+      findRenderElement(harness.renderStates.at(-1).elements, id, {
+        layoutRootId,
+      });
+    expect(rendered(h, "choice-label-0", "choice-container")?.content).toBe(
+      "Follow ADA north 12km",
+    );
+    expect(rendered(h, "choice-label-1", "choice-container")?.content).toBe(
+      "Rest at the ADA camp",
+    );
+    await h.clickRendered("choice-hit-1", "choice-container");
     expect(h.checkpoint()).toMatchObject({
       pointer: { sectionId: "camp", lineId: "camp-arrival" },
-      textById: { "camp-arrival": "ARRIVED SOUTHERN CAMP" },
       pendingEffects: [],
     });
-    expect(h.checkpoint().textById["choice-label-1"]).toBeUndefined();
+    expect(rendered(h, "camp-arrival", "layout-campArrival")?.content).toBe(
+      "ARRIVED SOUTHERN CAMP",
+    );
+    expect(rendered(h, "choice-label-1", "choice-container")).toBeUndefined();
 
     const restarted = setup("choice-interpolated-content-click");
-    await restarted.clickRendered("choice-hit-0");
+    await restarted.clickRendered("choice-hit-0", "choice-container");
     expect(restarted.checkpoint()).toMatchObject({
       pointer: { sectionId: "north", lineId: "north-arrival" },
-      textById: { "north-arrival": "ARRIVED NORTH OUTPOST" },
     });
+    expect(
+      rendered(restarted, "north-arrival", "layout-northArrival")?.content,
+    ).toBe("ARRIVED NORTH OUTPOST");
   });
 });
