@@ -9,10 +9,14 @@ viewport:
 specs:
   - the choice click enters a destination with the same media
   - the destination first line authors the same video background
-  - unchanged video background retains its render identity
+  - the decoded playing video element survives the choice click and continues advancing
+  - a constant-frame WebM makes capture independent of playback time
 steps:
+  - action: click
+    x: 480
+    y: 270
   - action: wait
-    ms: 150
+    ms: 900
   - action: customEvent
     name: vt:checkpoint
   - action: assert
@@ -22,12 +26,27 @@ steps:
   - action: assert
     type: js
     global: __vtLastRenderState.elements.0.children.1.src
-    value: video_sample
+    value: video-continuity
+  - action: customEvent
+    name: vt:videoCheckpoint
+    detail: { label: bg-cg-background-video }
+  - action: assert
+    type: js
+    global: __vtVideoCheckpoint
+    value:
+      {
+        decoded: true,
+        playing: true,
+        hasProgress: true,
+        sameElement: null,
+        sameSource: null,
+        advanced: null,
+      }
   - action: click
     x: 480
     y: 270
   - action: wait
-    ms: 180
+    ms: 350
   - action: customEvent
     name: vt:checkpoint
   - action: assert
@@ -41,18 +60,49 @@ steps:
   - action: assert
     type: js
     global: __vtLastRenderState.elements.0.children.1.src
-    value: video_sample
+    value: video-continuity
+  - action: customEvent
+    name: vt:videoCheckpoint
+    detail: { label: bg-cg-background-video }
+  - action: assert
+    type: js
+    global: __vtVideoCheckpoint
+    value:
+      {
+        decoded: true,
+        playing: true,
+        hasProgress: true,
+        sameElement: true,
+        sameSource: true,
+        advanced: true,
+      }
   - action: screenshot
 ---
 screen: { width: 960, height: 540 }
 resources:
+  variables:
+    vtAssetIds: { type: string, scope: context, default: video-continuity }
   videos:
     atmosphere:
-      fileId: video_sample
+      fileId: video-continuity
       width: 960
       height: 540
   colors:
     choice: { hex: "#4D4D4D" }
+  controls:
+    start:
+      elements:
+        - id: start
+          type: rect
+          x: 360
+          y: 230
+          width: 240
+          height: 80
+          colorId: choice
+          click:
+            payload:
+              actions:
+                nextLine: {}
   layouts:
     choiceLayout:
       elements:
@@ -75,8 +125,12 @@ story:
       sections:
         source:
           lines:
+            - id: start
+              actions:
+                control: { resourceId: start }
             - id: choice
               actions:
+                control: {}
                 background: { resourceId: atmosphere }
                 choice:
                   resourceId: choiceLayout
