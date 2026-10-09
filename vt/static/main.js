@@ -1,3 +1,4 @@
+import { selectVtAssets } from "./selectVtAssets.js";
 import { parse, Ticker } from "./VtDependencies.js";
 import createRouteEngine, {
   createEffectsHandler,
@@ -205,6 +206,10 @@ const init = async () => {
   const screenWidth = projectData?.screen?.width ?? 1920;
   const screenHeight = projectData?.screen?.height ?? 1080;
   const assets = {
+    "named-frame-atlas": {
+      url: "/public/named-frame-atlas.png",
+      type: "image/png",
+    },
     lakjf3lka: {
       url: "/public/bg/door.png",
       type: "image/png",
@@ -337,7 +342,7 @@ const init = async () => {
   }
 
   const assetBufferManager = createAssetBufferManager();
-  await assetBufferManager.load(assets);
+  await assetBufferManager.load(selectVtAssets(assets, projectData));
   const assetBufferMap = assetBufferManager.getBufferMap();
 
   const routeGraphics = createRouteGraphics();
@@ -488,6 +493,10 @@ const init = async () => {
             url = routeGraphics.canvas.toDataURL("image/png");
           }
           const assets = {
+            "named-frame-atlas": {
+              url: "/public/named-frame-atlas.png",
+              type: "image/png",
+            },
             [createSaveThumbnailAssetId(
               saveAction.slotId,
               saveTimestamp,

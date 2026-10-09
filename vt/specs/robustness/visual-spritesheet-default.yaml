@@ -1,105 +1,50 @@
 ---
 title: Visual Spritesheet Named Frames
-description: A spritesheet visual selects named frames despite array-like atlas keys.
+description: Named numeric-looking atlas keys select a white frame and a gray frame; zero speed holds the selected frames for deterministic capture.
 specs:
-  - animationName is intentionally omitted from the visual item
-  - the animation frames name their atlas entries
-  - integer-like atlas keys do not change the selected frame names
+  - omitted animationName selects the first named-frame animation
+  - explicit animationName selects another named frame
+  - index-based frame selection instead shows a large checkerboard and fails comparison
 skipInitialScreenshot: true
-viewport:
-  id: capture
-  width: 1280
-  height: 720
+viewport: { id: capture, width: 960, height: 540 }
 steps:
   - action: wait
-    ms: 300
+    ms: 200
   - action: screenshot
 ---
-screen:
-  width: 1280
-  height: 720
+screen: { width: 960, height: 540 }
 resources:
-  controls:
-    backgroundControl:
-      elements:
-        - id: background
-          type: rect
-          width: 1280
-          height: 720
-          colorId: background
-        - id: title
-          type: text
-          x: 80
-          y: 80
-          content: "EXPECTED: animated fighter is visible"
-          textStyleId: title
-        - id: detail
-          type: text
-          x: 80
-          y: 145
-          content: "animationName omitted → first animation selected"
-          textStyleId: body
+  variables:
+    vtAssetIds: { type: string, scope: context, default: named-frame-atlas }
   spritesheets:
-    fighter:
-      fileId: fighter-spritesheet
-      width: 175
+    tiles:
+      fileId: named-frame-atlas
+      width: 240
       height: 240
       jsonData:
         frames:
           "10":
-            frame: { x: 483, y: 692, w: 169, h: 226 }
-            rotated: false
-            trimmed: true
-            spriteSourceSize: { x: 3, y: 4, w: 169, h: 226 }
-            sourceSize: { w: 175, h: 240 }
+            frame: { x: 480, y: 0, w: 240, h: 240 }
           "2":
-            frame: { x: 468, y: 2, w: 169, h: 226 }
-            rotated: false
-            trimmed: true
-            spriteSourceSize: { x: 3, y: 4, w: 169, h: 226 }
-            sourceSize: { w: 175, h: 240 }
+            frame: { x: 240, y: 0, w: 240, h: 240 }
           "1":
-            frame: { x: 468, y: 2, w: 169, h: 226 }
-            rotated: false
-            trimmed: true
-            spriteSourceSize: { x: 3, y: 4, w: 169, h: 226 }
-            sourceSize: { w: 175, h: 240 }
+            frame: { x: 0, y: 0, w: 240, h: 240 }
         meta:
           format: RGBA8888
-          size: { w: 1024, h: 1024 }
+          size: { w: 720, h: 240 }
           scale: "1"
       animations:
-        idle:
+        white:
           frames: ["10", "2"]
-          animationSpeed: 0.1
+          animationSpeed: 0
+          loop: true
+        gray:
+          frames: ["2", "10"]
+          animationSpeed: 0
           loop: true
   transforms:
-    center:
-      x: 640
-      y: 420
-      anchorX: 0.5
-      anchorY: 0.5
-      scaleX: 1.4
-      scaleY: 1.4
-  fonts:
-    default:
-      fileId: Arial
-  colors:
-    background:
-      hex: "#111827"
-    text:
-      hex: "#FFFFFF"
-  textStyles:
-    title:
-      fontId: default
-      colorId: text
-      fontSize: 40
-      lineHeight: 1.2
-    body:
-      fontId: default
-      colorId: text
-      fontSize: 26
-      lineHeight: 1.3
+    left: { x: 80, y: 110, scaleX: 1.3, scaleY: 1.3 }
+    right: { x: 568, y: 110, scaleX: 1.3, scaleY: 1.3 }
 story:
   initialSceneId: main
   scenes:
@@ -108,12 +53,14 @@ story:
       sections:
         main:
           lines:
-            - id: line1
+            - id: tiles
               actions:
-                control:
-                  resourceId: backgroundControl
                 visual:
                   items:
-                    - id: fighter
-                      resourceId: fighter
-                      transformId: center
+                    - id: white
+                      resourceId: tiles
+                      transformId: left
+                    - id: gray
+                      resourceId: tiles
+                      transformId: right
+                      animationName: gray
