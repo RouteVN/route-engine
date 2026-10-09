@@ -467,6 +467,18 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
+  it("accepts an empty control action to clear the active control", () => {
+    const projectData = createMinimalProjectData();
+    projectData.story.scenes.scene1.sections.section1.lines[0].actions = {
+      control: {},
+    };
+
+    expect(validatePresentationActions({ control: {} })).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
   it("rejects removed layout.transitions resources", () => {
     const projectData = createMinimalProjectData({
       resources: {
