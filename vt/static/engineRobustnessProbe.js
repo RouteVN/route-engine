@@ -71,7 +71,12 @@ export const readEngineCheckpoint = (
       if (Object.hasOwn(textById, observedId)) {
         throw new Error(`Ambiguous checkpoint text id "${observedId}"`);
       }
-      textById[observedId] = text(value.content);
+      Object.defineProperty(textById, observedId, {
+        value: text(value.content),
+        enumerable: true,
+        writable: true,
+        configurable: true,
+      });
     }
     visit(value.children);
   };
