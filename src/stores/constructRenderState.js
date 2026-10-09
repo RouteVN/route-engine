@@ -1515,12 +1515,10 @@ const collectRenderElementIds = (elements, ids = new Set()) => {
 // native inputs keyed by those ids keep their DOM identity, typed text, and
 // focus. Authored ids duplicated within one instance get a deterministic
 // "-1", "-2", ... suffix. Root container ids themselves are never renamed.
-// Segment encoding keeps "--" reserved for the namespace separator, so an
-// The @layout/ prefix reserves a separate descendant domain: engine root ids
-// always start with their semantic slot name, even when user-supplied resource
-// or visual ids contain "--". An authored id or slot key containing "--"
-// can never impersonate another
-// slot/id pair, while ordinary hyphenated ids stay readable.
+// The @layout/ prefix separates descendants from engine roots. Segment
+// encoding reserves "--" for the namespace separator, so authored ids and
+// slot keys cannot impersonate another slot/id pair. Ordinary hyphenated ids
+// stay readable.
 const encodeLayoutIdSegment = (value) =>
   encodeURIComponent(value).replaceAll("--", "%2D%2D");
 
