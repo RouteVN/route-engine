@@ -81,6 +81,8 @@ jobs:
             item: robustness/save-load-skip-timer-cleanup.yaml
           - id: routing-cycle-recovery
             item: robustness/routing-cycle-recovery.yaml
+          - id: scalar-dialogue-rendering
+            item: robustness/scalar-dialogue-rendering.yaml
           - id: settings-batch
             item: robustness/settings-runtime-batch.yaml
           - id: template-click
