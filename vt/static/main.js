@@ -588,10 +588,15 @@ const init = async () => {
   window.__vtNamespace = persistence.namespace;
 
   if (isVtCaptureMode()) {
-    window.addEventListener("vt:checkpoint", () => {
+    window.addEventListener("vt:checkpoint", (event) => {
+      const detail =
+        typeof event.detail === "string"
+          ? JSON.parse(event.detail)
+          : event.detail;
       window.__vtCheckpoint = readEngineCheckpoint(engine, {
         timerCount: playbackTickerCallbacks.size,
         renderState: window.__vtLastRenderState,
+        layoutRootId: detail?.layoutRootId,
       });
     });
     window.addEventListener("vt:engineActions", (event) => {

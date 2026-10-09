@@ -242,7 +242,7 @@ describe("conditional fallthrough runtime invariants", () => {
               score: state.contexts.at(-1).variables.score,
               text: findElementById(
                 renderState.elements,
-                "destination-dialogue-text",
+                "@layout/dialogue-container--destination-dialogue-text",
               )?.content,
             });
           },
@@ -295,7 +295,7 @@ describe("conditional fallthrough runtime invariants", () => {
             score: engine.selectSystemState().contexts.at(-1).variables.score,
             text: findElementById(
               renderState.elements,
-              "destination-dialogue-text",
+              "@layout/dialogue-container--destination-dialogue-text",
             )?.content,
           });
         },
@@ -815,7 +815,7 @@ describe("conditional fallthrough runtime invariants", () => {
           score: state.contexts.at(-1).variables.score,
           text: findElementById(
             renderState.elements,
-            "destination-dialogue-text",
+            "@layout/dialogue-container--destination-dialogue-text",
           )?.content,
         });
       },

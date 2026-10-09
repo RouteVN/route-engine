@@ -364,9 +364,18 @@ describe("render, media, and animation contracts through engine effects", () => 
 
     const harness = createEngineIntegrationHarness({ projectData });
     const firstRender = harness.renderStates.at(-1);
-    const badge = findRenderElement(firstRender.elements, "badge");
-    const score = findRenderElement(firstRender.elements, "score");
-    const increment = findRenderElement(firstRender.elements, "increment");
+    const badge = findRenderElement(
+      firstRender.elements,
+      "@layout/visual-status--badge",
+    );
+    const score = findRenderElement(
+      firstRender.elements,
+      "@layout/visual-status--score",
+    );
+    const increment = findRenderElement(
+      firstRender.elements,
+      "@layout/visual-status--increment",
+    );
 
     expect(badge).toMatchObject({ type: "sprite", src: "badge.png" });
     expect(score).toMatchObject({
@@ -381,7 +390,10 @@ describe("render, media, and animation contracts through engine effects", () => 
 
     expect(harness.getState().contexts.at(-1).variables.score).toBe(3);
     expect(
-      findRenderElement(harness.renderStates.at(-1).elements, "score").content,
+      findRenderElement(
+        harness.renderStates.at(-1).elements,
+        "@layout/visual-status--score",
+      ).content,
     ).toBe("Score 3");
   });
 
@@ -569,7 +581,10 @@ describe("L10n packages through initialization, rendering, and actions", () => {
       height: 180,
     });
     expect(
-      findRenderElement(renderState.elements, "dialogue-body"),
+      findRenderElement(
+        renderState.elements,
+        "@layout/dialogue-container--dialogue-body",
+      ),
     ).toMatchObject({ content: "Translated dialogue" });
     expect(harness.getState().projectData.story.scenes.scene.name).toBe(
       "Translated scene",
@@ -586,7 +601,7 @@ describe("L10n packages through initialization, rendering, and actions", () => {
     });
     const sourceButton = findRenderElement(
       harness.renderStates.at(-1).elements,
-      "use-source",
+      "@layout/dialogue-container--use-source",
     );
 
     await harness.eventHandler("click", sourceButton.click.payload);
@@ -596,7 +611,10 @@ describe("L10n packages through initialization, rendering, and actions", () => {
       findRenderElement(harness.renderStates.at(-1).elements, "visual-feature"),
     ).toMatchObject({ src: "source-feature.png", width: 160, height: 90 });
     expect(
-      findRenderElement(harness.renderStates.at(-1).elements, "dialogue-body"),
+      findRenderElement(
+        harness.renderStates.at(-1).elements,
+        "@layout/dialogue-container--dialogue-body",
+      ),
     ).toMatchObject({ content: "Source dialogue" });
     await vi.waitFor(() => {
       expect(harness.persistence.saveGlobalRuntime).toHaveBeenCalledWith(

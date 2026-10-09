@@ -34,7 +34,7 @@ out:
           type: "container"
           children:
             - type: "container"
-              id: "background-container"
+              id: "@layout/bg-cg-background-container--background-container"
   animations: []
   audio: []
   global: {}
@@ -80,7 +80,7 @@ out:
           x: 0
           y: 0
           children:
-            - id: "control-hitbox"
+            - id: "@layout/control-gameplay--control-hitbox"
               type: "rect"
               x: 0
               y: 0
@@ -112,7 +112,7 @@ out:
           y: 0
           children:
             - type: "container"
-              id: "foreground-container"
+              id: "@layout/layout-foregroundLayout--foreground-container"
   animations: []
   audio: []
   global: {}
@@ -323,7 +323,7 @@ out:
           rotation: 0
           scaleX: 1
           scaleY: 1
-        - id: "dialogue-box"
+        - id: "@layout/dialogue-container--dialogue-box"
           type: "container"
         - id: "visual-behindChoice"
           type: "sprite"
@@ -337,14 +337,14 @@ out:
           rotation: 0
           scaleX: 1
           scaleY: 1
-        - id: "choice-box"
+        - id: "@layout/choice-container--choice-box"
           type: "container"
         - id: "layout-storyLayout"
           type: "container"
           x: 0
           y: 0
           children:
-            - id: "story-layout"
+            - id: "@layout/layout-storyLayout--story-layout"
               type: "container"
         - id: "visual-foreground"
           type: "sprite"
@@ -401,7 +401,7 @@ out:
           type: "container"
           children:
             - type: "container"
-              id: "old-container"
+              id: "@layout/bg-cg-background-container--old-container"
         - id: "bg-cg-background-color"
           type: "rect"
           x: 0
