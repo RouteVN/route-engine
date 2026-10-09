@@ -7,7 +7,7 @@ describe("explicit VT asset selection", () => {
     atlas: { type: "image/png" },
   };
   it("preserves the complete catalog for existing fixtures", () => {
-    expect(selectVtAssets(catalog, {})).toBe(catalog);
+    expect(selectVtAssets(catalog, {}, { extra: {} })).toBe(catalog);
   });
   it("loads only the explicitly selected fixture assets", () => {
     expect(
@@ -15,6 +15,16 @@ describe("explicit VT asset selection", () => {
         resources: { variables: { vtAssetIds: { default: " atlas " } } },
       }),
     ).toEqual({ atlas: catalog.atlas });
+  });
+  it("loads fixture-only media only when explicitly selected", () => {
+    const extra = { type: "video/webm" };
+    expect(
+      selectVtAssets(
+        catalog,
+        { resources: { variables: { vtAssetIds: { default: "extra" } } } },
+        { extra },
+      ),
+    ).toEqual({ extra });
   });
   it("fails clearly for a misspelled fixture asset", () => {
     expect(() =>
