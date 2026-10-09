@@ -214,6 +214,12 @@ describe("RouteEngine action templating", () => {
                           },
                         },
                       },
+                      {
+                        id: "line2",
+                        actions: {
+                          dialogue: { content: [{ text: "The door opened." }] },
+                        },
+                      },
                     ],
                   },
                 },
@@ -228,5 +234,12 @@ describe("RouteEngine action templating", () => {
       .selectRenderState()
       .elements.find((element) => element.id === "story");
     expect(story.children[0].content).toBe("Literal #{item}");
+
+    engine.handleAction("markLineCompleted", {});
+    engine.handleAction("nextLine", {});
+    const nextStory = engine
+      .selectRenderState()
+      .elements.find((element) => element.id === "story");
+    expect(nextStory.children[0].content).toBe("The door opened.");
   });
 });
