@@ -3,6 +3,7 @@ import { interpolateDialogueText } from "../dialogueText.js";
 import {
   createSequentialActionsExecutor,
   formatDate,
+  getOwnProperty,
   hasRenderableDialogueCharacterSprite,
   resolveCharacterDisplayName,
 } from "../util.js";
@@ -516,7 +517,7 @@ const createAnimationInstanceIfPossible = ({
     return false;
   }
 
-  const animation = resources?.animations?.[animationId];
+  const animation = getOwnProperty(resources?.animations, animationId);
   if (!animation) {
     return null;
   }
@@ -608,7 +609,7 @@ const getRequiredVisualTransform = (resources, item) => {
     );
   }
 
-  const transform = resources.transforms?.[item.transformId];
+  const transform = getOwnProperty(resources.transforms, item.transformId);
   if (!transform) {
     throw new Error(
       `Transform "${item.transformId}" not found for visual item "${item.id}"`,
@@ -623,7 +624,10 @@ const getBackgroundTransform = (resources, background = {}) => {
     return undefined;
   }
 
-  const transform = resources.transforms?.[background.transformId];
+  const transform = getOwnProperty(
+    resources.transforms,
+    background.transformId,
+  );
   if (!transform) {
     throw new Error(
       `Transform "${background.transformId}" not found for background`,
@@ -657,19 +661,19 @@ const resolveBackgroundKind = (resources = {}, resourceId) => {
     return undefined;
   }
 
-  if (resources.images?.[resourceId]) {
+  if (getOwnProperty(resources.images, resourceId)) {
     return "sprite";
   }
 
-  if (resources.videos?.[resourceId]) {
+  if (getOwnProperty(resources.videos, resourceId)) {
     return "video";
   }
 
-  if (resources.spritesheets?.[resourceId]) {
+  if (getOwnProperty(resources.spritesheets, resourceId)) {
     return "spritesheet-animation";
   }
 
-  if (resources.layouts?.[resourceId]) {
+  if (getOwnProperty(resources.layouts, resourceId)) {
     return "container";
   }
 
@@ -760,7 +764,7 @@ const createCharacterSpriteLayerElement = ({
   item,
   resources = {},
 } = {}) => {
-  const imageResource = resources.images?.[item.resourceId];
+  const imageResource = getOwnProperty(resources.images, item.resourceId);
   if (imageResource) {
     return {
       type: "sprite",
@@ -773,7 +777,7 @@ const createCharacterSpriteLayerElement = ({
     };
   }
 
-  const spritesheet = resources.spritesheets?.[item.resourceId];
+  const spritesheet = getOwnProperty(resources.spritesheets, item.resourceId);
   if (spritesheet) {
     return createAnimatedSpriteElement({
       id,
@@ -885,7 +889,10 @@ const applyAlphaToHexColor = (value, alpha, errorContext) => {
 };
 
 const resolveTextStyleResource = (resources = {}, textStyleId) => {
-  const textStyleResource = getTextStyleResources(resources)?.[textStyleId];
+  const textStyleResource = getOwnProperty(
+    getTextStyleResources(resources),
+    textStyleId,
+  );
 
   if (!textStyleResource) {
     throw new Error(`Text style "${textStyleId}" not found`);
@@ -895,7 +902,7 @@ const resolveTextStyleResource = (resources = {}, textStyleId) => {
     ? textStyleResource.fontId
     : [textStyleResource.fontId];
   const fontFamilies = fontIds.map((fontId) => {
-    const fontResource = resources.fonts?.[fontId];
+    const fontResource = getOwnProperty(resources.fonts, fontId);
     if (!fontResource) {
       throw new Error(
         `Font "${fontId}" not found for text style "${textStyleId}"`,
@@ -905,7 +912,10 @@ const resolveTextStyleResource = (resources = {}, textStyleId) => {
     return fontResource.fileId;
   });
 
-  const colorResource = resources.colors?.[textStyleResource.colorId];
+  const colorResource = getOwnProperty(
+    resources.colors,
+    textStyleResource.colorId,
+  );
   if (!colorResource) {
     throw new Error(
       `Color "${textStyleResource.colorId}" not found for text style "${textStyleId}"`,
@@ -952,8 +962,10 @@ const resolveTextStyleResource = (resources = {}, textStyleId) => {
   }
 
   if (textStyleResource.strokeColorId) {
-    const strokeColorResource =
-      resources.colors?.[textStyleResource.strokeColorId];
+    const strokeColorResource = getOwnProperty(
+      resources.colors,
+      textStyleResource.strokeColorId,
+    );
 
     if (!strokeColorResource) {
       throw new Error(
@@ -983,8 +995,10 @@ const resolveTextStyleResource = (resources = {}, textStyleId) => {
   }
 
   if (textStyleResource.shadow !== undefined) {
-    const shadowColorResource =
-      resources.colors?.[textStyleResource.shadow.colorId];
+    const shadowColorResource = getOwnProperty(
+      resources.colors,
+      textStyleResource.shadow.colorId,
+    );
 
     if (!shadowColorResource) {
       throw new Error(
@@ -1106,7 +1120,7 @@ export const resolveTextStyleIds = (node, resources = {}, path = "root") => {
 };
 
 const resolveColorResource = (resources = {}, colorId) => {
-  const colorResource = getColorResources(resources)?.[colorId];
+  const colorResource = getOwnProperty(getColorResources(resources), colorId);
 
   if (!colorResource) {
     throw new Error(`Color "${colorId}" not found`);
@@ -1249,7 +1263,7 @@ export const resolveColorIds = (node, resources = {}, path = "root") => {
 };
 
 const resolveImageResource = (resources = {}, imageId) => {
-  const imageResource = getImageResources(resources)?.[imageId];
+  const imageResource = getOwnProperty(getImageResources(resources), imageId);
 
   if (!imageResource) {
     return null;
@@ -1660,7 +1674,7 @@ const getVisualSubjectKey = (item = {}) => {
 
 const resolveParticleTextureReference = (texture, resources = {}) => {
   if (typeof texture === "string") {
-    return resources.images?.[texture]?.fileId ?? texture;
+    return getOwnProperty(resources.images, texture)?.fileId ?? texture;
   }
 
   if (!texture || typeof texture !== "object" || Array.isArray(texture)) {
@@ -1668,7 +1682,10 @@ const resolveParticleTextureReference = (texture, resources = {}) => {
   }
 
   if (texture.imageId) {
-    return resources.images?.[texture.imageId]?.fileId ?? texture.imageId;
+    return (
+      getOwnProperty(resources.images, texture.imageId)?.fileId ??
+      texture.imageId
+    );
   }
 
   if (!Array.isArray(texture.items)) {
@@ -1679,7 +1696,7 @@ const resolveParticleTextureReference = (texture, resources = {}) => {
     ...texture,
     items: texture.items.map((item) => {
       if (typeof item === "string") {
-        return resources.images?.[item]?.fileId ?? item;
+        return getOwnProperty(resources.images, item)?.fileId ?? item;
       }
 
       if (!item || typeof item !== "object" || Array.isArray(item)) {
@@ -1690,14 +1707,14 @@ const resolveParticleTextureReference = (texture, resources = {}) => {
         const { imageId, ...rest } = item;
         return {
           ...rest,
-          src: resources.images?.[imageId]?.fileId ?? imageId,
+          src: getOwnProperty(resources.images, imageId)?.fileId ?? imageId,
         };
       }
 
       if (typeof item.src === "string") {
         return {
           ...item,
-          src: resources.images?.[item.src]?.fileId ?? item.src,
+          src: getOwnProperty(resources.images, item.src)?.fileId ?? item.src,
         };
       }
 
@@ -1826,10 +1843,10 @@ const hasRenderableBackgroundResource = (resources = {}, resourceId) => {
   }
 
   return !!(
-    resources.images?.[resourceId] ||
-    resources.videos?.[resourceId] ||
-    resources.spritesheets?.[resourceId] ||
-    resources.layouts?.[resourceId]
+    getOwnProperty(resources.images, resourceId) ||
+    getOwnProperty(resources.videos, resourceId) ||
+    getOwnProperty(resources.spritesheets, resourceId) ||
+    getOwnProperty(resources.layouts, resourceId)
   );
 };
 
@@ -2667,7 +2684,7 @@ const createAnimationInstances = ({
 
   const animationId = resolveAnimationResourceId(animationsDef);
   const playback = resolveAnimationPlayback(animationsDef);
-  const animation = resources?.animations?.[animationId];
+  const animation = getOwnProperty(resources?.animations, animationId);
   const animationType = getAnimationType(animation, {
     animationId,
     animationPath,
@@ -3108,7 +3125,7 @@ export const addCharacters = (
         continue;
       }
 
-      const transform = resources.transforms[transformId];
+      const transform = getOwnProperty(resources.transforms, transformId);
       if (!transform) {
         console.warn("Transform not found:", transformId);
         continue;
@@ -3351,12 +3368,12 @@ export const addVisuals = (
       }
 
       const hasMediaResource = !!(
-        resources.spritesheets?.[item.resourceId] ||
-        resources.images?.[item.resourceId] ||
-        resources.videos?.[item.resourceId]
+        getOwnProperty(resources.spritesheets, item.resourceId) ||
+        getOwnProperty(resources.images, item.resourceId) ||
+        getOwnProperty(resources.videos, item.resourceId)
       );
       if (item.resourceId && !hasMediaResource) {
-        const particle = resources.particles?.[item.resourceId];
+        const particle = getOwnProperty(resources.particles, item.resourceId);
 
         if (particle) {
           storyContainer.children.push(
@@ -3365,10 +3382,13 @@ export const addVisuals = (
         }
       }
 
-      const hasParticleResource = !!resources.particles?.[item.resourceId];
+      const hasParticleResource = !!getOwnProperty(
+        resources.particles,
+        item.resourceId,
+      );
       if (item.resourceId && !hasMediaResource && !hasParticleResource) {
         const { layouts = {} } = resources;
-        let layout = layouts[item.resourceId];
+        let layout = getOwnProperty(layouts, item.resourceId);
 
         if (layout) {
           const transform = getRequiredVisualTransform(resources, item);
@@ -3489,7 +3509,7 @@ const addDialogueCharacterSprite = (
     return state;
   }
 
-  const transform = resources.transforms?.[sprite.transformId];
+  const transform = getOwnProperty(resources.transforms, sprite.transformId);
   if (!transform) {
     console.warn("Transform not found:", sprite.transformId);
     return state;
@@ -3698,7 +3718,10 @@ export const addChoices = (
     const storyContainer = getStoryContainer(elements);
     if (!storyContainer) return state;
 
-    const layout = resources?.layouts?.[presentationState.choice.resourceId];
+    const layout = getOwnProperty(
+      resources?.layouts,
+      presentationState.choice.resourceId,
+    );
     if (layout && layout.elements) {
       const wrappedTemplate = { elements: layout.elements };
       const result = renderLayoutTemplate(wrappedTemplate, {
@@ -3808,7 +3831,7 @@ export const addForm = (
     return state;
   }
 
-  const layout = resources?.layouts?.[form.resourceId];
+  const layout = getOwnProperty(resources?.layouts, form.resourceId);
   if (!layout) {
     console.warn(`Form layout not found: ${form.resourceId}`);
     return state;
@@ -3913,7 +3936,10 @@ export const addControl = (
     return state;
   }
 
-  const control = resources.controls?.[presentationState.control.resourceId];
+  const control = getOwnProperty(
+    resources.controls,
+    presentationState.control.resourceId,
+  );
   if (!control) {
     return state;
   }
@@ -4009,7 +4035,7 @@ export const createBgmChannelNode = ({
       previousBgmRender,
     });
     sounds.forEach((sound) => {
-      const audioResource = resources.sounds?.[sound.resourceId];
+      const audioResource = getOwnProperty(resources.sounds, sound.resourceId);
       if (!audioResource) return;
 
       const renderSound = loopsChannel
@@ -4089,7 +4115,9 @@ export const addMusicRoom = (
   const track = musicRoom.tracks.find(
     (item) => item.id === musicRoomPlayer.trackId,
   );
-  const soundResource = track ? resources.sounds?.[track.soundId] : undefined;
+  const soundResource = track
+    ? getOwnProperty(resources.sounds, track.soundId)
+    : undefined;
   if (!track || !soundResource) {
     return state;
   }
@@ -4175,7 +4203,10 @@ export const addSfx = (
       }
 
       channel.sounds.forEach((sound, soundIndex) => {
-        const audioResource = resources.sounds?.[sound.resourceId];
+        const audioResource = getOwnProperty(
+          resources.sounds,
+          sound.resourceId,
+        );
         if (!audioResource) return;
 
         const renderSound = loopsChannel
@@ -4226,7 +4257,10 @@ const resolveVoiceResource = (resources, currentSceneId, resourceId) => {
     return undefined;
   }
 
-  return resources?.voices?.[currentSceneId]?.[resourceId];
+  return getOwnProperty(
+    getOwnProperty(resources?.voices, currentSceneId),
+    resourceId,
+  );
 };
 
 export const addVoice = (
@@ -4369,7 +4403,10 @@ export const addLayout = (
     const storyContainer = getStoryContainer(elements);
     if (!storyContainer) return state;
 
-    const layout = resources.layouts?.[presentationState.layout.resourceId];
+    const layout = getOwnProperty(
+      resources.layouts,
+      presentationState.layout.resourceId,
+    );
 
     if (!layout) {
       return state;
@@ -4530,7 +4567,7 @@ export const addOverlayStack = (
   if (overlayStack && overlayStack.length > 0) {
     // Add each overlay from the stack above the base presentation.
     overlayStack.forEach((overlay, index) => {
-      const layout = resources.layouts?.[overlay.resourceId];
+      const layout = getOwnProperty(resources.layouts, overlay.resourceId);
 
       if (!layout) {
         console.warn(`Overlay layout not found: ${overlay.resourceId}`);
@@ -4640,7 +4677,7 @@ export const addConfirmDialog = (
     return state;
   }
 
-  const layout = resources.layouts?.[confirmDialog.resourceId];
+  const layout = getOwnProperty(resources.layouts, confirmDialog.resourceId);
   if (!layout) {
     console.warn(`ConfirmDialog layout not found: ${confirmDialog.resourceId}`);
     return state;

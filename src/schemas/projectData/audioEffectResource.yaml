@@ -1,6 +1,6 @@
 $schema: http://json-schema.org/draft-07/schema#
 title: Audio Effect Resource
-description: Reusable BGM transition or retained-property update compiled to Route Graphics audioEffects
+description: Reusable BGM transition, or update played as an update, incoming, or outgoing track depending on the sound's lifecycle, compiled to Route Graphics audioEffects
 type: object
 required: [type]
 $defs:
@@ -40,7 +40,7 @@ $defs:
       - easeInOutElastic
   keyframeValue:
     type: number
-    description: Numeric tween value; the final absolute value becomes the persistent BGM property value
+    description: Numeric tween value; when the line keeps or starts music, the final absolute value becomes the persistent BGM property value
   keyframe:
     type: object
     required: [value, duration]
