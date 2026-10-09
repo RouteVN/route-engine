@@ -1,0 +1,165 @@
+---
+title: Layout When Validation
+description: Operator-looking property names remain valid visibility guards and a real canvas click rerenders nested conditions.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 100
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById
+    value:
+      title: Valid layout conditions
+      in-label: variables.in
+      nested-label: nested.in and quoted literal
+      hyphen-label: variables.flag-
+      hide-label: HIDE CONDITIONAL LABELS
+  - action: screenshot
+  - action: click
+    x: 480
+    y: 430
+  - action: wait
+    ms: 100
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById
+    value:
+      title: Valid layout conditions
+      hyphen-label: variables.flag-
+      hide-label: HIDE CONDITIONAL LABELS
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pendingEffects
+    value: []
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  variables:
+    in:
+      type: boolean
+      scope: context
+      default: true
+    flag-:
+      type: boolean
+      scope: context
+      default: true
+    word:
+      type: string
+      scope: context
+      default: in
+    nested:
+      type: object
+      scope: context
+      default:
+        in: true
+  layouts:
+    background:
+      elements:
+        - id: fill
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: title
+          type: text
+          x: 480
+          y: 55
+          anchorX: 0.5
+          content: Valid layout conditions
+          textStyleId: title
+        - $when: variables.in
+          id: in-label
+          type: text
+          x: 480
+          y: 150
+          anchorX: 0.5
+          content: variables.in
+          textStyleId: body
+        - $when: variables.in && variables.nested.in
+          id: nested-container
+          type: container
+          children:
+            - $when: variables.word == 'in'
+              id: nested-label
+              type: text
+              x: 480
+              y: 220
+              anchorX: 0.5
+              content: nested.in and quoted literal
+              textStyleId: body
+        - $when: variables.flag-
+          id: hyphen-label
+          type: text
+          x: 480
+          y: 290
+          anchorX: 0.5
+          content: variables.flag-
+          textStyleId: body
+        - id: hide-button
+          type: rect
+          x: 180
+          y: 385
+          width: 600
+          height: 90
+          colorId: button
+          click:
+            payload:
+              actions:
+                updateVariable:
+                  id: hideLabels
+                  operations:
+                    - variableId: in
+                      op: set
+                      value: false
+        - id: hide-label
+          type: text
+          x: 480
+          y: 430
+          anchorX: 0.5
+          anchorY: 0.5
+          content: HIDE CONDITIONAL LABELS
+          textStyleId: body
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    button:
+      hex: "#166534"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 38
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 30
+      lineHeight: 1.2
+story:
+  initialSceneId: scene
+  scenes:
+    scene:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: condition
+              actions:
+                background:
+                  resourceId: background

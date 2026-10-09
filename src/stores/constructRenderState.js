@@ -1,4 +1,5 @@
 import { parseAndRender } from "jempl";
+import { validateLayoutCondition } from "../validateLayoutCondition.js";
 import { interpolateDialogueText } from "../dialogueText.js";
 import {
   createSequentialActionsExecutor,
@@ -29,8 +30,6 @@ const jemplFunctions = {
 
 const LOOP_DIRECTIVE_RE =
   /^\$for\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s*,\s*([A-Za-z_][A-Za-z0-9_]*))?\s+in\s+(.+?)(?::)?$/;
-const INCOMPLETE_WHEN_OPERATOR_RE =
-  /(?:==|!=|>=|<=|&&|\|\||\bin\b|[<>]|[+-])\s*$/;
 
 const assertCompleteWhenConditions = (node, path = "template") => {
   if (Array.isArray(node)) {
@@ -45,12 +44,7 @@ const assertCompleteWhenConditions = (node, path = "template") => {
   }
 
   if (typeof node.$when === "string") {
-    const match = node.$when.trim().match(INCOMPLETE_WHEN_OPERATOR_RE);
-    if (match) {
-      throw new Error(
-        `Malformed $when condition at "${path}": missing an operand after "${match[0].trim()}".`,
-      );
-    }
+    validateLayoutCondition(node.$when, path);
   }
 
   Object.entries(node).forEach(([key, value]) => {
