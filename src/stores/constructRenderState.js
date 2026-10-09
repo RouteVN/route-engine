@@ -122,6 +122,18 @@ const createAnimationInstance = ({
     animationId: id,
     animationPath,
   });
+  // Route Graphics rejects a transition without any surface, so the engine
+  // must not emit one; fail at the authored selection instead of mid-render.
+  if (
+    normalized.type === "transition" &&
+    normalized.prev === undefined &&
+    normalized.next === undefined &&
+    normalized.mask === undefined
+  ) {
+    throw new Error(
+      `[${animationPath}] Animation "${id}" of type "transition" must define prev, next, or mask.`,
+    );
+  }
   delete normalized.name;
   delete normalized.playback;
   normalized.id = id;
@@ -342,18 +354,39 @@ export const collectPersistentAnimationContinuations = (animations = []) =>
     )
     .map((animationInstance) => structuredClone(animationInstance));
 
+const getFiniteDurationMs = (value) =>
+  typeof value === "number" && Number.isFinite(value) ? value : 0;
+
+// Mirrors the Route Graphics tween timing model: a property plays its
+// keyframes (each preceded by its own delay) sequentially, or a single
+// auto-resolved clip preceded by the auto delay. The schema and renderer
+// reject authoring both at once, so the branches are mutually exclusive here.
 const getTweenPropertyDurationMs = (tweenProperty) => {
-  if (!Array.isArray(tweenProperty?.keyframes)) {
+  if (
+    !tweenProperty ||
+    typeof tweenProperty !== "object" ||
+    Array.isArray(tweenProperty)
+  ) {
+    return 0;
+  }
+
+  if (tweenProperty.auto !== undefined) {
+    const auto = tweenProperty.auto;
+    return (
+      getFiniteDurationMs(auto?.delay) + getFiniteDurationMs(auto?.duration)
+    );
+  }
+
+  if (!Array.isArray(tweenProperty.keyframes)) {
     return 0;
   }
 
   return tweenProperty.keyframes.reduce((total, keyframe) => {
-    const duration =
-      typeof keyframe?.duration === "number" &&
-      Number.isFinite(keyframe.duration)
-        ? keyframe.duration
-        : 0;
-    return total + duration;
+    return (
+      total +
+      getFiniteDurationMs(keyframe?.delay) +
+      getFiniteDurationMs(keyframe?.duration)
+    );
   }, 0);
 };
 
@@ -367,12 +400,30 @@ const getTweenDurationMs = (tween) => {
   }, 0);
 };
 
+// A mask may be authored as one object or an array; the renderer normalizes
+// both to an array, where the progress tracks run in parallel.
+const getMaskProgressDurationMs = (mask) => {
+  if (Array.isArray(mask)) {
+    return mask.reduce(
+      (maxDuration, maskItem) =>
+        Math.max(maxDuration, getMaskProgressDurationMs(maskItem)),
+      0,
+    );
+  }
+
+  if (!mask || typeof mask !== "object") {
+    return 0;
+  }
+
+  return getTweenPropertyDurationMs(mask.progress);
+};
+
 const getAuthoredAnimationDurationMs = (animationInstance) =>
   Math.max(
     getTweenDurationMs(animationInstance?.tween),
     getTweenDurationMs(animationInstance?.prev?.tween),
     getTweenDurationMs(animationInstance?.next?.tween),
-    getTweenPropertyDurationMs(animationInstance?.mask?.progress),
+    getMaskProgressDurationMs(animationInstance?.mask),
   );
 
 const getAnimationTimelineKeyframeLists = (animationInstance) => {

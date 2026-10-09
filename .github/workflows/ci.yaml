@@ -45,6 +45,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - id: creator-auto-animation-continuity
+            item: robustness/creator-auto-animation-continuity.yaml
+          - id: creator-delayed-keyframe-continuity
+            item: robustness/creator-delayed-keyframe-continuity.yaml
+          - id: creator-mask-array-continuity
+            item: robustness/creator-mask-array-continuity.yaml
           - id: alpha-opacity-compat
             item: robustness/alpha-opacity-compat.yaml
           - id: async-stale-click
