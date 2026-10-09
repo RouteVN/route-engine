@@ -16,6 +16,7 @@ import {
   validateVariableOperationValue,
   applyVariableOperation,
   diffPresentationState,
+  getOwnProperty,
   normalizePersistentPresentationState,
   processActionTemplates,
   resolveCharacterDisplayName,
@@ -201,7 +202,10 @@ const getAchievementForAction = (state, resourceId) => {
     throw new Error("Achievement action requires a non-empty resourceId");
   }
 
-  const achievement = state.projectData.resources?.achievements?.[resourceId];
+  const achievement = getOwnProperty(
+    state.projectData.resources?.achievements,
+    resourceId,
+  );
   if (!achievement) {
     throw new Error(`Achievement resource "${resourceId}" not found`);
   }
@@ -387,10 +391,11 @@ const findSectionInProjectData = (projectData, sectionId) => {
   const scenes = projectData?.story?.scenes ?? {};
 
   for (const [sceneId, scene] of Object.entries(scenes)) {
-    if (scene?.sections?.[sectionId]) {
+    const section = getOwnProperty(scene?.sections, sectionId);
+    if (section) {
       return {
         sceneId,
-        section: scene.sections[sectionId],
+        section,
       };
     }
   }
@@ -416,7 +421,7 @@ const assertUniqueStoryIds = (projectData) => {
       }
       seenSectionIds.set(sectionId, sceneId);
 
-      const lines = sections[sectionId]?.lines;
+      const lines = getOwnProperty(sections, sectionId)?.lines;
       const seenLineIds = new Map();
       if (!Array.isArray(lines)) continue;
       lines.forEach((line, index) => {
@@ -493,7 +498,10 @@ const sanitizeRollbackUpdateVariablePayload = (payload, projectData) => {
       return false;
     }
     const { variableId, op, value, roundTo } = operation;
-    const variableConfig = projectData?.resources?.variables?.[variableId];
+    const variableConfig = getOwnProperty(
+      projectData?.resources?.variables,
+      variableId,
+    );
     if (
       !variableConfig ||
       isComputedVariableConfig(variableConfig) ||
@@ -616,8 +624,10 @@ const reconcilePersistedRandomOutcomes = (outcomes, checkpoint, projectData) =>
       );
     }
     if (type === "integer") {
-      const variableConfig =
-        projectData?.resources?.variables?.[canonicalAction.variableId];
+      const variableConfig = getOwnProperty(
+        projectData?.resources?.variables,
+        canonicalAction.variableId,
+      );
       return (
         typeof canonicalAction.variableId === "string" &&
         variableConfig?.type === "number" &&
@@ -935,9 +945,9 @@ const normalizeLoadedReadPointer = (pointer, projectData, path) => {
 
 const getInitialProjectPointer = (projectData) => {
   const sceneId = projectData.story.initialSceneId;
-  const scene = projectData.story.scenes[sceneId];
+  const scene = getOwnProperty(projectData.story.scenes, sceneId);
   const sectionId = scene.initialSectionId;
-  const section = scene.sections[sectionId];
+  const section = getOwnProperty(scene.sections, sectionId);
   return normalizeLoadedReadPointer(
     {
       sceneId,
@@ -2441,7 +2451,10 @@ const applyRollbackCheckpointUpdateVariable = (state, payload) => {
 
   const operations = payload?.operations ?? [];
   for (const { variableId, op, value, roundTo } of operations) {
-    const variableConfig = state.projectData.resources?.variables?.[variableId];
+    const variableConfig = getOwnProperty(
+      state.projectData.resources?.variables,
+      variableId,
+    );
     const scope = variableConfig?.scope;
     const type = variableConfig?.type;
 
@@ -2604,9 +2617,12 @@ export const createInitialState = (payload) => {
   validateComputedVariableConfigs(projectData?.resources?.variables ?? {});
 
   const initialSceneId = projectData.story.initialSceneId;
-  const initialScene = projectData.story.scenes[initialSceneId];
+  const initialScene = getOwnProperty(projectData.story.scenes, initialSceneId);
   const initialSectionId = initialScene.initialSectionId;
-  const initialSection = initialScene.sections[initialSectionId];
+  const initialSection = getOwnProperty(
+    initialScene.sections,
+    initialSectionId,
+  );
 
   const initialPointer = {
     sceneId: initialSceneId,
@@ -3530,8 +3546,10 @@ export const selectAchievements = ({ state }) => {
 };
 
 export const selectAchievement = ({ state }, payload) => {
-  const achievement =
-    state.projectData.resources?.achievements?.[payload?.resourceId];
+  const achievement = getOwnProperty(
+    state.projectData.resources?.achievements,
+    payload?.resourceId,
+  );
   return achievement === undefined ? undefined : cloneStateValue(achievement);
 };
 
@@ -5309,9 +5327,9 @@ export const startSceneReplay = ({ state }, payload) => {
     return state;
   }
 
-  const scene = state.projectData.story.scenes[replay.sceneId];
+  const scene = getOwnProperty(state.projectData.story.scenes, replay.sceneId);
   const sectionId = scene?.initialSectionId;
-  const section = scene?.sections?.[sectionId];
+  const section = getOwnProperty(scene?.sections, sectionId);
   const initialLineId = section?.initialLineId ?? section?.lines?.[0]?.id;
   if (
     !section ||
@@ -6383,8 +6401,10 @@ const validateFormCommitTarget = (state, field) => {
     throw new Error(`form field "${field.id}" requires variableId`);
   }
 
-  const variableConfig =
-    state.projectData.resources?.variables?.[field.variableId];
+  const variableConfig = getOwnProperty(
+    state.projectData.resources?.variables,
+    field.variableId,
+  );
   const scope = variableConfig?.scope;
   const type = variableConfig?.type;
 
@@ -6632,7 +6652,10 @@ export const updateVariable = (
   const contextOperations = [];
 
   operations.forEach(({ variableId, op, value, roundTo }) => {
-    const variableConfig = state.projectData.resources?.variables?.[variableId];
+    const variableConfig = getOwnProperty(
+      state.projectData.resources?.variables,
+      variableId,
+    );
     const scope = variableConfig?.scope;
     const type = variableConfig?.type;
 
