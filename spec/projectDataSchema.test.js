@@ -1063,8 +1063,8 @@ describe("projectData schema", () => {
     );
   });
 
-  it("accepts spritesheet animation frame names", () => {
-    const projectData = createMinimalProjectData({
+  const createSpritesheetAnimationProject = (frames) =>
+    createMinimalProjectData({
       resources: {
         spritesheets: {
           animatedSky: {
@@ -1078,15 +1078,41 @@ describe("projectData schema", () => {
               },
             },
             animations: {
-              calm: { frames: ["10", "2"] },
+              calm: { frames },
             },
           },
         },
       },
     });
 
-    expect(validateProjectData(projectData)).toBe(true);
+  it.each([
+    ["frame names", ["10", "2"]],
+    ["numeric frame indexes", [0, 1]],
+    ["mixed frame names and indexes", [0, "2"]],
+  ])("accepts spritesheet animation %s", (_label, frames) => {
+    expect(validateProjectData(createSpritesheetAnimationProject(frames))).toBe(
+      true,
+    );
     expect(validateProjectData.errors).toBeNull();
+  });
+
+  it.each([
+    ["boolean", true],
+    ["null", null],
+    ["object", { name: "10" }],
+    ["array", [0]],
+  ])("rejects a %s spritesheet animation frame", (_label, frame) => {
+    expect(
+      validateProjectData(createSpritesheetAnimationProject([0, frame])),
+    ).toBe(false);
+    expect(validateProjectData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath:
+            "/resources/spritesheets/animatedSky/animations/calm/frames/1",
+        }),
+      ]),
+    );
   });
 
   it("accepts structured and legacy particle resources", () => {

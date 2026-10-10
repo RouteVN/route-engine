@@ -1,0 +1,66 @@
+---
+title: Visual Spritesheet Named Frames
+description: Named numeric-looking atlas keys select a white frame and a gray frame; zero speed holds the selected frames for deterministic capture.
+specs:
+  - omitted animationName selects the first named-frame animation
+  - explicit animationName selects another named frame
+  - index-based frame selection instead shows a large checkerboard and fails comparison
+skipInitialScreenshot: true
+viewport: { id: capture, width: 960, height: 540 }
+steps:
+  - action: wait
+    ms: 200
+  - action: screenshot
+---
+screen: { width: 960, height: 540 }
+resources:
+  variables:
+    vtAssetIds: { type: string, scope: context, default: named-frame-atlas }
+  spritesheets:
+    tiles:
+      fileId: named-frame-atlas
+      width: 240
+      height: 240
+      jsonData:
+        frames:
+          "10":
+            frame: { x: 480, y: 0, w: 240, h: 240 }
+          "2":
+            frame: { x: 240, y: 0, w: 240, h: 240 }
+          "1":
+            frame: { x: 0, y: 0, w: 240, h: 240 }
+        meta:
+          format: RGBA8888
+          size: { w: 720, h: 240 }
+          scale: "1"
+      animations:
+        white:
+          frames: ["10", "2"]
+          animationSpeed: 0
+          loop: true
+        gray:
+          frames: ["2", "10"]
+          animationSpeed: 0
+          loop: true
+  transforms:
+    left: { x: 80, y: 110, scaleX: 1.3, scaleY: 1.3 }
+    right: { x: 568, y: 110, scaleX: 1.3, scaleY: 1.3 }
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: tiles
+              actions:
+                visual:
+                  items:
+                    - id: white
+                      resourceId: tiles
+                      transformId: left
+                    - id: gray
+                      resourceId: tiles
+                      transformId: right
+                      animationName: gray
