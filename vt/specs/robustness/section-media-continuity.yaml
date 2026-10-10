@@ -81,6 +81,7 @@ steps:
 screen: { width: 960, height: 540 }
 resources:
   variables:
+    vtWaitForVideoTextures: { type: boolean, scope: context, default: true }
     vtAssetIds: { type: string, scope: context, default: video-continuity }
   videos:
     atmosphere:

@@ -1,3 +1,5 @@
+import { waitForVtVideoTextures } from "./videoTextureReadiness.js";
+import { installVideoVolumeProbe } from "./videoVolumeProbe.js";
 import { installVideoPlaybackProbe } from "./videoPlaybackProbe.js";
 import { selectVtAssets } from "./selectVtAssets.js";
 import { parse, Ticker } from "./VtDependencies.js";
@@ -338,6 +340,14 @@ const init = async () => {
   const assetBufferManager = createAssetBufferManager();
   await assetBufferManager.load(
     selectVtAssets(assets, projectData, {
+      "video-volume-background": {
+        url: "/public/video-volume-background.webm",
+        type: "video/webm",
+      },
+      "video-volume-visual": {
+        url: "/public/video-volume-visual.webm",
+        type: "video/webm",
+      },
       "video-continuity": {
         url: "/public/video-continuity.webm",
         type: "video/webm",
@@ -347,6 +357,7 @@ const init = async () => {
   const assetBufferMap = assetBufferManager.getBufferMap();
 
   const routeGraphics = createRouteGraphics();
+  if (isVtCaptureMode()) installVideoVolumeProbe(routeGraphics);
   if (isVtCaptureMode()) installVideoPlaybackProbe(routeGraphics);
   window.takeVtScreenshotBase64 = async (label) => {
     let base64;
@@ -546,7 +557,12 @@ const init = async () => {
     debug: window?.RTGL_VT_DEBUG ?? false,
   });
   setBootstrapPhase("load assets");
-  await routeGraphics.loadAssets(assetBufferMap);
+  const loadedTextures = await routeGraphics.loadAssets(assetBufferMap);
+  if (
+    projectData.resources?.variables?.vtWaitForVideoTextures?.default === true
+  ) {
+    await waitForVtVideoTextures(loadedTextures);
+  }
 
   const canvasHost = document.getElementById("canvas");
   canvasHost.appendChild(routeGraphics.canvas);

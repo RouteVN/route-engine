@@ -45,6 +45,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - id: video-volume-settings
+            item: robustness/video-volume-settings.yaml
           - id: creator-auto-animation-continuity
             item: robustness/creator-auto-animation-continuity.yaml
           - id: creator-delayed-keyframe-continuity
