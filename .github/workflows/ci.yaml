@@ -107,6 +107,8 @@ jobs:
             item: robustness/settings-runtime-batch.yaml
           - id: template-click
             item: robustness/visual-layout-template-click.yaml
+          - id: spritesheet-frame-names
+            item: robustness/visual-spritesheet-named-frames.yaml
           - id: layout-each-missing-source
             item: robustness/layout-each-missing-source.yaml
           - id: layout-guarded-choice

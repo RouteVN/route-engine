@@ -348,6 +348,10 @@ const init = async () => {
         url: "/public/video-volume-visual.webm",
         type: "video/webm",
       },
+      "named-frame-atlas": {
+        url: "/public/named-frame-atlas.png",
+        type: "image/png",
+      },
       "video-continuity": {
         url: "/public/video-continuity.webm",
         type: "video/webm",

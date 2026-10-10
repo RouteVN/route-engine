@@ -18,6 +18,17 @@ const atlas = {
   },
 };
 
+const arrayLikeFrameOrder = ["10", "2", "1"];
+const arrayLikeAtlas = {
+  frames: Object.fromEntries(
+    arrayLikeFrameOrder.map((frameName, index) => [
+      frameName,
+      { frame: { x: index * 32, y: 0, w: 32, h: 32 } },
+    ]),
+  ),
+  meta: { size: { w: 96, h: 32 }, scale: "1" },
+};
+
 const createResources = () => ({
   spritesheets: {
     animatedSky: {
@@ -142,6 +153,33 @@ describe("constructRenderState spritesheet backgrounds", () => {
         loop: false,
       },
     });
+  });
+
+  it("selects array-like atlas frames by their authored names", () => {
+    const resources = createResources();
+    resources.spritesheets.animatedSky.jsonData = arrayLikeAtlas;
+    resources.spritesheets.animatedSky.animations.indexed = {
+      frames: ["10", "2"],
+      animationSpeed: 0.5,
+      loop: true,
+    };
+    const renderState = constructRenderState({
+      presentationState: {
+        background: {
+          resourceId: "animatedSky",
+          animationName: "indexed",
+        },
+      },
+      resources,
+    });
+    const playback = findBackground(renderState).playback;
+    const renderedFrameNames = playback.frames.map((frame) =>
+      typeof frame === "number"
+        ? Object.keys(arrayLikeAtlas.frames)[frame]
+        : frame,
+    );
+
+    expect(renderedFrameNames).toEqual(arrayLikeFrameOrder.slice(0, 2));
   });
 
   it("rejects an unknown spritesheet animation", () => {

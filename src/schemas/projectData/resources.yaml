@@ -219,8 +219,10 @@ properties:
                   frames:
                     type: array
                     items:
-                      type: number
-                    description: Array of frame indices
+                      oneOf:
+                        - type: number
+                        - type: string
+                    description: Array of frame indices or names
                   animationSpeed:
                     type: number
                     description: Default playback speed (0.5 is standard)
