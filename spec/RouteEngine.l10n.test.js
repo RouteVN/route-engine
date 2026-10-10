@@ -220,7 +220,10 @@ describe("RouteEngine L10n initialization", () => {
     });
 
     expect(
-      findElementById(engine.selectRenderState().elements, "dialogue-body"),
+      findElementById(
+        engine.selectRenderState().elements,
+        "@layout/dialogue-container--dialogue-body",
+      ),
     ).toMatchObject({
       content: "Hello.",
     });
@@ -277,7 +280,10 @@ describe("RouteEngine L10n initialization", () => {
       content: [{ text: "こんにちは。" }],
     });
     expect(
-      findElementById(engine.selectRenderState().elements, "dialogue-body"),
+      findElementById(
+        engine.selectRenderState().elements,
+        "@layout/dialogue-container--dialogue-body",
+      ),
     ).toMatchObject({
       content: "こんにちは。",
     });
@@ -300,7 +306,10 @@ describe("RouteEngine L10n initialization", () => {
 
     expect(engine.selectSystemState().projectData).toEqual(projectData);
     expect(
-      findElementById(engine.selectRenderState().elements, "dialogue-body"),
+      findElementById(
+        engine.selectRenderState().elements,
+        "@layout/dialogue-container--dialogue-body",
+      ),
     ).toMatchObject({
       content: "Hello.",
     });
@@ -322,14 +331,17 @@ describe("RouteEngine L10n initialization", () => {
     });
 
     const renderState = engine.selectRenderState();
-    const sourceOption = findElementById(renderState.elements, "language-");
+    const sourceOption = findElementById(
+      renderState.elements,
+      "@layout/layout-localizationMenu--language-",
+    );
     const japaneseOption = findElementById(
       renderState.elements,
-      "language-Japanese",
+      "@layout/layout-localizationMenu--language-Japanese",
     );
     const frenchOption = findElementById(
       renderState.elements,
-      "language-French",
+      "@layout/layout-localizationMenu--language-French",
     );
 
     expect(sourceOption.click.payload.actions).toEqual({
@@ -344,7 +356,10 @@ describe("RouteEngine L10n initialization", () => {
     });
     expect(frenchOption).toBeDefined();
     expect(
-      findElementById(renderState.elements, "selected-language").content,
+      findElementById(
+        renderState.elements,
+        "@layout/layout-localizationMenu--selected-language",
+      ).content,
     ).toBeNull();
     expect(engine.selectRuntime().localizationPackageId).toBeNull();
   });
@@ -369,19 +384,24 @@ describe("RouteEngine L10n initialization", () => {
 
     const japaneseOption = findElementById(
       engine.selectRenderState().elements,
-      "language-Japanese",
+      "@layout/layout-localizationMenu--language-Japanese",
     );
     engine.handleActions(japaneseOption.click.payload.actions);
 
     expect(engine.selectRuntime().localizationPackageId).toBe("japanese");
     expect(
-      findElementById(engine.selectRenderState().elements, "dialogue-body"),
+      findElementById(
+        engine.selectRenderState().elements,
+        "@layout/dialogue-container--dialogue-body",
+      ),
     ).toMatchObject({
       content: "こんにちは。",
     });
     expect(
-      findElementById(engine.selectRenderState().elements, "selected-language")
-        .content,
+      findElementById(
+        engine.selectRenderState().elements,
+        "@layout/layout-localizationMenu--selected-language",
+      ).content,
     ).toBe("japanese");
     expect(effects).toContainEqual({
       name: "saveGlobalRuntime",
@@ -397,13 +417,16 @@ describe("RouteEngine L10n initialization", () => {
     effects.length = 0;
     const sourceOption = findElementById(
       engine.selectRenderState().elements,
-      "language-",
+      "@layout/layout-localizationMenu--language-",
     );
     engine.handleActions(sourceOption.click.payload.actions);
 
     expect(engine.selectRuntime().localizationPackageId).toBeNull();
     expect(
-      findElementById(engine.selectRenderState().elements, "dialogue-body"),
+      findElementById(
+        engine.selectRenderState().elements,
+        "@layout/dialogue-container--dialogue-body",
+      ),
     ).toMatchObject({
       content: "Hello.",
     });
@@ -439,7 +462,10 @@ describe("RouteEngine L10n initialization", () => {
     ).toThrow(/package "missing" was not imported/);
     expect(engine.selectRuntime().localizationPackageId).toBeNull();
     expect(
-      findElementById(engine.selectRenderState().elements, "dialogue-body"),
+      findElementById(
+        engine.selectRenderState().elements,
+        "@layout/dialogue-container--dialogue-body",
+      ),
     ).toMatchObject({
       content: "Hello.",
     });
@@ -640,7 +666,10 @@ describe("RouteEngine L10n initialization", () => {
     });
 
     expect(
-      findElementById(engine.selectRenderState().elements, "dialogue-body"),
+      findElementById(
+        engine.selectRenderState().elements,
+        "@layout/dialogue-container--dialogue-body",
+      ),
     ).toMatchObject({
       content: "Hello.",
     });
@@ -686,7 +715,10 @@ describe("RouteEngine L10n initialization", () => {
     });
 
     expect(
-      findElementById(engine.selectRenderState().elements, "dialogue-body"),
+      findElementById(
+        engine.selectRenderState().elements,
+        "@layout/dialogue-container--dialogue-body",
+      ),
     ).toMatchObject({
       content: "こんにちは。",
     });
@@ -700,7 +732,10 @@ describe("RouteEngine L10n initialization", () => {
       },
     });
     expect(
-      findElementById(engine.selectRenderState().elements, "dialogue-body"),
+      findElementById(
+        engine.selectRenderState().elements,
+        "@layout/dialogue-container--dialogue-body",
+      ),
     ).toMatchObject({
       content: "Updated source.",
     });
@@ -725,7 +760,10 @@ describe("RouteEngine L10n initialization", () => {
 
     expect(engine.selectRuntime().localizationPackageId).toBeNull();
     expect(
-      findElementById(engine.selectRenderState().elements, "dialogue-body"),
+      findElementById(
+        engine.selectRenderState().elements,
+        "@layout/dialogue-container--dialogue-body",
+      ),
     ).toMatchObject({
       content: "Hello.",
     });

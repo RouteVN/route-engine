@@ -1,0 +1,168 @@
+---
+title: Runtime Dialogue Bindings
+description: >-
+  Direct runtime dialogue appears in plain and revealing text, updates on a real settings click, and
+  remains the visible prefix when the next line appends.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 1000
+  - &ref_0
+    action: screenshot
+  - action: click
+    x: 200
+    "y": 450
+  - action: wait
+    ms: 1000
+  - &ref_1
+    action: customEvent
+    name: vt:checkpoint
+    detail:
+      layoutRootId: dialogue-container
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.plain
+    value: Speed 91
+  - *ref_0
+  - action: click
+    x: 750
+    "y": 450
+  - action: wait
+    ms: 1000
+  - *ref_1
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: appended
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.revealing
+    value: Speed 91 units
+  - *ref_0
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    foreground:
+      hex: "#FFFFFF"
+    button:
+      hex: "#4D4D4D"
+  textStyles:
+    body:
+      fontId: default
+      colorId: foreground
+      fontSize: 44
+    button:
+      fontId: default
+      colorId: foreground
+      fontSize: 32
+  layouts:
+    dialogue:
+      elements:
+        - id: plain-label
+          type: text
+          x: 80
+          "y": 50
+          width: 800
+          content: Plain text
+          textStyleId: body
+        - id: plain
+          type: text
+          x: 80
+          "y": 120
+          width: 800
+          content: ${dialogue.content}
+          textStyleId: body
+        - id: reveal-label
+          type: text
+          x: 80
+          "y": 240
+          width: 800
+          content: Revealing text
+          textStyleId: body
+        - id: revealing
+          type: text-revealing
+          x: 80
+          "y": 310
+          width: 800
+          content: ${dialogue.content}
+          textStyleId: body
+          revealEffect: typewriter
+          speed: 10
+          initialRevealedCharacters: ${dialogue.initialRevealedCharacters}
+  controls:
+    navigation:
+      elements:
+        - id: change
+          type: rect
+          x: 70
+          "y": 415
+          width: 280
+          height: 75
+          colorId: button
+          click:
+            payload:
+              actions:
+                setDialogueTextSpeed:
+                  value: 91
+        - id: change-label
+          type: text
+          x: 95
+          "y": 433
+          width: 250
+          content: Set speed to 91
+          textStyleId: button
+        - id: next
+          type: rect
+          x: 610
+          "y": 415
+          width: 280
+          height: 75
+          colorId: button
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: next-label
+          type: text
+          x: 635
+          "y": 433
+          width: 250
+          content: Continue
+          textStyleId: button
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: bound
+              actions:
+                setDialogueTextSpeed:
+                  value: 84
+                control:
+                  resourceId: navigation
+                dialogue:
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: Speed ${runtime.dialogueTextSpeed}
+            - id: appended
+              actions:
+                dialogue:
+                  append: true
+                  content:
+                    - text: " units"

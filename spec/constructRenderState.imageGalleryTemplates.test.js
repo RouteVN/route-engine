@@ -182,22 +182,22 @@ describe("constructRenderState feature projection template data", () => {
     });
 
     const templateElementIds = [
-      "gallery-background",
-      "gallery-visual",
-      "gallery-dialogue",
-      "gallery-choice",
-      "gallery-form",
-      "gallery-control",
-      "gallery-layout",
-      "gallery-overlay",
-      "gallery-confirm",
+      "@layout/bg-cg-background-container--gallery-background",
+      "@layout/visual-gallery--gallery-visual",
+      "@layout/dialogue-container--gallery-dialogue",
+      "@layout/choice-container--gallery-choice",
+      "@layout/form-container--gallery-form",
+      "@layout/control-controlTemplate--gallery-control",
+      "@layout/layout-layoutTemplate--gallery-layout",
+      "@layout/overlayStack-0--gallery-overlay",
+      "@layout/confirmDialog--gallery-confirm",
     ];
 
     for (const id of templateElementIds) {
       expect(findElementById(renderState.elements, id), id).toMatchObject({
         content: "festivalDay",
       });
-      const musicId = id.replace("gallery-", "music-");
+      const musicId = id.replace(/--gallery-/, "--music-");
       expect(
         findElementById(renderState.elements, musicId),
         musicId,

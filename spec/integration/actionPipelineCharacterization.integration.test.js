@@ -85,7 +85,10 @@ describe("action pipeline black-box characterization", () => {
     });
     expect(renderEntry.payload).not.toHaveProperty("id");
     expect(
-      findRenderElement(renderEntry.payload.elements, "rendered-marker"),
+      findRenderElement(
+        renderEntry.payload.elements,
+        "@layout/layout-markerLayout--rendered-marker",
+      ),
     ).toMatchObject({ type: "text", content: "Rendered" });
   });
 

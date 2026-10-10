@@ -74,6 +74,21 @@ const DIALOGUE_HISTORY_RESTORE_ACTION_TYPES = new Set([
 ]);
 const FORM_INTERACTION_SOURCE = "form";
 const FORM_ACTION_TYPES = new Set(["submitForm", "cancelForm"]);
+const PRESENTATION_ACTION_TYPES = new Set([
+  "background",
+  "bgm",
+  "character",
+  "choice",
+  "cleanAll",
+  "control",
+  "dialogue",
+  "form",
+  "layout",
+  "screen",
+  "sfx",
+  "visual",
+  "voice",
+]);
 const SHOW_IMAGE_GALLERY_VARIANT_ACTION_TYPE = "showImageGalleryVariant";
 const PLAY_MUSIC_ROOM_TRACK_ACTION_TYPE = "playMusicRoomTrack";
 const START_SCENE_REPLAY_ACTION_TYPE = "startSceneReplay";
@@ -1938,11 +1953,19 @@ export default function createRouteEngine(options) {
       maskedPayload = maskDeclaredSceneReplayId(payload);
     }
     const { templatePayload, literalTargetIds } = maskedPayload;
-    const processedActions = processActionTemplates(
-      { [actionType]: templatePayload },
-      context,
-    );
-    const renderedPayload = processedActions[actionType];
+    const renderedPayload = !PRESENTATION_ACTION_TYPES.has(actionType)
+      ? processActionTemplates({ [actionType]: templatePayload }, context)[
+          actionType
+        ]
+      : actionType === "bgm" && templatePayload?.audioEffects !== undefined
+        ? {
+            ...templatePayload,
+            audioEffects: processActionTemplates(
+              { audioEffects: templatePayload.audioEffects },
+              context,
+            ).audioEffects,
+          }
+        : templatePayload;
     const processedPayload = literalTargetIds
       ? {
           ...renderedPayload,
