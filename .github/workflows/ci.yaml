@@ -91,6 +91,8 @@ jobs:
             item: robustness/runtime-dialogue-bindings.yaml
           - id: runtime-dialogue-auto-delay
             item: robustness/runtime-dialogue-auto-delay.yaml
+          - id: save-layout-pagination
+            item: robustness/save-layout-pagination.yaml
           - id: save-load-timers
             item: robustness/save-load-skip-timer-cleanup.yaml
           - id: routing-cycle-recovery

@@ -784,6 +784,38 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
+  it("requires layout paginationSize to be a positive integer", () => {
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          resources: {
+            layouts: {
+              saveGrid: {
+                paginationSize: 4,
+                elements: [],
+              },
+            },
+          },
+        }),
+      ),
+    ).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+
+    for (const paginationSize of [0, -1, 1.5]) {
+      expect(
+        validateProjectData(
+          createMinimalProjectData({
+            resources: {
+              layouts: {
+                saveGrid: { paginationSize, elements: [] },
+              },
+            },
+          }),
+        ),
+      ).toBe(false);
+    }
+  });
+
   it("accepts character variables and numeric font weights", () => {
     const projectData = createMinimalProjectData({
       resources: {

@@ -665,6 +665,10 @@ properties:
         type: object
         description: Layout configuration. This schema is intentionally permissive because runtime-supported layout fields extend beyond the documented subset.
         properties:
+          paginationSize:
+            type: integer
+            minimum: 1
+            description: Number of save/load slots shown per page when this layout is active
           elements:
             type: array
             description: Array of UI elements authored with textStyleId, imageId, colorId, and inline shader filters
