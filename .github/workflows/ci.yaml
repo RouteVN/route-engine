@@ -57,6 +57,8 @@ jobs:
             item: robustness/alpha-opacity-compat.yaml
           - id: async-stale-click
             item: robustness/async-stale-click.yaml
+          - id: choice-interpolated-content
+            item: robustness/choice-interpolated-content-click.yaml
           - id: cached-backlog-localization
             item: robustness/cached-backlog-localization.yaml
           - id: cached-dialogue-save-rollback
