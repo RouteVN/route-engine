@@ -6,7 +6,9 @@ const findTextElement = (renderState) =>
   renderState.elements
     .find((element) => element.id === "story")
     .children.find((element) => element.id === "layout-font-fallback")
-    .children.find((element) => element.id === "fallback-text");
+    .children.find(
+      (element) => element.id === "@layout/layout-font-fallback--fallback-text",
+    );
 
 describe("constructRenderState font fallbacks", () => {
   it("emits a frozen render state that Pixi can parse without mutating it", () => {

@@ -1,9 +1,30 @@
 import { describe, expect, it, vi } from "vitest";
+import Ajv from "ajv";
+import { load } from "js-yaml";
+import { readFileSync } from "node:fs";
 import {
   createEngineIntegrationHarness,
   createIntegrationProject,
   findRenderElement,
 } from "./helpers/createEngineIntegrationHarness.js";
+
+// Validate the actual video schema so fixtures cannot sneak unsupported
+// resource.volume or resource.loop fields past the runtime tests.
+const resourcesSchema = load(
+  readFileSync(
+    new URL("../../src/schemas/projectData/resources.yaml", import.meta.url),
+    "utf8",
+  ),
+);
+const validateVideos = new Ajv({ allErrors: true }).compile(
+  resourcesSchema.properties.videos,
+);
+const assertValidResources = (resources) => {
+  expect(
+    validateVideos(resources.videos),
+    JSON.stringify(validateVideos.errors),
+  ).toBe(true);
+};
 
 const createSingleLineProject = ({
   actions = {},
@@ -19,6 +40,46 @@ const createSingleLineProject = ({
       },
     },
   });
+
+// Schema-valid default video resources: the resources schema permits only
+// fileId/fileType/width/height, so video loudness comes entirely from the
+// runtime music/sound channel layered over the 100% resource gain.
+const createVideoVolumeProject = () => {
+  const resources = {
+    videos: {
+      backdrop: { fileId: "backdrop.mp4", width: 1920, height: 1080 },
+      cutscene: { fileId: "cutscene.mp4", width: 640, height: 360 },
+    },
+    transforms: { videoPosition: { x: 400, y: 200 } },
+  };
+  assertValidResources(resources);
+  return {
+    projectData: createSingleLineProject({
+      resources,
+      actions: {
+        background: { resourceId: "backdrop" },
+        visual: {
+          items: [
+            {
+              id: "cutscene",
+              resourceId: "cutscene",
+              transformId: "videoPosition",
+            },
+          ],
+        },
+      },
+    }),
+  };
+};
+
+const collectVideoVolumes = (renderStates) =>
+  renderStates.map((renderState) => ({
+    background: findRenderElement(
+      renderState.elements,
+      "bg-cg-background-video",
+    )?.volume,
+    visual: findRenderElement(renderState.elements, "visual-cutscene")?.volume,
+  }));
 
 const createL10nProject = () =>
   createSingleLineProject({
@@ -143,38 +204,36 @@ const createTranslatedPackage = () => ({
 
 describe("render, media, and animation contracts through engine effects", () => {
   it("projects image, video, and named spritesheet visuals to renderer nodes", () => {
-    const projectData = createSingleLineProject({
-      resources: {
-        images: {
-          portrait: { fileId: "portrait.png", width: 240, height: 360 },
-        },
-        videos: {
-          cutscene: {
-            fileId: "cutscene.mp4",
-            width: 640,
-            height: 360,
-            loop: true,
-            volume: 25,
+    const resources = {
+      images: {
+        portrait: { fileId: "portrait.png", width: 240, height: 360 },
+      },
+      videos: {
+        backdrop: { fileId: "backdrop.mp4", width: 1920, height: 1080 },
+        cutscene: { fileId: "cutscene.mp4", width: 640, height: 360 },
+      },
+      spritesheets: {
+        actor: {
+          fileId: "actor.png",
+          width: 96,
+          height: 128,
+          jsonData: { frames: {}, meta: {} },
+          animations: {
+            idle: { frames: [0, 1], animationSpeed: 0.2, loop: true },
           },
-        },
-        spritesheets: {
-          actor: {
-            fileId: "actor.png",
-            width: 96,
-            height: 128,
-            jsonData: { frames: {}, meta: {} },
-            animations: {
-              idle: { frames: [0, 1], animationSpeed: 0.2, loop: true },
-            },
-          },
-        },
-        transforms: {
-          portraitPosition: { x: 100, y: 200 },
-          videoPosition: { x: 400, y: 200 },
-          actorPosition: { x: 700, y: 200 },
         },
       },
+      transforms: {
+        portraitPosition: { x: 100, y: 200 },
+        videoPosition: { x: 400, y: 200 },
+        actorPosition: { x: 700, y: 200 },
+      },
+    };
+    assertValidResources(resources);
+    const projectData = createSingleLineProject({
+      resources,
       actions: {
+        background: { resourceId: "backdrop", loop: true },
         visual: {
           items: [
             {
@@ -200,7 +259,10 @@ describe("render, media, and animation contracts through engine effects", () => 
       },
     });
 
-    const harness = createEngineIntegrationHarness({ projectData });
+    const harness = createEngineIntegrationHarness({
+      projectData,
+      global: { runtime: { musicVolume: 30, soundVolume: 40 } },
+    });
     const elements = harness.renderStates.at(-1).elements;
 
     expect(findRenderElement(elements, "visual-portrait")).toMatchObject({
@@ -214,9 +276,17 @@ describe("render, media, and animation contracts through engine effects", () => 
     expect(findRenderElement(elements, "visual-cutscene")).toMatchObject({
       type: "video",
       src: "cutscene.mp4",
-      loop: true,
-      volume: 25,
+      loop: false,
+      volume: 40,
     });
+    expect(findRenderElement(elements, "bg-cg-background-video")).toMatchObject(
+      {
+        type: "video",
+        src: "backdrop.mp4",
+        loop: true,
+        volume: 30,
+      },
+    );
     expect(findRenderElement(elements, "visual-actor")).toMatchObject({
       type: "spritesheet-animation",
       src: "actor.png",
@@ -226,6 +296,61 @@ describe("render, media, and animation contracts through engine effects", () => 
         loop: false,
       },
     });
+  });
+
+  it("layers the 100% video resource gain under the default music and sound volumes", () => {
+    const { projectData } = createVideoVolumeProject();
+    const harness = createEngineIntegrationHarness({ projectData });
+
+    expect(collectVideoVolumes(harness.renderStates)).toEqual([
+      { background: 50, visual: 50 },
+    ]);
+  });
+
+  it("retargets background and visual video volumes independently through live settings", () => {
+    const { projectData } = createVideoVolumeProject();
+    const harness = createEngineIntegrationHarness({ projectData });
+
+    harness.engine.handleActions({ setMusicVolume: { value: 30 } });
+    expect(collectVideoVolumes(harness.renderStates)).toEqual([
+      { background: 50, visual: 50 },
+      { background: 30, visual: 50 },
+    ]);
+
+    harness.engine.handleActions({ setSoundVolume: { value: 40 } });
+    expect(collectVideoVolumes(harness.renderStates)).toEqual([
+      { background: 50, visual: 50 },
+      { background: 30, visual: 50 },
+      { background: 30, visual: 40 },
+    ]);
+
+    expect(harness.engine.selectRuntime()).toMatchObject({
+      musicVolume: 30,
+      soundVolume: 40,
+      muteAll: false,
+    });
+  });
+
+  it("mutes and unmutes video render states while keeping their identity", () => {
+    const { projectData } = createVideoVolumeProject();
+    const harness = createEngineIntegrationHarness({
+      projectData,
+      global: { runtime: { musicVolume: 30, soundVolume: 40 } },
+    });
+
+    harness.engine.handleActions({ setMuteAll: { value: true } });
+    expect(collectVideoVolumes(harness.renderStates)).toEqual([
+      { background: 30, visual: 40 },
+      { background: 0, visual: 0 },
+    ]);
+
+    harness.engine.handleActions({ setMuteAll: { value: false } });
+    expect(collectVideoVolumes(harness.renderStates)).toEqual([
+      { background: 30, visual: 40 },
+      { background: 0, visual: 0 },
+      { background: 30, visual: 40 },
+    ]);
+    expect(harness.engine.selectRuntime().muteAll).toBe(false);
   });
 
   it("resolves particle image textures before dispatching a renderer node", () => {
@@ -364,9 +489,18 @@ describe("render, media, and animation contracts through engine effects", () => 
 
     const harness = createEngineIntegrationHarness({ projectData });
     const firstRender = harness.renderStates.at(-1);
-    const badge = findRenderElement(firstRender.elements, "badge");
-    const score = findRenderElement(firstRender.elements, "score");
-    const increment = findRenderElement(firstRender.elements, "increment");
+    const badge = findRenderElement(
+      firstRender.elements,
+      "@layout/visual-status--badge",
+    );
+    const score = findRenderElement(
+      firstRender.elements,
+      "@layout/visual-status--score",
+    );
+    const increment = findRenderElement(
+      firstRender.elements,
+      "@layout/visual-status--increment",
+    );
 
     expect(badge).toMatchObject({ type: "sprite", src: "badge.png" });
     expect(score).toMatchObject({
@@ -381,7 +515,10 @@ describe("render, media, and animation contracts through engine effects", () => 
 
     expect(harness.getState().contexts.at(-1).variables.score).toBe(3);
     expect(
-      findRenderElement(harness.renderStates.at(-1).elements, "score").content,
+      findRenderElement(
+        harness.renderStates.at(-1).elements,
+        "@layout/visual-status--score",
+      ).content,
     ).toBe("Score 3");
   });
 
@@ -569,7 +706,10 @@ describe("L10n packages through initialization, rendering, and actions", () => {
       height: 180,
     });
     expect(
-      findRenderElement(renderState.elements, "dialogue-body"),
+      findRenderElement(
+        renderState.elements,
+        "@layout/dialogue-container--dialogue-body",
+      ),
     ).toMatchObject({ content: "Translated dialogue" });
     expect(harness.getState().projectData.story.scenes.scene.name).toBe(
       "Translated scene",
@@ -586,7 +726,7 @@ describe("L10n packages through initialization, rendering, and actions", () => {
     });
     const sourceButton = findRenderElement(
       harness.renderStates.at(-1).elements,
-      "use-source",
+      "@layout/dialogue-container--use-source",
     );
 
     await harness.eventHandler("click", sourceButton.click.payload);
@@ -596,7 +736,10 @@ describe("L10n packages through initialization, rendering, and actions", () => {
       findRenderElement(harness.renderStates.at(-1).elements, "visual-feature"),
     ).toMatchObject({ src: "source-feature.png", width: 160, height: 90 });
     expect(
-      findRenderElement(harness.renderStates.at(-1).elements, "dialogue-body"),
+      findRenderElement(
+        harness.renderStates.at(-1).elements,
+        "@layout/dialogue-container--dialogue-body",
+      ),
     ).toMatchObject({ content: "Source dialogue" });
     await vi.waitFor(() => {
       expect(harness.persistence.saveGlobalRuntime).toHaveBeenCalledWith(

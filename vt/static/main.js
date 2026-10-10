@@ -1,4 +1,5 @@
 import { waitForVtVideoTextures } from "./videoTextureReadiness.js";
+import { installVideoVolumeProbe } from "./videoVolumeProbe.js";
 import { installVideoPlaybackProbe } from "./videoPlaybackProbe.js";
 import { selectVtAssets } from "./selectVtAssets.js";
 import { parse, Ticker } from "./VtDependencies.js";
@@ -339,6 +340,14 @@ const init = async () => {
   const assetBufferManager = createAssetBufferManager();
   await assetBufferManager.load(
     selectVtAssets(assets, projectData, {
+      "video-volume-background": {
+        url: "/public/video-volume-background.webm",
+        type: "video/webm",
+      },
+      "video-volume-visual": {
+        url: "/public/video-volume-visual.webm",
+        type: "video/webm",
+      },
       "named-frame-atlas": {
         url: "/public/named-frame-atlas.png",
         type: "image/png",
@@ -352,6 +361,7 @@ const init = async () => {
   const assetBufferMap = assetBufferManager.getBufferMap();
 
   const routeGraphics = createRouteGraphics();
+  if (isVtCaptureMode()) installVideoVolumeProbe(routeGraphics);
   if (isVtCaptureMode()) installVideoPlaybackProbe(routeGraphics);
   window.takeVtScreenshotBase64 = async (label) => {
     let base64;
@@ -598,10 +608,15 @@ const init = async () => {
   window.__vtNamespace = persistence.namespace;
 
   if (isVtCaptureMode()) {
-    window.addEventListener("vt:checkpoint", () => {
+    window.addEventListener("vt:checkpoint", (event) => {
+      const detail =
+        typeof event.detail === "string"
+          ? JSON.parse(event.detail)
+          : event.detail;
       window.__vtCheckpoint = readEngineCheckpoint(engine, {
         timerCount: playbackTickerCallbacks.size,
         renderState: window.__vtLastRenderState,
+        layoutRootId: detail?.layoutRootId,
       });
     });
     window.addEventListener("vt:engineActions", (event) => {

@@ -666,9 +666,9 @@ const ensureDialogueContentItems = (content, path) => {
   return content;
 };
 
-const getDialogueContentTextLength = ({ content, path, variables }) =>
+const getDialogueContentTextLength = ({ content, path, variables, runtime }) =>
   ensureDialogueContentItems(content, path).reduce((length, item) => {
-    const text = interpolateDialogueText(item.text, { variables });
+    const text = interpolateDialogueText(item.text, { variables, runtime });
     return length + `${text ?? ""}`.length;
   }, 0);
 
@@ -1611,6 +1611,98 @@ const getStoryContainer = (elements = []) => {
   return elements.find((element) => element.id === "story");
 };
 
+const collectRenderElementIds = (elements, ids = new Set()) => {
+  if (!Array.isArray(elements)) {
+    return ids;
+  }
+
+  for (const element of elements) {
+    if (typeof element?.id === "string") {
+      ids.add(element.id);
+    }
+    collectRenderElementIds(element?.children, ids);
+  }
+  return ids;
+};
+
+// Stable layout occurrence ids: every authored layout element id is rendered
+// under the namespace of its owning semantic slot (background, layout action,
+// overlay stack entry, visual item, dialogue UI, ...). The namespace is the
+// owner's own stable root id, never a traversal counter or duplicate-ordering
+// heuristic, so an instance's ids depend only on its own slot identity.
+// Adding, removing, or re-rendering unrelated layouts, overlays, or
+// conditionals therefore never rekeys another instance's element ids, and
+// native inputs keyed by those ids keep their DOM identity, typed text, and
+// focus. Authored ids duplicated within one instance get a deterministic
+// "-1", "-2", ... suffix. Root container ids themselves are never renamed.
+// The @layout/ prefix separates descendants from engine roots. Segment
+// encoding reserves "--" for the namespace separator, so authored ids and
+// slot keys cannot impersonate another slot/id pair. Ordinary hyphenated ids
+// stay readable.
+const encodeLayoutIdSegment = (value) =>
+  encodeURIComponent(value).replaceAll("--", "%2D%2D");
+
+const claimLayoutInstanceNamespace = (layoutInstanceState, slotKey) => {
+  const baseKey = encodeLayoutIdSegment(
+    typeof slotKey === "string" && slotKey.length > 0 ? slotKey : "layout",
+  );
+  let namespace = baseKey;
+  let suffix = 2;
+  while (layoutInstanceState.claimedNamespaces.has(namespace)) {
+    namespace = `${baseKey}-${suffix++}`;
+  }
+  layoutInstanceState.claimedNamespaces.add(namespace);
+  return namespace;
+};
+
+const registerLayoutInstanceElements = ({
+  state,
+  elements,
+  layoutInstanceState,
+  rootId,
+}) => {
+  if (!layoutInstanceState || !Array.isArray(elements)) {
+    return elements;
+  }
+
+  const namespace = claimLayoutInstanceNamespace(layoutInstanceState, rootId);
+  const occupiedIds = collectRenderElementIds(state.elements);
+  if (typeof rootId === "string") {
+    occupiedIds.add(rootId);
+  }
+
+  // Whole-object template bindings may reuse frozen variable values, including
+  // the same object in several positions. Clone each occurrence separately.
+  const visit = (items) => {
+    if (!Array.isArray(items)) return items;
+    return items.map((element) => {
+      if (!element || typeof element !== "object" || Array.isArray(element)) {
+        return element;
+      }
+      const renderedElement = { ...element };
+      if (typeof element.id === "string") {
+        const baseId = `@layout/${namespace}--${encodeLayoutIdSegment(element.id)}`;
+        let uniqueId = baseId;
+        let suffix = 1;
+        while (
+          layoutInstanceState.usedIds.has(uniqueId) ||
+          occupiedIds.has(uniqueId)
+        ) {
+          uniqueId = `${baseId}-${suffix++}`;
+        }
+        renderedElement.id = uniqueId;
+        layoutInstanceState.usedIds.add(uniqueId);
+      }
+      if (Array.isArray(element.children)) {
+        renderedElement.children = visit(element.children);
+      }
+      return renderedElement;
+    });
+  };
+
+  return visit(elements);
+};
+
 const DEFAULT_BACKGROUND_COLOR = "#000000";
 const BACKGROUND_COLOR_ELEMENT_ID = "bg-cg-background-color";
 
@@ -2026,6 +2118,17 @@ const getEffectiveChannelVolume = (
   field,
   volume = DEFAULT_AUTHORED_AUDIO_VOLUME,
 ) => getLayeredVolume(volume, getRuntimeAudioVolume(runtime, field));
+
+// Public video resources have no authored gain. A unity gain preserves the
+// previous default output of 50 when the runtime preference is also 50.
+const getVideoVolume = (volume, runtime, field) =>
+  runtime?.muteAll === true
+    ? 0
+    : getEffectiveChannelVolume(
+        runtime,
+        field,
+        volume ?? DEFAULT_AUTHORED_AUDIO_VOLUME,
+      );
 
 const createChannelNode = ({
   id,
@@ -2603,6 +2706,7 @@ const createDialogueTemplateData = ({
           content: dialogueState.initialRevealedContent,
           path: "dialogue.initialRevealedContent",
           variables,
+          runtime,
         });
   const runtimeDialogueTextSpeed =
     runtime?.dialogueTextSpeed ?? GLOBAL_RUNTIME_DEFAULTS.dialogueTextSpeed;
@@ -2625,7 +2729,7 @@ const createDialogueTemplateData = ({
       textSpeed: line.textSpeed ?? runtimeDialogueTextSpeed,
       content: lineContent.map((item) => ({
         ...item,
-        text: interpolateDialogueText(item.text, { variables }),
+        text: interpolateDialogueText(item.text, { variables, runtime }),
       })),
       character,
       characterName: character.name,
@@ -2646,7 +2750,7 @@ const createDialogueTemplateData = ({
     textSpeed,
     content: dialogueContent.map((item) => ({
       ...item,
-      text: interpolateDialogueText(item.text, { variables }),
+      text: interpolateDialogueText(item.text, { variables, runtime }),
     })),
     initialRevealedCharacters,
     lines: dialogueLines,
@@ -2654,14 +2758,22 @@ const createDialogueTemplateData = ({
 };
 
 const renderTemplatedLayoutContainer = ({
+  state,
   container,
   resources,
   templateData,
+  layoutInstanceState,
   isLineCompleted = false,
   skipMode = false,
   skipTransitionsAndAnimations = false,
 }) => {
   const processedContainer = renderLayoutTemplate(container, templateData);
+  processedContainer.children = registerLayoutInstanceElements({
+    state,
+    elements: processedContainer.children,
+    layoutInstanceState,
+    rootId: container.id,
+  });
 
   return resolveLayoutResourceIds(
     settleTextRevealIfCompleted(processedContainer, {
@@ -2897,6 +3009,7 @@ export const addBackgroundOrCg = (
     canRollback,
     form,
     saveSlots = [],
+    layoutInstanceState,
   },
 ) => {
   const { elements, animations } = state;
@@ -3021,7 +3134,11 @@ export const addBackgroundOrCg = (
 
         if (isVideo) {
           element.loop = presentationState.background.loop ?? false;
-          element.volume = background.volume ?? 50;
+          element.volume = getVideoVolume(
+            background.volume,
+            runtime,
+            "musicVolume",
+          );
         }
 
         if (element) {
@@ -3082,6 +3199,12 @@ export const addBackgroundOrCg = (
             skipTransitionsAndAnimations,
           }),
         );
+        processedContainer.children = registerLayoutInstanceElements({
+          state,
+          elements: processedContainer.children,
+          layoutInstanceState,
+          rootId: bgContainer.id,
+        });
         storyContainer.children.push(
           resolveLayoutResourceIds(
             settleTextRevealIfCompleted(processedContainer, {
@@ -3339,6 +3462,7 @@ export const addVisuals = (
     form,
     saveSlots = [],
     visualLayer,
+    layoutInstanceState,
   },
 ) => {
   const { elements, animations } = state;
@@ -3402,9 +3526,11 @@ export const addVisuals = (
 
         storyContainer.children.push(
           renderTemplatedLayoutContainer({
+            state,
             container: visualContainer,
             resources,
             templateData: visualTemplateData,
+            layoutInstanceState,
             isLineCompleted,
             skipMode,
             skipTransitionsAndAnimations,
@@ -3476,7 +3602,11 @@ export const addVisuals = (
 
             if (isVideo) {
               element.loop = resource.loop ?? false;
-              element.volume = resource.volume ?? 50;
+              element.volume = getVideoVolume(
+                resource.volume,
+                runtime,
+                "soundVolume",
+              );
             }
 
             storyContainer.children.push(element);
@@ -3520,6 +3650,12 @@ export const addVisuals = (
             visualContainer,
             visualTemplateData,
           );
+          processedContainer.children = registerLayoutInstanceElements({
+            state,
+            elements: processedContainer.children,
+            layoutInstanceState,
+            rootId: visualContainer.id,
+          });
           storyContainer.children.push(
             resolveLayoutResourceIds(
               settleTextRevealIfCompleted(processedContainer, {
@@ -3695,6 +3831,7 @@ export const addDialogue = (
     runtime,
     activePersistentAnimations,
     saveSlots = [],
+    layoutInstanceState,
   },
 ) => {
   const { elements, animations } = state;
@@ -3744,11 +3881,19 @@ export const addDialogue = (
 
       const result = renderLayoutTemplate(wrappedTemplate, templateData);
       const uiElements = resolveLayoutResourceIds(
-        settleTextRevealIfCompleted(result?.elements, {
-          isLineCompleted,
-          skipMode,
-          skipTransitionsAndAnimations,
-        }),
+        settleTextRevealIfCompleted(
+          registerLayoutInstanceElements({
+            state,
+            elements: result?.elements,
+            layoutInstanceState,
+            rootId: "dialogue-container",
+          }),
+          {
+            isLineCompleted,
+            skipMode,
+            skipTransitionsAndAnimations,
+          },
+        ),
         resources,
       );
 
@@ -3827,6 +3972,7 @@ export const addChoices = (
     form,
     activePersistentAnimations,
     saveSlots = [],
+    layoutInstanceState,
   },
 ) => {
   const { elements, animations } = state;
@@ -3841,36 +3987,51 @@ export const addChoices = (
     );
     if (layout && layout.elements) {
       const wrappedTemplate = { elements: layout.elements };
+      const templateData = createLayoutTemplateData({
+        variables,
+        imageGallery,
+        musicRoom,
+        sceneReplay,
+        runtime,
+        saveSlots,
+        dialogueState: presentationState.dialogue,
+        isLineCompleted,
+        autoMode,
+        skipMode,
+        isChoiceVisible: isChoiceVisible ?? !!presentationState.choice,
+        isFormVisible,
+        canRollback,
+        form,
+        characters: resources.characters || {},
+        skipTransitionsAndAnimations,
+      });
       const result = renderLayoutTemplate(wrappedTemplate, {
-        ...createLayoutTemplateData({
-          variables,
-          imageGallery,
-          musicRoom,
-          sceneReplay,
-          runtime,
-          saveSlots,
-          dialogueState: presentationState.dialogue,
-          isLineCompleted,
-          autoMode,
-          skipMode,
-          isChoiceVisible: isChoiceVisible ?? !!presentationState.choice,
-          isFormVisible,
-          canRollback,
-          form,
-          characters: resources.characters || {},
-          skipTransitionsAndAnimations,
-        }),
+        ...templateData,
         choice: {
-          items: presentationState.choice?.items ?? [],
+          items: (presentationState.choice?.items ?? []).map((item) => {
+            if (typeof item?.content !== "string") return item;
+            return {
+              ...item,
+              content: renderLayoutTemplate(item.content, templateData),
+            };
+          }),
         },
       });
       const choiceElements = tagBypassChoice(
         resolveLayoutResourceIds(
-          settleTextRevealIfCompleted(result?.elements, {
-            isLineCompleted,
-            skipMode,
-            skipTransitionsAndAnimations,
-          }),
+          settleTextRevealIfCompleted(
+            registerLayoutInstanceElements({
+              state,
+              elements: result?.elements,
+              layoutInstanceState,
+              rootId: "choice-container",
+            }),
+            {
+              isLineCompleted,
+              skipMode,
+              skipTransitionsAndAnimations,
+            },
+          ),
           resources,
         ),
       );
@@ -3936,6 +4097,7 @@ export const addForm = (
     activePersistentAnimations,
     saveSlots = [],
     form,
+    layoutInstanceState,
   },
 ) => {
   const { elements, animations } = state;
@@ -3996,6 +4158,14 @@ export const addForm = (
     ),
     form,
   );
+  if (formElements?.children) {
+    formElements.children = registerLayoutInstanceElements({
+      state,
+      elements: formElements.children,
+      layoutInstanceState,
+      rootId: formElements.id,
+    });
+  }
 
   if (formElements) {
     storyContainer.children.push(formElements);
@@ -4047,6 +4217,7 @@ export const addControl = (
     form,
     saveSlots = [],
     skipTransitionsAndAnimations,
+    layoutInstanceState,
   },
 ) => {
   if (!presentationState.control?.resourceId) {
@@ -4088,6 +4259,7 @@ export const addControl = (
 
   storyContainer.children.push(
     renderTemplatedLayoutContainer({
+      state,
       container: controlContainer,
       resources,
       templateData: createLayoutTemplateData({
@@ -4108,6 +4280,7 @@ export const addControl = (
         characters: resources.characters || {},
         skipTransitionsAndAnimations,
       }),
+      layoutInstanceState,
       isLineCompleted,
       skipMode,
       skipTransitionsAndAnimations,
@@ -4512,6 +4685,7 @@ export const addLayout = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     activePersistentAnimations,
+    layoutInstanceState,
   },
 ) => {
   const { elements, animations } = state;
@@ -4539,6 +4713,7 @@ export const addLayout = (
 
     storyContainer.children.push(
       renderTemplatedLayoutContainer({
+        state,
         container: layoutContainer,
         resources,
         templateData: createLayoutTemplateData({
@@ -4559,6 +4734,7 @@ export const addLayout = (
           characters: resources.characters || {},
           skipTransitionsAndAnimations,
         }),
+        layoutInstanceState,
         isLineCompleted,
         skipMode,
         skipTransitionsAndAnimations,
@@ -4678,6 +4854,7 @@ export const addOverlayStack = (
     screen,
     isLineCompleted,
     skipTransitionsAndAnimations,
+    layoutInstanceState,
   },
 ) => {
   const { elements } = state;
@@ -4738,11 +4915,17 @@ export const addOverlayStack = (
       );
 
       const [blocker, ...layoutChildren] = processedOverlay.children || [];
+      const namespacedLayoutChildren = registerLayoutInstanceElements({
+        state,
+        elements: layoutChildren,
+        layoutInstanceState,
+        rootId: overlayContainer.id,
+      });
       const resolvedOverlay = resolveLayoutResourceIds(
         settleTextRevealIfCompleted(
           {
             ...processedOverlay,
-            children: layoutChildren,
+            children: namespacedLayoutChildren,
           },
           {
             isLineCompleted,
@@ -4786,6 +4969,7 @@ export const addConfirmDialog = (
     screen,
     isLineCompleted,
     skipTransitionsAndAnimations,
+    layoutInstanceState,
   },
 ) => {
   const { elements } = state;
@@ -4845,11 +5029,17 @@ export const addConfirmDialog = (
   );
 
   const [blocker, ...layoutChildren] = processedConfirmDialog.children || [];
+  const namespacedLayoutChildren = registerLayoutInstanceElements({
+    state,
+    elements: layoutChildren,
+    layoutInstanceState,
+    rootId: confirmDialogContainer.id,
+  });
   const resolvedConfirmDialog = resolveLayoutResourceIds(
     settleTextRevealIfCompleted(
       {
         ...processedConfirmDialog,
-        children: layoutChildren,
+        children: namespacedLayoutChildren,
       },
       {
         isLineCompleted,
@@ -4915,5 +5105,13 @@ export const constructRenderState = (params) => {
     actions,
   );
 
-  return executeActions(params);
+  const layoutInstanceState = {
+    usedIds: new Set(),
+    claimedNamespaces: new Set(),
+  };
+  const paramsWithLayoutInstanceState = Array.isArray(params)
+    ? params.map((item) => ({ ...item, layoutInstanceState }))
+    : { ...params, layoutInstanceState };
+
+  return executeActions(paramsWithLayoutInstanceState);
 };

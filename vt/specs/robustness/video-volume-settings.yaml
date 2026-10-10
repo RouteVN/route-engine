@@ -1,0 +1,436 @@
+---
+title: Playing Video Volume Settings
+description: Real canvas controls independently change music/background and sound/visual volume, then mute and unmute both decoded videos without restarting playback.
+specs:
+  - schema-valid video resources follow runtime volume without a second attenuation layer
+  - default music and sound preferences preserve HTML media volume 0.5
+  - live music and sound settings affect their own playing video independently
+  - mute-all silences both videos and unmute restores each channel setting
+  - actual video elements remain decoded, playing, and advancing throughout
+skipInitialScreenshot: true
+viewport: { id: capture, width: 960, height: 540 }
+steps:
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 800
+  - action: customEvent
+    name: vt:videoVolumeCheckpoint
+    detail:
+      background: bg-cg-background-video
+      visual: visual-clip
+  - action: assert
+    type: js
+    global: __vtVideoGeometry
+    value:
+      background:
+        {
+          width: 400,
+          height: 225,
+          textureWidth: 160,
+          textureHeight: 90,
+          sourceWidth: 160,
+          sourceHeight: 90,
+          videoWidth: 160,
+          videoHeight: 90,
+        }
+      visual:
+        {
+          width: 400,
+          height: 225,
+          textureWidth: 160,
+          textureHeight: 90,
+          sourceWidth: 160,
+          sourceHeight: 90,
+          videoWidth: 160,
+          videoHeight: 90,
+        }
+  - action: assert
+    type: js
+    global: __vtVideoVolumes
+    value:
+      background:
+        {
+          volume: 0.5,
+          muted: false,
+          decoded: true,
+          playing: true,
+          hasProgress: true,
+          continued: null,
+        }
+      visual:
+        {
+          volume: 0.5,
+          muted: false,
+          decoded: true,
+          playing: true,
+          hasProgress: true,
+          continued: null,
+        }
+  - action: click
+    x: 135
+    y: 420
+  - action: wait
+    ms: 250
+  - action: customEvent
+    name: vt:videoVolumeCheckpoint
+    detail:
+      background: bg-cg-background-video
+      visual: visual-clip
+  - action: assert
+    type: js
+    global: __vtVideoGeometry
+    value:
+      background:
+        {
+          width: 400,
+          height: 225,
+          textureWidth: 160,
+          textureHeight: 90,
+          sourceWidth: 160,
+          sourceHeight: 90,
+          videoWidth: 160,
+          videoHeight: 90,
+        }
+      visual:
+        {
+          width: 400,
+          height: 225,
+          textureWidth: 160,
+          textureHeight: 90,
+          sourceWidth: 160,
+          sourceHeight: 90,
+          videoWidth: 160,
+          videoHeight: 90,
+        }
+  - action: assert
+    type: js
+    global: __vtVideoVolumes
+    value:
+      background:
+        {
+          volume: 0.3,
+          muted: false,
+          decoded: true,
+          playing: true,
+          hasProgress: true,
+          continued: true,
+        }
+      visual:
+        {
+          volume: 0.5,
+          muted: false,
+          decoded: true,
+          playing: true,
+          hasProgress: true,
+          continued: true,
+        }
+  - action: click
+    x: 375
+    y: 420
+  - action: wait
+    ms: 250
+  - action: customEvent
+    name: vt:videoVolumeCheckpoint
+    detail:
+      background: bg-cg-background-video
+      visual: visual-clip
+  - action: assert
+    type: js
+    global: __vtVideoGeometry
+    value:
+      background:
+        {
+          width: 400,
+          height: 225,
+          textureWidth: 160,
+          textureHeight: 90,
+          sourceWidth: 160,
+          sourceHeight: 90,
+          videoWidth: 160,
+          videoHeight: 90,
+        }
+      visual:
+        {
+          width: 400,
+          height: 225,
+          textureWidth: 160,
+          textureHeight: 90,
+          sourceWidth: 160,
+          sourceHeight: 90,
+          videoWidth: 160,
+          videoHeight: 90,
+        }
+  - action: assert
+    type: js
+    global: __vtVideoVolumes
+    value:
+      background:
+        {
+          volume: 0.3,
+          muted: false,
+          decoded: true,
+          playing: true,
+          hasProgress: true,
+          continued: true,
+        }
+      visual:
+        {
+          volume: 0.4,
+          muted: false,
+          decoded: true,
+          playing: true,
+          hasProgress: true,
+          continued: true,
+        }
+  - action: click
+    x: 615
+    y: 420
+  - action: wait
+    ms: 250
+  - action: customEvent
+    name: vt:videoVolumeCheckpoint
+    detail:
+      background: bg-cg-background-video
+      visual: visual-clip
+  - action: assert
+    type: js
+    global: __vtVideoGeometry
+    value:
+      background:
+        {
+          width: 400,
+          height: 225,
+          textureWidth: 160,
+          textureHeight: 90,
+          sourceWidth: 160,
+          sourceHeight: 90,
+          videoWidth: 160,
+          videoHeight: 90,
+        }
+      visual:
+        {
+          width: 400,
+          height: 225,
+          textureWidth: 160,
+          textureHeight: 90,
+          sourceWidth: 160,
+          sourceHeight: 90,
+          videoWidth: 160,
+          videoHeight: 90,
+        }
+  - action: assert
+    type: js
+    global: __vtVideoVolumes
+    value:
+      background:
+        {
+          volume: 0,
+          muted: false,
+          decoded: true,
+          playing: true,
+          hasProgress: true,
+          continued: true,
+        }
+      visual:
+        {
+          volume: 0,
+          muted: false,
+          decoded: true,
+          playing: true,
+          hasProgress: true,
+          continued: true,
+        }
+  - action: click
+    x: 855
+    y: 420
+  - action: wait
+    ms: 250
+  - action: customEvent
+    name: vt:videoVolumeCheckpoint
+    detail:
+      background: bg-cg-background-video
+      visual: visual-clip
+  - action: assert
+    type: js
+    global: __vtVideoGeometry
+    value:
+      background:
+        {
+          width: 400,
+          height: 225,
+          textureWidth: 160,
+          textureHeight: 90,
+          sourceWidth: 160,
+          sourceHeight: 90,
+          videoWidth: 160,
+          videoHeight: 90,
+        }
+      visual:
+        {
+          width: 400,
+          height: 225,
+          textureWidth: 160,
+          textureHeight: 90,
+          sourceWidth: 160,
+          sourceHeight: 90,
+          videoWidth: 160,
+          videoHeight: 90,
+        }
+  - action: assert
+    type: js
+    global: __vtVideoVolumes
+    value:
+      background:
+        {
+          volume: 0.3,
+          muted: false,
+          decoded: true,
+          playing: true,
+          hasProgress: true,
+          continued: true,
+        }
+      visual:
+        {
+          volume: 0.4,
+          muted: false,
+          decoded: true,
+          playing: true,
+          hasProgress: true,
+          continued: true,
+        }
+  - action: screenshot
+---
+screen: { width: 960, height: 540 }
+resources:
+  variables:
+    vtWaitForVideoTextures: { type: boolean, scope: context, default: true }
+    vtAssetIds:
+      {
+        type: string,
+        scope: context,
+        default: "video-volume-background,video-volume-visual",
+      }
+  videos:
+    background: { fileId: video-volume-background, width: 400, height: 225 }
+    clip: { fileId: video-volume-visual, width: 400, height: 225 }
+  transforms:
+    background: { x: 40, y: 60, anchorX: 0, anchorY: 0 }
+    visual: { x: 520, y: 60, anchorX: 0, anchorY: 0 }
+  colors:
+    button: { hex: "#4D4D4D" }
+    text: { hex: "#FFFFFF" }
+  fonts:
+    default: { fileId: Arial }
+  textStyles:
+    label: { fontId: default, colorId: text, fontSize: 22 }
+  controls:
+    start:
+      elements:
+        - id: start
+          type: rect
+          x: 360
+          y: 230
+          width: 240
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                nextLine: {}
+  layouts:
+    settings:
+      elements:
+        - id: music
+          type: rect
+          x: 40
+          y: 370
+          width: 190
+          height: 100
+          colorId: button
+          click:
+            payload:
+              actions:
+                setMusicVolume: { value: 30 }
+        - id: music-label
+          type: text
+          x: 62
+          y: 405
+          content: Music 30
+          textStyleId: label
+        - id: sound
+          type: rect
+          x: 280
+          y: 370
+          width: 190
+          height: 100
+          colorId: button
+          click:
+            payload:
+              actions:
+                setSoundVolume: { value: 40 }
+        - id: sound-label
+          type: text
+          x: 302
+          y: 405
+          content: Sound 40
+          textStyleId: label
+        - id: mute
+          type: rect
+          x: 520
+          y: 370
+          width: 190
+          height: 100
+          colorId: button
+          click:
+            payload:
+              actions:
+                setMuteAll: { value: true }
+        - id: mute-label
+          type: text
+          x: 542
+          y: 405
+          content: Mute
+          textStyleId: label
+        - id: unmute
+          type: rect
+          x: 760
+          y: 370
+          width: 190
+          height: 100
+          colorId: button
+          click:
+            payload:
+              actions:
+                setMuteAll: { value: false }
+        - id: unmute-label
+          type: text
+          x: 782
+          y: 405
+          content: Unmute
+          textStyleId: label
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: start
+              actions:
+                control: { resourceId: start }
+            - id: video
+              actions:
+                background: { resourceId: background, transformId: background }
+                visual:
+                  items:
+                    - id: clip
+                      resourceId: clip
+                      transformId: visual
+                    - id: settings
+                      resourceId: settings
+                      layer: 90
+                      transform: { x: 0, y: 0, anchorX: 0, anchorY: 0 }
+                control: {}

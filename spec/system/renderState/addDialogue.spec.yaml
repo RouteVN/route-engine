@@ -1172,6 +1172,54 @@ out:
           content: "Localized line"
   animations: []
 ---
+case: interpolates runtime bindings in dialogue content and lines
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        ui:
+          resourceId: "dialogueLayout"
+        content:
+          - text: "Speed ${runtime.dialogueTextSpeed}"
+        lines:
+          - content:
+              - text: "Line speed ${runtime.dialogueTextSpeed}"
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-text"
+              type: "text"
+              content: "${dialogue.content[0].text}"
+            - id: "dialogue-line-text"
+              type: "text"
+              content: "${dialogue.lines[0].content[0].text}"
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+    runtime:
+      dialogueTextSpeed: 84
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "dialogue-text"
+          type: "text"
+          content: "Speed 84"
+        - id: "dialogue-line-text"
+          type: "text"
+          content: "Line speed 84"
+  animations: []
+---
 case: converts numeric dialogue content to a string
 in:
   - elements:

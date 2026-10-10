@@ -273,6 +273,27 @@ describe("RouteEngine audioEffects occurrences", () => {
     });
   });
 
+  it("templates the BGM audio effect selection used by line entry", () => {
+    const projectData = createProjectData();
+    const action =
+      projectData.story.scenes.scene.sections.section.lines[1].actions.bgm;
+    action.volume = 30;
+    action.sounds = [{ id: "main", resourceId: "old" }];
+    action.audioEffects.resourceId = "${variables.audioEffectId}";
+    const engine = createEngine({
+      projectData,
+      global: { variables: { audioEffectId: "smooth" } },
+    });
+
+    enterNextLine(engine);
+
+    expect(
+      engine
+        .selectRenderState()
+        .audioEffects[0].properties.volume.update.keyframes.at(-1).value,
+    ).toBe(30);
+  });
+
   it("preserves each local mix while updating a multi-sound BGM channel", () => {
     const projectData = createProjectData();
     projectData.resources.sounds.ambience = {

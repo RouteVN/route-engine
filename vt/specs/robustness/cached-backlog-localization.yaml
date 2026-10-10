@@ -42,11 +42,11 @@ steps:
     value: true
   - action: assert
     type: js
-    global: __vtCheckpoint.textById.history-row-0
+    global: __vtCheckpoint.textById.@layout/overlayStack-0--history-row-0
     value: "Source speaker: Source first."
   - action: assert
     type: js
-    global: __vtCheckpoint.textById.history-row-1
+    global: __vtCheckpoint.textById.@layout/overlayStack-0--history-row-1
     value: "Source speaker: Source second."
   - action: screenshot
   - action: click
@@ -68,11 +68,11 @@ steps:
     value: true
   - action: assert
     type: js
-    global: __vtCheckpoint.textById.history-row-0
+    global: __vtCheckpoint.textById.@layout/overlayStack-0--history-row-0
     value: "Translated speaker: Translated first."
   - action: assert
     type: js
-    global: __vtCheckpoint.textById.history-row-1
+    global: __vtCheckpoint.textById.@layout/overlayStack-0--history-row-1
     value: "Translated speaker: Translated second."
   - action: screenshot
   - action: click
@@ -94,11 +94,11 @@ steps:
     value: true
   - action: assert
     type: js
-    global: __vtCheckpoint.textById.history-row-0
+    global: __vtCheckpoint.textById.@layout/overlayStack-0--history-row-0
     value: "Source speaker: Source first."
   - action: assert
     type: js
-    global: __vtCheckpoint.textById.history-row-1
+    global: __vtCheckpoint.textById.@layout/overlayStack-0--history-row-1
     value: "Source speaker: Source second."
   - action: screenshot
 ---

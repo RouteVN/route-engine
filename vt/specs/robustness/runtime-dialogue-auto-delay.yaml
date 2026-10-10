@@ -1,0 +1,130 @@
+---
+title: Runtime Dialogue Auto Delay
+description: >-
+  Auto progression counts two rendered runtime digits, crossing the 1120 ms deadline instead of
+  counting the 28-character template. Deterministic playback ticks avoid wall-clock races.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 250
+  - action: click
+    x: 750
+    "y": 450
+  - action: customEvent
+    name: vt:tickPlayback
+    detail:
+      deltaMS: 1119
+  - action: wait
+    ms: 100
+  - &ref_0
+    action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: bound
+  - &ref_1
+    action: screenshot
+  - action: customEvent
+    name: vt:tickPlayback
+    detail:
+      deltaMS: 1
+  - action: wait
+    ms: 250
+  - *ref_0
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: continued
+  - *ref_1
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    foreground:
+      hex: "#FFFFFF"
+    button:
+      hex: "#4D4D4D"
+  textStyles:
+    body:
+      fontId: default
+      colorId: foreground
+      fontSize: 44
+    button:
+      fontId: default
+      colorId: foreground
+      fontSize: 32
+  variables:
+    vtDeterministicPlaybackTicker:
+      type: boolean
+      scope: context
+      default: true
+  layouts:
+    dialogue:
+      elements:
+        - id: dialogue
+          type: text
+          x: 80
+          "y": 180
+          width: 800
+          content: ${dialogue.content}
+          textStyleId: body
+  controls:
+    navigation:
+      elements:
+        - id: auto
+          type: rect
+          x: 610
+          "y": 415
+          width: 280
+          height: 75
+          colorId: button
+          click:
+            payload:
+              actions:
+                startAutoMode: {}
+        - id: auto-label
+          type: text
+          x: 635
+          "y": 433
+          width: 250
+          content: Start auto
+          textStyleId: button
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: bound
+              actions:
+                setDialogueTextSpeed:
+                  value: 84
+                control:
+                  resourceId: navigation
+                dialogue:
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: ${runtime.dialogueTextSpeed}
+            - id: continued
+              actions:
+                stopAutoMode: {}
+                dialogue:
+                  content:
+                    - text: The story continues.

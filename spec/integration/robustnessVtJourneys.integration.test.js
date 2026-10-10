@@ -57,10 +57,56 @@ const setup = (name) => {
       if (harness.renderStates.length > renderCount)
         harness.completeLatestRender();
     },
+    clickRendered: async (elementId, layoutRootId) => {
+      const element = findRenderElement(
+        harness.renderStates.at(-1)?.elements,
+        elementId,
+        { layoutRootId },
+      );
+      expect(element?.click?.payload).toBeDefined();
+      const renderCount = harness.renderStates.length;
+      await handleEvent("click", structuredClone(element.click.payload));
+      if (harness.renderStates.length > renderCount)
+        harness.completeLatestRender();
+    },
   };
 };
 
 describe("robustness VT companion journeys", () => {
+  it("preserves the overlay input identity through the exact VT background and shared-layout transitions", () => {
+    const h = setup("layout-instance-continuity");
+    const overlayInput = () =>
+      findRenderElement(h.renderStates.at(-1).elements, "shared-input", {
+        layoutRootId: "overlayStack-0",
+      });
+    const id = overlayInput().id;
+    for (const [lineId, hasMain, hasBackground] of [
+      ["backgroundAdded", true, true],
+      ["mainRemoved", false, true],
+      ["mainRestored", true, false],
+    ]) {
+      h.engine.handleActions({ jumpToLine: { lineId } });
+      h.completeLatestRender();
+      expect(h.checkpoint().pointer.lineId).toBe(lineId);
+      expect(overlayInput().id).toBe(id);
+      expect(
+        Boolean(
+          findRenderElement(h.renderStates.at(-1).elements, "shared-input", {
+            layoutRootId: "layout-sharedPanel",
+          }),
+        ),
+      ).toBe(hasMain);
+      expect(
+        Boolean(
+          findRenderElement(h.renderStates.at(-1).elements, "backdrop", {
+            layoutRootId: "bg-cg-background-container",
+          }),
+        ),
+      ).toBe(hasBackground);
+      expect(h.checkpoint().pendingEffects).toEqual([]);
+    }
+  });
+
   it("rejects the exact VT duplicate project through renderer input and continues playing", async () => {
     const h = setup("duplicate-line-update-rejection");
     await h.click("main", "invalid");
@@ -146,19 +192,53 @@ describe("robustness VT companion journeys", () => {
     const h = setup("cached-backlog-localization");
     await h.click("main", "next");
     expect(h.checkpoint().textById).toMatchObject({
-      "history-row-0": "Source speaker: Source first.",
-      "history-row-1": "Source speaker: Source second.",
+      "@layout/overlayStack-0--history-row-0": "Source speaker: Source first.",
+      "@layout/overlayStack-0--history-row-1": "Source speaker: Source second.",
     });
     await h.click("history", "translate");
     expect(h.checkpoint().textById).toMatchObject({
-      "history-row-0": "Translated speaker: Translated first.",
-      "history-row-1": "Translated speaker: Translated second.",
+      "@layout/overlayStack-0--history-row-0":
+        "Translated speaker: Translated first.",
+      "@layout/overlayStack-0--history-row-1":
+        "Translated speaker: Translated second.",
     });
     await h.click("history", "source");
     expect(h.checkpoint().textById).toMatchObject({
-      "history-row-0": "Source speaker: Source first.",
-      "history-row-1": "Source speaker: Source second.",
+      "@layout/overlayStack-0--history-row-0": "Source speaker: Source first.",
+      "@layout/overlayStack-0--history-row-1": "Source speaker: Source second.",
     });
+  });
+
+  it("routes each interpolated choice label to its own section through the exact VT project", async () => {
+    const h = setup("choice-interpolated-content-click");
+    const rendered = (harness, id, layoutRootId) =>
+      findRenderElement(harness.renderStates.at(-1).elements, id, {
+        layoutRootId,
+      });
+    expect(rendered(h, "choice-label-0", "choice-container")?.content).toBe(
+      "Follow ADA north 12km",
+    );
+    expect(rendered(h, "choice-label-1", "choice-container")?.content).toBe(
+      "Rest at the ADA camp",
+    );
+    await h.clickRendered("choice-hit-1", "choice-container");
+    expect(h.checkpoint()).toMatchObject({
+      pointer: { sectionId: "camp", lineId: "camp-arrival" },
+      pendingEffects: [],
+    });
+    expect(rendered(h, "camp-arrival", "layout-campArrival")?.content).toBe(
+      "ARRIVED SOUTHERN CAMP",
+    );
+    expect(rendered(h, "choice-label-1", "choice-container")).toBeUndefined();
+
+    const restarted = setup("choice-interpolated-content-click");
+    await restarted.clickRendered("choice-hit-0", "choice-container");
+    expect(restarted.checkpoint()).toMatchObject({
+      pointer: { sectionId: "north", lineId: "north-arrival" },
+    });
+    expect(
+      rendered(restarted, "north-arrival", "layout-northArrival")?.content,
+    ).toBe("ARRIVED NORTH OUTPOST");
   });
 
   it("keeps the exact VT zero-length loop item visible without scheduling animations", () => {

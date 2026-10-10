@@ -45,6 +45,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - id: video-volume-settings
+            item: robustness/video-volume-settings.yaml
           - id: creator-auto-animation-continuity
             item: robustness/creator-auto-animation-continuity.yaml
           - id: creator-delayed-keyframe-continuity
@@ -55,6 +57,8 @@ jobs:
             item: robustness/alpha-opacity-compat.yaml
           - id: async-stale-click
             item: robustness/async-stale-click.yaml
+          - id: choice-interpolated-content
+            item: robustness/choice-interpolated-content-click.yaml
           - id: cached-backlog-localization
             item: robustness/cached-backlog-localization.yaml
           - id: cached-dialogue-save-rollback
@@ -69,6 +73,8 @@ jobs:
             item: robustness/duplicate-line-update-rejection.yaml
           - id: form-mixed-action-guard
             item: robustness/form-mixed-action-guard.yaml
+          - id: literal-dialogue-entry
+            item: robustness/literal-dialogue-entry.yaml
           - id: l10n-roundtrip
             item: robustness/l10n-layout-roundtrip.yaml
           - id: particle-texture
@@ -85,6 +91,12 @@ jobs:
             item: robustness/section-media-continuity.yaml
           - id: playback-skip-authored
             item: robustness/playback-skip-authored-co-due.yaml
+          - id: runtime-dialogue-bindings
+            item: robustness/runtime-dialogue-bindings.yaml
+          - id: runtime-dialogue-auto-delay
+            item: robustness/runtime-dialogue-auto-delay.yaml
+          - id: save-layout-pagination
+            item: robustness/save-layout-pagination.yaml
           - id: save-load-timers
             item: robustness/save-load-skip-timer-cleanup.yaml
           - id: routing-cycle-recovery
@@ -101,6 +113,8 @@ jobs:
             item: robustness/layout-each-missing-source.yaml
           - id: layout-guarded-choice
             item: robustness/layout-guarded-choice.yaml
+          - id: layout-instance-continuity
+            item: robustness/layout-instance-continuity.yaml
           - id: inline-layout-click
             item: robustness/visual-inline-layout-click.yaml
           - id: inline-layout-transition

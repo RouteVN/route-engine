@@ -2,6 +2,12 @@ import { describe, expect, it } from "vitest";
 import createEffectsHandler from "../src/createEffectsHandler.js";
 import createRouteEngine from "../src/RouteEngine.js";
 
+// Replay layouts render under the layout slot's stable namespace.
+const menuElementId = (id) =>
+  `@layout/layout-replayMenu--${encodeURIComponent(id).replaceAll("--", "%2D%2D")}`;
+const hudElementId = (id) =>
+  `@layout/layout-replayHud--${encodeURIComponent(id).replaceAll("--", "%2D%2D")}`;
+
 const findElementById = (elements, id) => {
   for (const element of elements || []) {
     if (element?.id === id) {
@@ -163,7 +169,10 @@ describe("RouteEngine scene replay render API", () => {
     });
 
     const menuState = engine.selectRenderState();
-    const startButton = findElementById(menuState.elements, `start-${sceneId}`);
+    const startButton = findElementById(
+      menuState.elements,
+      menuElementId(`start-${sceneId}`),
+    );
     expect(startButton).toMatchObject({
       click: {
         payload: {
@@ -184,14 +193,14 @@ describe("RouteEngine scene replay render API", () => {
 
     const replayState = engine.selectRenderState();
     expect(
-      findElementById(replayState.elements, "active-replay"),
+      findElementById(replayState.elements, hudElementId("active-replay")),
     ).toMatchObject({
       content: sceneId,
     });
 
     await dispatchRouteGraphicsClick(
       engine,
-      findElementById(replayState.elements, "exit-replay"),
+      findElementById(replayState.elements, hudElementId("exit-replay")),
     );
     expect(engine.selectIsSceneReplayActive()).toBe(false);
     expect(
