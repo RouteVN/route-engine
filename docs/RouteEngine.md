@@ -2001,6 +2001,10 @@ double-speed range and applies only to the length-derived reading time. The
 persisted `runtime.autoForwardDelay` minimum is still added unchanged, subject
 to the auto-mode delay cap.
 
+Reading units always use the bundled Unicode 17.0 grapheme segmenter rather
+than the host's `Intl.Segmenter`, whose Unicode data depends on the browser or
+runtime version.
+
 ### Dialogue Append Reveal
 
 In ADV mode, `dialogue.append: true` appends the line content to the current

@@ -15,25 +15,12 @@ const CJK_GRAPHEME_RE =
   /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/u;
 const WHITESPACE_GRAPHEME_RE = /^\s+$/u;
 
-let graphemeSegmenter;
-
-const segmentGraphemes = (text) => {
-  const normalizedText = `${text ?? ""}`.normalize("NFC");
-  const Segmenter = globalThis.Intl?.Segmenter;
-
-  if (typeof Segmenter !== "function") {
-    return Array.from(splitGraphemes(normalizedText));
-  }
-
-  graphemeSegmenter ??= new Segmenter(undefined, {
-    granularity: "grapheme",
-  });
-
-  return Array.from(
-    graphemeSegmenter.segment(normalizedText),
-    ({ segment }) => segment,
-  );
-};
+// Graphemes always come from the bundled UAX #29 segmenter (Unicode 17.0).
+// Intl.Segmenter follows the host's ICU data, so the same line counted
+// differently on hosts with older Unicode tables (for example Khmer and
+// Myanmar conjuncts, or U+2701 U+200D U+2701).
+const segmentGraphemes = (text) =>
+  Array.from(splitGraphemes(`${text ?? ""}`.normalize("NFC")));
 
 export const getAutoForwardReadingUnits = (text) =>
   segmentGraphemes(text).reduce((units, grapheme) => {
