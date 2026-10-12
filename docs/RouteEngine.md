@@ -2001,6 +2001,10 @@ double-speed range and applies only to the length-derived reading time. The
 persisted `runtime.autoForwardDelay` minimum is still added unchanged, subject
 to the auto-mode delay cap.
 
+The speed multiplier is `2 ** ((speed - 50) / 50)` rounded to the nearest
+double (correctly rounded), so it is the same on every JavaScript host; the
+host's `Math.pow` differs in the last bit between engines and C libraries.
+
 Reading units always use the bundled Unicode 17.0 grapheme segmenter rather
 than the host's `Intl.Segmenter`, whose Unicode data depends on the browser or
 runtime version.
