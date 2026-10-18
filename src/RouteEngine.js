@@ -29,6 +29,12 @@ import {
   isTerminalNavigationActionType,
   orderActionEntries,
 } from "./actionExecutionOrder.js";
+import {
+  assertStrictInitialState,
+  assertStrictProjectData,
+  normalizeValidationMode,
+  STRICT_VALIDATION_MODE,
+} from "./strictValidation.js";
 
 const PERSISTENT_PLAYBACK_RESET_ACTIONS = new Set([
   "loadSlot",
@@ -190,6 +196,8 @@ export default function createRouteEngine(options) {
   if (typeof handlePendingEffects !== "function") {
     throw new TypeError("RouteEngine requires handlePendingEffects");
   }
+  const _isStrictValidation =
+    normalizeValidationMode(options.validation) === STRICT_VALIDATION_MODE;
   const handleEffects = handlePendingEffects.bind(handlePendingEffects);
   const reconcilePlayback =
     typeof handlePendingEffects.reconcilePlaybackScheduleV1 === "function"
@@ -588,6 +596,12 @@ export default function createRouteEngine(options) {
     const normalizedL10nData =
       l10nData === undefined ? undefined : structuredClone(l10nData);
     const canonicalProjectData = structuredClone(initialState.projectData);
+    if (_isStrictValidation) {
+      assertStrictInitialState({
+        projectData: canonicalProjectData,
+        l10nData: normalizedL10nData,
+      });
+    }
     const localizationPackages = getLocalizationPackageOptions({
       projectData: canonicalProjectData,
       l10nData: normalizedL10nData,
@@ -1191,6 +1205,9 @@ export default function createRouteEngine(options) {
     if (actionType === "updateProjectData") {
       validateProjectDataUpdatePayload(payload);
       nextCanonicalProjectData = structuredClone(payload.projectData);
+      if (_isStrictValidation) {
+        assertStrictProjectData(nextCanonicalProjectData);
+      }
       storePayload = {
         ...payload,
         projectData: resolveL10nProjectData({
