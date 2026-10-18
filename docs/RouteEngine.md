@@ -31,11 +31,6 @@ through `4294967295`. Production hosts can omit it; the engine uses
 `crypto.getRandomValues` when available and falls back to `Math.random` for
 compatibility.
 
-`createRouteEngine` also accepts `validation: "strict"` to reject invalid
-project data when it is loaded instead of tolerating it. The default
-(`validation` omitted or `"default"`) keeps the existing behavior; any other
-value throws a `TypeError`. See [Strict Validation](#strict-validation).
-
 ## Initialization
 
 ### `init({ initialState, namespace })`
@@ -147,40 +142,6 @@ This bounds immediate routing cycles, including conditional cycles. Each
 completed dispatch gets a fresh budget, so loops that pause for player input
 continue to work. After a limit error, the host can reinitialize, dispose, or
 reset to a safe section with `resetStoryAtSection`.
-
-### Strict Validation
-
-With `createRouteEngine({ ..., validation: "strict" })`, `init(...)` and
-`updateProjectData` check the canonical project data (before L10n resolution)
-before they replace any state. `init(...)` also checks `initialState.l10nData`
-for the first two rules below. A failure throws an `Error` with a stable
-`code` and a `path`, a JSON Pointer (RFC 6901) into `initialState` or into the
-`updateProjectData` payload, so paths start with `/projectData` or
-`/l10nData`. Identify failures by `code` and `path`, not by message text. As
-with any failed initialization, the previous generation stays active.
-
-Checks run in three passes and the first failure is thrown: a walk of the
-whole document in key order (`lone_surrogate`, `reserved_key`), the project
-envelope (top-level keys, `screen`, `resources`), then the story (scenes in key
-order, each section's lines and their action maps).
-
-| `code`              | Rejected input                                                                                                                                                                                                                                                                                                                                     |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `lone_surrogate`    | A string value or object key containing an unpaired UTF-16 surrogate. The path names the value or key.                                                                                                                                                                                                                                             |
-| `reserved_key`      | An object key `__proto__`, `constructor` or `prototype` anywhere in the document, for example a control keyboard binding or a resource ID.                                                                                                                                                                                                         |
-| `invalid_value`     | Project data that is not an object or contains a cyclic reference; a screen `width` or `height` that is not a positive integer; `resources`, a scene, section, line, line `actions` or action payload that is not an object; `lines` that is not a non-empty array; a line `id` or initial ID that is not a string.                                |
-| `unknown_field`     | A top-level project key other than `config`, `screen`, `resources` and `story`, or a `screen` key other than `width`, `height` and `backgroundColor`.                                                                                                                                                                                              |
-| `missing_field`     | A missing `screen`, screen `width`/`height`, `story`, `story.scenes`, `story.initialSceneId`, scene `sections`, section `lines`, line `id`, or `initialSectionId` of the initial scene.                                                                                                                                                            |
-| `unknown_reference` | `story.initialSceneId`, a scene `initialSectionId` or a section `initialLineId` that names no scene, section of that scene, or line of that section.                                                                                                                                                                                               |
-| `unknown_action`    | A key of a story line `actions` map, or of the nested `conditional` branch and weighted `random` outcome `actions` maps, that is not an authored action: the actions of `presentationActions.yaml` and `systemActions.yaml`, plus `addViewedLine`, `addViewedResource` and `updateProjectData`. Internal store actions and selectors are rejected. |
-
-Without strict validation the engine tolerates most of this input: for
-example it renders a missing screen at 1920x1080, points the story at a
-missing initial line, and skips unknown action names when their line runs.
-Strict mode does not yet check unknown fields below the project and screen
-level, action maps inside resources (layout and control events, keyboard
-bindings) or in other action payloads, or values in `initialState.global` and
-save slots.
 
 ### `dispose()`
 
