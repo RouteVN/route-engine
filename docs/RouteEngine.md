@@ -2001,13 +2001,16 @@ double-speed range and applies only to the length-derived reading time. The
 persisted `runtime.autoForwardDelay` minimum is still added unchanged, subject
 to the auto-mode delay cap.
 
-The speed multiplier is `2 ** ((speed - 50) / 50)` rounded to the nearest
-double (correctly rounded), so it is the same on every JavaScript host; the
-host's `Math.pow` differs in the last bit between engines and C libraries.
+The speed multiplier is `2 ** x`, where `x = (speed - 50) / 50` is evaluated in
+ordinary double arithmetic and 2 raised to that double `x` is then rounded to
+the nearest double (correctly rounded). It is the same on every JavaScript host;
+the host's `Math.pow` differs in the last bit between engines and C libraries.
 
-Reading units always use the bundled Unicode 17.0 grapheme segmenter rather
-than the host's `Intl.Segmenter`, whose Unicode data depends on the browser or
-runtime version.
+Reading units always use the bundled Unicode 17.0 grapheme segmenter and Unicode
+17.0 Han, Hiragana, Katakana, and Hangul code point ranges, rather than the
+host's `Intl.Segmenter` and regular-expression script data, whose Unicode
+version depends on the browser or runtime. The text is not normalized first,
+because `String.prototype.normalize` also uses the host's Unicode data.
 
 ### Dialogue Append Reveal
 

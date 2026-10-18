@@ -62,8 +62,11 @@ const FRACTIONAL_SPEED_MULTIPLIERS = [
   [96.70571486931294, 1.9107172431722372],
 ];
 
-// Reading units under the bundled Unicode 17.0 grapheme rules. Rows marked
-// "Unicode 17" counted differently through Intl.Segmenter on Unicode 16 hosts.
+// Reading units under the bundled Unicode 17.0 grapheme rules and script
+// ranges. Rows marked "Unicode 17" counted differently on Unicode 16 hosts,
+// through Intl.Segmenter or \p{Script=...}. Text with joiners, variation
+// selectors, tags, regional indicators or combining marks is escaped so every
+// code point shows in review.
 const READING_UNIT_CORPUS = [
   ["Latin", "Hello, world.", 12.5],
   ["combining marks", "cafe\u0301 A\u030Angstro\u0308m", 12.5],
@@ -71,18 +74,48 @@ const READING_UNIT_CORPUS = [
   ["Han and kana", "漢字とカタカナ", 21],
   ["Hangul syllables", "한국어", 9],
   ["Hangul conjoining jamo", "\u1100\u1161\u11A8\u1112\u1161\u11AB", 6],
-  ["emoji ZWJ family", "👨‍👩‍👧‍👦", 1],
-  ["emoji ZWJ with skin tone", "🧑🏿‍🦱", 1],
-  ["regional indicator flags", "🇯🇵🇰🇷🇺🇳🇳", 4],
-  ["emoji tag sequence", "🏴󠁧󠁢󠁥󠁮󠁧󠁿", 1],
-  ["emoji keycaps", "1️⃣#️⃣", 2],
-  ["Thai tone marks and sara am", "ภาษาไทย น้ำ กำลัง", 12],
-  ["Devanagari conjuncts", "क्षत्रिय श्री", 4.5],
-  ["Khmer conjuncts (Unicode 17)", "ភាសាខ្មែរ", 4],
+  ["CJK Extension J (Unicode 17)", "\u{323B0}\u{33479}", 6],
+  ["Unicode whitespace", "\u3000\u00A0\t\u2028", 2],
+  [
+    "emoji ZWJ family",
+    "\u{1F468}\u200D\u{1F469}\u200D\u{1F467}\u200D\u{1F466}",
+    1,
+  ],
+  ["emoji ZWJ with skin tone", "\u{1F9D1}\u{1F3FF}\u200D\u{1F9B1}", 1],
+  [
+    "regional indicator flags",
+    "\u{1F1EF}\u{1F1F5}\u{1F1F0}\u{1F1F7}\u{1F1FA}\u{1F1F3}\u{1F1F3}",
+    4,
+  ],
+  [
+    "emoji tag sequence",
+    "\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}",
+    1,
+  ],
+  ["emoji keycaps", "1\uFE0F\u20E3#\uFE0F\u20E3", 2],
+  [
+    "Thai tone marks and sara am",
+    "\u0E20\u0E32\u0E29\u0E32\u0E44\u0E17\u0E22 \u0E19\u0E49\u0E33 \u0E01\u0E33\u0E25\u0E31\u0E07",
+    12,
+  ],
+  [
+    "Devanagari conjuncts",
+    "\u0915\u094D\u0937\u0924\u094D\u0930\u093F\u092F \u0936\u094D\u0930\u0940",
+    4.5,
+  ],
+  [
+    "Khmer conjuncts (Unicode 17)",
+    "\u1797\u17B6\u179F\u17B6\u1781\u17D2\u1798\u17C2\u179A",
+    4,
+  ],
   ["Myanmar kinzi (Unicode 17)", "\u1004\u103A\u1039\u1011\u1039\u1011", 1],
   ["pictograph ZWJ pictograph (Unicode 17)", "\u2701\u200D\u2701", 2],
   ["CRLF", "a\r\nb", 2.5],
-  ["mixed dialogue", "Hi 世界 e\u0301 👨‍👩‍👧‍👦 สวัสดี 🇯🇵!", 18.5],
+  [
+    "mixed dialogue",
+    "Hi \u4E16\u754C e\u0301 \u{1F468}\u200D\u{1F469}\u200D\u{1F467}\u200D\u{1F466} \u0E2A\u0E27\u0E31\u0E2A\u0E14\u0E35 \u{1F1EF}\u{1F1F5}!",
+    18.5,
+  ],
 ];
 
 describe("auto-forward timing", () => {
@@ -107,24 +140,22 @@ describe("auto-forward timing", () => {
 
   it("counts composed characters and emoji sequences as graphemes", () => {
     expect(getAutoForwardReadingUnits("e\u0301")).toBe(1);
-    expect(getAutoForwardReadingUnits("👨‍👩‍👧‍👦")).toBe(1);
+    expect(
+      getAutoForwardReadingUnits(
+        "\u{1F468}\u200D\u{1F469}\u200D\u{1F467}\u200D\u{1F466}",
+      ),
+    ).toBe(1);
   });
 
-  it("keeps emoji sequences intact without Intl.Segmenter", () => {
-    const segmenterDescriptor = Object.getOwnPropertyDescriptor(
-      Intl,
-      "Segmenter",
-    );
-    Object.defineProperty(Intl, "Segmenter", {
-      configurable: true,
-      value: undefined,
-    });
-
-    try {
-      expect(getAutoForwardReadingUnits("👨‍👩‍👧‍👦")).toBe(1);
-      expect(getAutoForwardReadingUnits("🇨🇳")).toBe(1);
-    } finally {
-      Object.defineProperty(Intl, "Segmenter", segmenterDescriptor);
+  it("counts composed and decomposed text alike without normalizing it", () => {
+    for (const [composed, decomposed, units] of [
+      ["\u00E9", "e\u0301", 1],
+      ["\uAC01", "\u1100\u1161\u11A8", 3],
+      ["\u0929\u094D\u0915", "\u0928\u093C\u094D\u0915", 1],
+      ["\u1EC7", "e\u0323\u0302", 1],
+    ]) {
+      expect(getAutoForwardReadingUnits(composed)).toBe(units);
+      expect(getAutoForwardReadingUnits(decomposed)).toBe(units);
     }
   });
 
@@ -135,11 +166,12 @@ describe("auto-forward timing", () => {
     },
   );
 
-  it("ignores the host Intl.Segmenter and its Unicode data", async () => {
+  it("ignores the host Intl.Segmenter and String.prototype.normalize", async () => {
     const segmenterDescriptor = Object.getOwnPropertyDescriptor(
       Intl,
       "Segmenter",
     );
+    const normalizeSpy = vi.spyOn(String.prototype, "normalize");
     let hostSegmenterCount = 0;
     // Stands in for a host with outdated grapheme data: one code point each.
     class OutdatedHostSegmenter {
@@ -163,8 +195,15 @@ describe("auto-forward timing", () => {
         expect(timing.getAutoForwardReadingUnits(text)).toBe(units);
       }
       expect(hostSegmenterCount).toBe(0);
+      expect(normalizeSpy).not.toHaveBeenCalled();
     } finally {
-      Object.defineProperty(Intl, "Segmenter", segmenterDescriptor);
+      normalizeSpy.mockRestore();
+      // Hosts without Intl.Segmenter have no descriptor to restore.
+      if (segmenterDescriptor) {
+        Object.defineProperty(Intl, "Segmenter", segmenterDescriptor);
+      } else {
+        delete Intl.Segmenter;
+      }
       vi.resetModules();
     }
   });
@@ -213,7 +252,8 @@ describe("auto-forward timing", () => {
   });
 
   it("derives the reading delay from the exact multiplier", () => {
-    const text = "Hi 世界 e\u0301 👨‍👩‍👧‍👦";
+    const text =
+      "Hi \u4E16\u754C e\u0301 \u{1F468}\u200D\u{1F469}\u200D\u{1F467}\u200D\u{1F466}";
     expect(getAutoForwardReadingUnits(text)).toBe(11.5);
     expect(estimateAutoForwardDelay({ text, baseDelay: 0, speed: 25 })).toBe(
       975.8073580374355,
