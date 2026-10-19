@@ -1345,3 +1345,274 @@ out:
           type: "container"
           children: []
   animations: []
+---
+case: dialogue content runs keep inline textStyle through the adv dialogue template
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "dialogueLayout"
+        content:
+          - text: "Plain "
+          - text: "bold "
+            textStyle:
+              fontWeight: "bold"
+          - text: "italic "
+            textStyle:
+              fontStyle: "italic"
+          - text: "underline "
+            textStyle:
+              textDecoration: "underline"
+          - text: "accent"
+            textStyle:
+              fill: "#b45309"
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-text"
+              type: "text-revealing"
+              content: "${dialogue.content}"
+              textStyleId: "body"
+      textStyles:
+        body:
+          fontId: "fontMain"
+          colorId: "fg"
+          fontSize: 24
+          fontWeight: "400"
+          fontStyle: "normal"
+          lineHeight: 1.2
+      fonts:
+        fontMain:
+          fileId: "Arial"
+      colors:
+        fg:
+          hex: "#FFFFFF"
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "dialogue-text"
+          type: "text-revealing"
+          content:
+            - text: "Plain "
+            - text: "bold "
+              textStyle:
+                fontWeight: "bold"
+            - text: "italic "
+              textStyle:
+                fontStyle: "italic"
+            - text: "underline "
+              textStyle:
+                textDecoration: "underline"
+            - text: "accent"
+              textStyle:
+                fill: "#b45309"
+          textStyle:
+            fontFamily: "Arial"
+            fontSize: 24
+            fontWeight: "400"
+            fontStyle: "normal"
+            lineHeight: 1.2
+            fill: "#FFFFFF"
+  animations: []
+---
+case: dialogue content run overlays inline textStyle on its textStyleId
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "dialogueLayout"
+        content:
+          - text: "Emphasis"
+            textStyleId: "emphasis"
+            textStyle:
+              fontWeight: "bold"
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-text"
+              type: "text-revealing"
+              content: "${dialogue.content}"
+      textStyles:
+        emphasis:
+          fontId: "fontMain"
+          colorId: "fg"
+          fontSize: 30
+          fontWeight: "400"
+          fontStyle: "italic"
+          lineHeight: 1.2
+      fonts:
+        fontMain:
+          fileId: "Arial"
+      colors:
+        fg:
+          hex: "#FFD166"
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "dialogue-text"
+          type: "text-revealing"
+          content:
+            - text: "Emphasis"
+              textStyle:
+                fontFamily: "Arial"
+                fontSize: 30
+                fontWeight: "bold"
+                fontStyle: "italic"
+                lineHeight: 1.2
+                fill: "#FFD166"
+  animations: []
+---
+case: nvl dialogue lines keep inline textStyle on content runs
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        mode: "nvl"
+        ui:
+          resourceId: "nvl-layout"
+        content:
+          - text: "Second"
+        lines:
+          - content:
+              - text: "First "
+              - text: "bold"
+                textStyle:
+                  fontWeight: "bold"
+          - content:
+              - text: "Second"
+    resources:
+      layouts:
+        nvl-layout:
+          elements:
+            - id: "nvl-container"
+              type: "container"
+              children:
+                - $for line, i in dialogueLines:
+                    - id: "text-${i}"
+                      type: "text"
+                      content: "${line.content}"
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "nvl-container"
+          type: "container"
+          children:
+            - id: "text-0"
+              type: "text"
+              content:
+                - text: "First "
+                - text: "bold"
+                  textStyle:
+                    fontWeight: "bold"
+            - id: "text-1"
+              type: "text"
+              content:
+                - text: "Second"
+  animations: []
+---
+case: dialogue content run inline textStyle rejects fields outside the allowlist
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "dialogueLayout"
+        content:
+          - text: "Large"
+            textStyle:
+              fontSize: 80
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-text"
+              type: "text-revealing"
+              content: "${dialogue.content}"
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+throws: 'Inline textStyle.fontSize is not allowed in text content runs at "root[0].content[0]"'
+---
+case: dialogue ui layout element inline textStyle still throws when dialogue content is styled
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "dialogueLayout"
+        content:
+          - text: "Bold"
+            textStyle:
+              fontWeight: "bold"
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-text"
+              type: "text-revealing"
+              content: "${dialogue.content}"
+              textStyle:
+                fontSize: 24
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+throws: 'Inline textStyle is not allowed in layout elements at "root[0]". Use textStyleId instead'

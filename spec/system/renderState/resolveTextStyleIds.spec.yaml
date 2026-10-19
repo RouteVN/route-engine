@@ -581,3 +581,559 @@ in:
       fg:
         hex: "white"
 throws: 'Color "fg" for text style "body" must resolve to a hex color'
+---
+case: text-revealing content run keeps an inline fontWeight and the element style
+in:
+  - type: "text-revealing"
+    content:
+      - text: "Plain "
+      - text: "Bold"
+        textStyle:
+          fontWeight: "bold"
+    textStyleId: "body"
+  - textStyles:
+      body:
+        fontId: "fontMain"
+        colorId: "fg"
+        fontSize: 24
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1.2
+    fonts:
+      fontMain:
+        fileId: "Arial"
+    colors:
+      fg:
+        hex: "#FFFFFF"
+out:
+  type: "text-revealing"
+  content:
+    - text: "Plain "
+    - text: "Bold"
+      textStyle:
+        fontWeight: "bold"
+  textStyle:
+    fontFamily: "Arial"
+    fontSize: 24
+    fontWeight: "400"
+    fontStyle: "normal"
+    lineHeight: 1.2
+    fill: "#FFFFFF"
+---
+case: text content run resolves inline fontStyle, textDecoration, and fill
+in:
+  - type: "text"
+    content:
+      - text: "Italic"
+        textStyle:
+          fontStyle: "italic"
+      - text: "Underlined"
+        textStyle:
+          textDecoration: "underline"
+      - text: "Accent"
+        textStyle:
+          fill: "#b45309"
+    textStyleId: "body"
+  - textStyles:
+      body:
+        fontId: "fontMain"
+        colorId: "fg"
+        fontSize: 24
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1.2
+    fonts:
+      fontMain:
+        fileId: "Arial"
+    colors:
+      fg:
+        hex: "#FFFFFF"
+out:
+  type: "text"
+  content:
+    - text: "Italic"
+      textStyle:
+        fontStyle: "italic"
+    - text: "Underlined"
+      textStyle:
+        textDecoration: "underline"
+    - text: "Accent"
+      textStyle:
+        fill: "#b45309"
+  textStyle:
+    fontFamily: "Arial"
+    fontSize: 24
+    fontWeight: "400"
+    fontStyle: "normal"
+    lineHeight: 1.2
+    fill: "#FFFFFF"
+---
+case: content run accepts every allowlisted inline field together and expands short hex fill
+in:
+  - type: "text-revealing"
+    content:
+      - text: "Everything"
+        textStyle:
+          fontWeight: 700
+          fontStyle: "oblique"
+          textDecoration: "none"
+          fill: "#0af"
+  - {}
+out:
+  type: "text-revealing"
+  content:
+    - text: "Everything"
+      textStyle:
+        fontWeight: 700
+        fontStyle: "oblique"
+        textDecoration: "none"
+        fill: "#00aaff"
+---
+case: content run inline fontWeight accepts keywords and numeric strings
+in:
+  - type: "text"
+    content:
+      - text: "A"
+        textStyle:
+          fontWeight: "700"
+      - text: "B"
+        textStyle:
+          fontWeight: "lighter"
+      - text: "C"
+        textStyle:
+          fontWeight: "normal"
+  - {}
+out:
+  type: "text"
+  content:
+    - text: "A"
+      textStyle:
+        fontWeight: "700"
+    - text: "B"
+      textStyle:
+        fontWeight: "lighter"
+    - text: "C"
+      textStyle:
+        fontWeight: "normal"
+---
+case: content run overlays inline textStyle fields on its resolved textStyleId
+in:
+  - type: "text-revealing"
+    content:
+      - text: "Small bold"
+        textStyleId: "ruby"
+        textStyle:
+          fontWeight: "bold"
+          fill: "#112233"
+      - text: "Small"
+        textStyleId: "ruby"
+  - textStyles:
+      ruby:
+        fontId: "fontMain"
+        colorId: "fg"
+        fontSize: 12
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1
+    fonts:
+      fontMain:
+        fileId: "Arial"
+    colors:
+      fg:
+        hex: "#FFFFFF"
+out:
+  type: "text-revealing"
+  content:
+    - text: "Small bold"
+      textStyle:
+        fontFamily: "Arial"
+        fontSize: 12
+        fontWeight: "bold"
+        fontStyle: "normal"
+        lineHeight: 1
+        fill: "#112233"
+    - text: "Small"
+      textStyle:
+        fontFamily: "Arial"
+        fontSize: 12
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1
+        fill: "#FFFFFF"
+---
+case: inline run fill replaces a text style fill that carries colorAlpha
+in:
+  - type: "text"
+    content:
+      - text: "Accent"
+        textStyleId: "body"
+        textStyle:
+          fill: "#b45309"
+  - textStyles:
+      body:
+        fontId: "fontMain"
+        colorId: "fg"
+        colorAlpha: 0.5
+        fontSize: 24
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1.2
+    fonts:
+      fontMain:
+        fileId: "Arial"
+    colors:
+      fg:
+        hex: "#FFFFFF"
+out:
+  type: "text"
+  content:
+    - text: "Accent"
+      textStyle:
+        fontFamily: "Arial"
+        fontSize: 24
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1.2
+        fill: "#b45309"
+---
+case: nested text elements resolve run textStyle and keep furigana resolution
+in:
+  - id: "root-container"
+    type: "container"
+    children:
+      - id: "body"
+        type: "text-revealing"
+        textStyleId: "body"
+        content:
+          - text: "Hello "
+            furigana:
+              text: "ruby"
+              textStyleId: "ruby"
+          - text: "bold"
+            textStyle:
+              fontWeight: "bold"
+  - textStyles:
+      body:
+        fontId: "fontMain"
+        colorId: "fg"
+        fontSize: 24
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1.2
+      ruby:
+        fontId: "fontMain"
+        colorId: "fg"
+        fontSize: 12
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1
+    fonts:
+      fontMain:
+        fileId: "Arial"
+    colors:
+      fg:
+        hex: "#FFFFFF"
+out:
+  id: "root-container"
+  type: "container"
+  children:
+    - id: "body"
+      type: "text-revealing"
+      content:
+        - text: "Hello "
+          furigana:
+            text: "ruby"
+            textStyle:
+              fontFamily: "Arial"
+              fontSize: 12
+              fontWeight: "400"
+              fontStyle: "normal"
+              lineHeight: 1
+              fill: "#FFFFFF"
+        - text: "bold"
+          textStyle:
+            fontWeight: "bold"
+      textStyle:
+        fontFamily: "Arial"
+        fontSize: 24
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1.2
+        fill: "#FFFFFF"
+---
+case: runs without textStyle or textStyleId are unchanged
+in:
+  - type: "text-revealing"
+    content:
+      - text: "One "
+      - text: "two"
+        custom: true
+  - {}
+out:
+  type: "text-revealing"
+  content:
+    - text: "One "
+    - text: "two"
+      custom: true
+---
+case: content run textStyle outside a text element keeps the layout error
+in:
+  - type: "container"
+    content:
+      - text: "Hello"
+        textStyle:
+          fontWeight: "bold"
+  - {}
+throws: 'Inline textStyle is not allowed in layout elements at "content[0]". Use textStyleId instead'
+---
+case: text element textStyle still throws when its content has styled runs
+in:
+  - type: "text-revealing"
+    content:
+      - text: "Hello"
+        textStyle:
+          fontWeight: "bold"
+    textStyle:
+      fontSize: 20
+  - {}
+throws: 'Inline textStyle is not allowed in layout elements at "root". Use textStyleId instead'
+---
+case: text element hover textStyle still throws when its content has styled runs
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyle:
+          fontWeight: "bold"
+    hover:
+      textStyle:
+        fill: "#FFFFFF"
+  - {}
+throws: 'Inline textStyle is not allowed in layout elements at "hover". Use textStyleId instead'
+---
+case: text element click textStyle still throws when its content has styled runs
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyle:
+          fontWeight: "bold"
+    click:
+      textStyle:
+        fill: "#FFFFFF"
+  - {}
+throws: 'Inline textStyle is not allowed in layout elements at "click". Use textStyleId instead'
+---
+case: text element rightClick textStyle still throws when its content has styled runs
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyle:
+          fontWeight: "bold"
+    rightClick:
+      textStyle:
+        fill: "#FFFFFF"
+  - {}
+throws: 'Inline textStyle is not allowed in layout elements at "rightClick". Use textStyleId instead'
+---
+case: furigana inline textStyle still throws
+in:
+  - type: "text"
+    content:
+      - text: "Kanji"
+        furigana:
+          text: "reading"
+          textStyle:
+            fontWeight: "bold"
+  - {}
+throws: 'Inline textStyle is not allowed in layout elements at "content[0].furigana". Use textStyleId instead'
+---
+case: content run inline textStyle rejects fields outside the allowlist
+in:
+  - type: "text-revealing"
+    content:
+      - text: "Hello"
+        textStyle:
+          fontWeight: "bold"
+          fontSize: 40
+  - {}
+throws: 'Inline textStyle.fontSize is not allowed in text content runs at "content[0]". Only fontWeight, fontStyle, textDecoration, and fill may be authored inline; use textStyleId for other style changes'
+---
+case: content run inline textStyle rejects shadow
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyle:
+          shadow:
+            color: "#000000"
+  - {}
+throws: 'Inline textStyle.shadow is not allowed in text content runs at "content[0]"'
+---
+case: content run inline textStyle rejects fontFamily
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyle:
+          fontFamily: "Arial"
+  - {}
+throws: 'Inline textStyle.fontFamily is not allowed in text content runs at "content[0]"'
+---
+case: content run inline textStyle error path points at the failing run
+in:
+  - id: "root-container"
+    type: "container"
+    children:
+      - id: "body"
+        type: "text-revealing"
+        content:
+          - text: "Fine"
+            textStyle:
+              fontWeight: "bold"
+          - text: "Broken"
+            textStyle:
+              strokeWidth: 3
+  - {}
+throws: 'Inline textStyle.strokeWidth is not allowed in text content runs at "children[0].content[1]"'
+---
+case: content run inline textStyle must be an object
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyle: "bold"
+  - {}
+throws: 'Inline textStyle at "content[0]" must be an object'
+---
+case: content run inline textStyle cannot be null
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyle: null
+  - {}
+throws: 'Inline textStyle at "content[0]" must be an object'
+---
+case: content run inline textStyle cannot be an array
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyle:
+          - fontWeight: "bold"
+  - {}
+throws: 'Inline textStyle at "content[0]" must be an object'
+---
+case: content run inline fill must be an opaque hex color
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyle:
+          fill: "rgba(255, 0, 0, 0.5)"
+  - {}
+throws: 'Inline textStyle.fill at "content[0]" must resolve to a hex color'
+---
+case: content run inline fill rejects hex colors with alpha
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyle:
+          fill: "#ff000080"
+  - {}
+throws: 'Inline textStyle.fill at "content[0]" must resolve to a hex color'
+---
+case: content run inline fill rejects color names
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyle:
+          fill: "red"
+  - {}
+throws: 'Inline textStyle.fill at "content[0]" must resolve to a hex color'
+---
+case: content run inline fill rejects non-string values
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyle:
+          fill: 255
+  - {}
+throws: 'Inline textStyle.fill at "content[0]" must resolve to a hex color'
+---
+case: content run inline fontWeight rejects unknown keywords
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyle:
+          fontWeight: "heavy"
+  - {}
+throws: 'Inline textStyle.fontWeight at "content[0]" must be normal, bold, bolder, lighter, or a number from 1 to 1000'
+---
+case: content run inline fontWeight rejects numbers outside 1 to 1000
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyle:
+          fontWeight: 1001
+  - {}
+throws: 'Inline textStyle.fontWeight at "content[0]" must be normal, bold, bolder, lighter, or a number from 1 to 1000'
+---
+case: content run inline fontWeight rejects booleans
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyle:
+          fontWeight: true
+  - {}
+throws: 'Inline textStyle.fontWeight at "content[0]" must be normal, bold, bolder, lighter, or a number from 1 to 1000'
+---
+case: content run inline fontStyle rejects unknown values
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyle:
+          fontStyle: "slanted"
+  - {}
+throws: 'Inline textStyle.fontStyle at "content[0]" must be normal, italic, or oblique'
+---
+case: content run inline textDecoration rejects unsupported values
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyle:
+          textDecoration: "line-through"
+  - {}
+throws: 'Inline textStyle.textDecoration at "content[0]" must be none or underline'
+---
+case: content run textStyleId still reports a missing text style when inline textStyle is present
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyleId: "missing"
+        textStyle:
+          fontWeight: "bold"
+  - textStyles: {}
+throws: 'Text style "missing" not found'
+---
+case: content run textStyleId must resolve to a non-empty string when inline textStyle is present
+in:
+  - type: "text"
+    content:
+      - text: "Hello"
+        textStyleId: ""
+        textStyle:
+          fontWeight: "bold"
+  - textStyles: {}
+throws: 'textStyleId at "content[0]" must resolve to a non-empty string'

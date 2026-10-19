@@ -1188,6 +1188,123 @@ const setLayoutOwnProperty = (target, key, value) => {
   });
 };
 
+// Layout elements may not author inline textStyle; they reference
+// resources.textStyles through textStyleId. A run inside the content array of a
+// text element is the writer's text rather than layout design, so it may carry
+// a narrow emphasis override. The renderer merges a run's textStyle over the
+// element's own style, so the override only needs the fields it changes.
+const TEXT_RUN_ELEMENT_TYPES = new Set(["text", "text-revealing"]);
+const TEXT_RUN_STYLE_FIELDS = [
+  "fontWeight",
+  "fontStyle",
+  "textDecoration",
+  "fill",
+];
+const TEXT_RUN_FONT_WEIGHT_KEYWORDS = new Set([
+  "normal",
+  "bold",
+  "bolder",
+  "lighter",
+]);
+const TEXT_RUN_FONT_STYLES = new Set(["normal", "italic", "oblique"]);
+const TEXT_RUN_TEXT_DECORATIONS = new Set(["none", "underline"]);
+const NUMERIC_FONT_WEIGHT_PATTERN = /^\d+(?:\.\d+)?$/;
+
+const isTextRunFontWeight = (value) => {
+  if (typeof value === "string" && TEXT_RUN_FONT_WEIGHT_KEYWORDS.has(value)) {
+    return true;
+  }
+
+  const weight =
+    typeof value === "string" && NUMERIC_FONT_WEIGHT_PATTERN.test(value)
+      ? Number(value)
+      : value;
+
+  return (
+    typeof weight === "number" &&
+    Number.isFinite(weight) &&
+    weight >= 1 &&
+    weight <= 1000
+  );
+};
+
+const resolveTextRunStyle = (textStyle, path) => {
+  if (!textStyle || typeof textStyle !== "object" || Array.isArray(textStyle)) {
+    throw new Error(`Inline textStyle at "${path}" must be an object`);
+  }
+
+  const resolvedTextStyle = {};
+
+  for (const [field, value] of Object.entries(textStyle)) {
+    if (!TEXT_RUN_STYLE_FIELDS.includes(field)) {
+      throw new Error(
+        `Inline textStyle.${field} is not allowed in text content runs at "${path}". Only fontWeight, fontStyle, textDecoration, and fill may be authored inline; use textStyleId for other style changes`,
+      );
+    }
+
+    if (field === "fontWeight" && !isTextRunFontWeight(value)) {
+      throw new Error(
+        `Inline textStyle.fontWeight at "${path}" must be normal, bold, bolder, lighter, or a number from 1 to 1000`,
+      );
+    }
+
+    if (field === "fontStyle" && !TEXT_RUN_FONT_STYLES.has(value)) {
+      throw new Error(
+        `Inline textStyle.fontStyle at "${path}" must be normal, italic, or oblique`,
+      );
+    }
+
+    if (field === "textDecoration" && !TEXT_RUN_TEXT_DECORATIONS.has(value)) {
+      throw new Error(
+        `Inline textStyle.textDecoration at "${path}" must be none or underline`,
+      );
+    }
+
+    resolvedTextStyle[field] =
+      field === "fill"
+        ? normalizeHexColor(value, `Inline textStyle.fill at "${path}"`)
+        : value;
+  }
+
+  return resolvedTextStyle;
+};
+
+// A run's textStyleId resolves first; its inline textStyle fields then replace
+// the matching fields of the resolved style. Furigana and any other nested
+// object keep the strict layout rules.
+const resolveTextRun = (run, resources, path) => {
+  const resolvedRun = {};
+
+  for (const [key, value] of Object.entries(run)) {
+    if (key === "textStyle" || key === "textStyleId") {
+      continue;
+    }
+
+    setLayoutOwnProperty(
+      resolvedRun,
+      key,
+      resolveTextStyleIds(value, resources, getLayoutResourcePath(path, key)),
+    );
+  }
+
+  let textStyle;
+
+  if (run.textStyleId !== undefined) {
+    ensureNonEmptyLayoutResourceId(run.textStyleId, path, "textStyleId");
+    textStyle = resolveTextStyleResource(resources, run.textStyleId);
+  }
+
+  if (run.textStyle !== undefined) {
+    textStyle = { ...textStyle, ...resolveTextRunStyle(run.textStyle, path) };
+  }
+
+  if (textStyle !== undefined) {
+    resolvedRun.textStyle = textStyle;
+  }
+
+  return resolvedRun;
+};
+
 export const resolveTextStyleIds = (node, resources = {}, path = "root") => {
   if (Array.isArray(node)) {
     return node.map((item, index) =>
@@ -1214,6 +1331,25 @@ export const resolveTextStyleIds = (node, resources = {}, path = "root") => {
     }
 
     if (key === "textStyleId") {
+      continue;
+    }
+
+    if (
+      key === "content" &&
+      Array.isArray(value) &&
+      TEXT_RUN_ELEMENT_TYPES.has(node.type)
+    ) {
+      const contentPath = getLayoutResourcePath(path, key);
+
+      setLayoutOwnProperty(
+        resolvedNode,
+        key,
+        value.map((item, index) =>
+          item && typeof item === "object" && !Array.isArray(item)
+            ? resolveTextRun(item, resources, `${contentPath}[${index}]`)
+            : resolveTextStyleIds(item, resources, `${contentPath}[${index}]`),
+        ),
+      );
       continue;
     }
 
