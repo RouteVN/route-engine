@@ -82,6 +82,7 @@ Static, read-only data that defines the visual novel content:
   - Layout sprite elements should reference images with `imageId` and optional `hoverImageId` / `clickImageId`
   - Layout rect elements should reference shared colors with `colorId` and optional `hover.colorId` / `click.colorId` / `rightClick.colorId`
   - Authored inline `textStyle` objects, authored sprite `src` / `hover.src` / `click.src` fields, and authored rect `fill` / `hover.fill` / `click.fill` / `rightClick.fill` fields in layout elements are invalid and fail fast at render-state construction
+  - The one exception is a run inside the `content` array of a `text` or `text-revealing` element, such as an item of dialogue content. A run may carry a narrow inline `textStyle` that allows only `fontWeight`, `fontStyle`, `textDecoration`, and `fill`; any other field fails fast. When a run has both `textStyleId` and `textStyle`, `textStyleId` resolves first and the inline fields then replace the matching fields. See `Inline Text Run Styles` in [RouteEngine.md](./RouteEngine.md)
 - **story**: Scenes, sections, and lines that define the narrative flow
   - Scene containers remain part of authored story structure
   - Section IDs are globally unique across scenes and are the primary runtime routing key

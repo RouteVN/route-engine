@@ -1,0 +1,140 @@
+---
+title: Dialogue Inline Run Text Style
+description: |
+  Verifies that dialogue content runs may carry a small inline textStyle
+  (fontWeight, fontStyle, fill) and that the renderer merges it over the
+  element's own text style:
+  - a run with only fontWeight keeps the element's font, size, and color
+  - a run with only fontStyle keeps the element's font, size, and color
+  - a run with only fill keeps the element's font, size, and weight
+  - a run with both textStyleId and inline textStyle applies the inline fields
+    over the resolved text style
+  The same content is rendered by a text-revealing element (fast enough to be
+  fully revealed in the capture) and a text element.
+  The accent fill is the only intentionally saturated color; it is the subject
+  of the fill override.
+---
+screen:
+  width: 1920
+  height: 1080
+resources:
+  controls:
+    base:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: black
+  layouts:
+    runStyleDialogue:
+      mode: adv
+      elements:
+        - id: dialogue-panel
+          type: rect
+          x: 100
+          y: 300
+          width: 1720
+          height: 480
+          colorId: panel
+        - id: revealing-label
+          type: text
+          x: 140
+          y: 340
+          content: TEXT-REVEALING
+          textStyleId: label
+        - id: revealing-text
+          type: text-revealing
+          x: 140
+          y: 390
+          width: 1640
+          speed: 1000
+          revealEffect: typewriter
+          content: ${dialogue.content}
+          textStyleId: body
+        - id: static-label
+          type: text
+          x: 140
+          y: 560
+          content: TEXT
+          textStyleId: label
+        - id: static-text
+          type: text
+          x: 140
+          y: 610
+          width: 1640
+          content: ${dialogue.content}
+          textStyleId: body
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    black:
+      hex: "#000000"
+    panel:
+      hex: "#2B2F36"
+    labelColor:
+      hex: "#A6A6A6"
+    textColor:
+      hex: "#FFFFFF"
+    mutedColor:
+      hex: "#A6A6A6"
+  textStyles:
+    label:
+      fontId: fontDefault
+      colorId: labelColor
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1
+    body:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 40
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.3
+    muted:
+      fontId: fontDefault
+      colorId: mutedColor
+      fontSize: 40
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.3
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: start
+      sections:
+        start:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: base
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: runStyleDialogue
+                  content:
+                    - text: "Plain, "
+                    - text: "bold, "
+                      textStyle:
+                        fontWeight: bold
+                    - text: "italic, "
+                      textStyle:
+                        fontStyle: italic
+                    - text: "accent, "
+                      textStyle:
+                        fill: "#FFB347"
+                    - text: "muted bold, "
+                      textStyleId: muted
+                      textStyle:
+                        fontWeight: bold
+                    - text: "then plain again."

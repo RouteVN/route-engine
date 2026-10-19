@@ -213,7 +213,10 @@ It resolves:
   `clickImageId`, and `rightClick.colorId`
 
 It uses the same strict rules as the engine render-state pipeline, so inline
-authored `textStyle`, `fill`, and sprite `src` fields still throw.
+authored `textStyle`, `fill`, and sprite `src` fields still throw. The one
+exception is the narrow inline `textStyle` allowed on a run inside the `content`
+array of a `text` or `text-revealing` element; see
+[Inline Text Run Styles](#inline-text-run-styles).
 
 ```js
 import { resolveLayoutReferences } from "rvn-temp";
@@ -444,6 +447,8 @@ applies filters to its color rect.
 
 Layout text should be authored with `textStyleId` and resolved through `resources.textStyles`.
 Authored inline `textStyle` objects in layout elements are rejected at render-state construction.
+The only exception is a content run, described in
+[Inline Text Run Styles](#inline-text-run-styles).
 Text transparency should be authored on the text style resource with `colorAlpha`,
 `strokeAlpha`, and `shadow.alpha`, not baked into the shared color resource itself. Whole-node
 transparency still uses the element `alpha`. `resources.colors[*].hex` must be
@@ -483,6 +488,55 @@ resources:
           content: "${dialogue.content[0].text}"
           textStyleId: body
 ```
+
+#### Inline Text Run Styles
+
+A layout element may not author an inline `textStyle`. A run inside the
+`content` array of a `text` or `text-revealing` element is different: it is the
+writer's text rather than layout design, so it may carry a narrow emphasis
+override. This is how dialogue content such as bold, italic, underlined, or
+accented text reaches the renderer:
+
+```yaml
+dialogue:
+  content:
+    - text: "Plain "
+    - text: "bold "
+      textStyle:
+        fontWeight: bold
+    - text: "accent"
+      textStyle:
+        fill: "#b45309"
+```
+
+Rules:
+
+- Only these `textStyle` fields are accepted on a run. Any other field, such as
+  `fontSize`, `fontFamily`, or `shadow`, throws with the path of the run. Use
+  `textStyleId` for those.
+  - `fontWeight`: `normal`, `bold`, `bolder`, `lighter`, or a number from 1 to 1000. A numeric string such as `"700"` is also accepted.
+  - `fontStyle`: `normal`, `italic`, or `oblique`.
+  - `textDecoration`: `none` or `underline`. Underline needs a Route Graphics
+    release that draws `textDecoration` (1.48.0 or later); earlier releases
+    ignore it.
+  - `fill`: an opaque hex color such as `#b45309` or `#b50`. Color names,
+    `rgba()`, and hex colors with alpha are rejected. Transparent text belongs
+    on a text style resource with `colorAlpha`.
+- The engine passes the run's `textStyle` to Route Graphics with only the fields
+  that were authored (a short hex `fill` is expanded to six digits). Route
+  Graphics merges it over the element's own text style, so a run with only
+  `fontWeight: bold` keeps the element's font, size, and color.
+- A run with both `textStyleId` and `textStyle` resolves `textStyleId` through
+  `resources.textStyles` first, then replaces the matching fields of the
+  resolved style with the inline fields. The run then carries the complete
+  resolved style. An inline `fill` replaces the text style's fill together with
+  its `colorAlpha`.
+- The exception covers only the run itself. `textStyle` on the element, on its
+  `hover`, `click`, or `rightClick`, on `furigana`, or on an element of any other
+  type still throws. `furigana` keeps using `textStyleId`.
+- Once templates are rendered, the engine cannot tell dialogue content from a
+  run written directly in a layout's `content` array, so both follow the same
+  rule. The same applies to `text.content` runs of legacy text visuals.
 
 #### Layout Sprite Images
 
@@ -1497,7 +1551,9 @@ visual:
 
 `imageId`, `textStyleId`, and `colorId` are resolved from the normal project
 resource collections. Raw renderer fields such as sprite `src`, text
-`textStyle`, and rectangle `fill` should not be authored directly.
+`textStyle`, and rectangle `fill` should not be authored directly. The only
+exception is the narrow inline `textStyle` on a content run described in
+[Inline Text Run Styles](#inline-text-run-styles).
 
 #### Templates and input
 

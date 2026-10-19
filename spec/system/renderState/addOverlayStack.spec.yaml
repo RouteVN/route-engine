@@ -719,3 +719,89 @@ out:
           width: 640
           height: 360
   animations: []
+---
+case: overlay history keeps inline textStyle on content runs
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        historyLayout:
+          elements:
+            - $for entry, i in historyDialogue:
+                - id: "history-text-${i}"
+                  type: "text"
+                  content: "${entry.content}"
+                  textStyleId: "body"
+      textStyles:
+        body:
+          fontId: "fontMain"
+          colorId: "fg"
+          fontSize: 24
+          fontWeight: "400"
+          fontStyle: "normal"
+          lineHeight: 1.2
+      fonts:
+        fontMain:
+          fileId: "Arial"
+      colors:
+        fg:
+          hex: "#FFFFFF"
+    variables: {}
+    autoMode: false
+    skipMode: false
+    screen:
+      width: 1920
+      height: 1080
+    dialogueHistory:
+      - content:
+          - text: "Hello "
+          - text: "world"
+            textStyle:
+              fontWeight: "bold"
+        text: "Hello world"
+    overlayStack:
+      - resourceId: historyLayout
+        resourceType: layout
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "overlayStack-0"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "overlayStack-0-blocker"
+          type: "rect"
+          fill: "transparent"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            payload:
+              actions: {}
+        - id: "history-text-0"
+          type: "text"
+          content:
+            - text: "Hello "
+            - text: "world"
+              textStyle:
+                fontWeight: "bold"
+          textStyle:
+            fontFamily: "Arial"
+            fontSize: 24
+            fontWeight: "400"
+            fontStyle: "normal"
+            lineHeight: 1.2
+            fill: "#FFFFFF"
+  animations: []

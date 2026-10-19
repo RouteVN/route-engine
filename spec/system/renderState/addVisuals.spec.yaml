@@ -323,6 +323,83 @@ out:
   animations: []
   audio: []
 ---
+case: add rich visual text content with inline run textStyle
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "richTitle"
+            text:
+              content:
+                - text: "Plain "
+                - text: "bold"
+                  textStyle:
+                    fontWeight: "bold"
+              textStyleId: "body"
+            transformId: "titleTransform"
+    resources:
+      textStyles:
+        body:
+          fontId: "fontMain"
+          colorId: "fg"
+          fontSize: 36
+          fontWeight: "400"
+          fontStyle: "normal"
+          lineHeight: 1.2
+      fonts:
+        fontMain:
+          fileId: "Arial"
+      colors:
+        fg:
+          hex: "#FFFFFF"
+      transforms:
+        titleTransform:
+          x: 320
+          y: 180
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-richTitle"
+          type: "text"
+          content:
+            - text: "Plain "
+            - text: "bold"
+              textStyle:
+                fontWeight: "bold"
+          x: 320
+          y: 180
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          textStyle:
+            fontFamily: "Arial"
+            fontSize: 36
+            fontWeight: "400"
+            fontStyle: "normal"
+            lineHeight: 1.2
+            fill: "#FFFFFF"
+  animations: []
+  audio: []
+---
 case: add visual sprite with opacity and blur to story container
 in:
   - elements:
