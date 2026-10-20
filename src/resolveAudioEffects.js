@@ -34,9 +34,6 @@ const isSameSourceIdentity = (previous, next) =>
       (next?.[field] ?? (field === "endAt" ? null : 0)),
   );
 
-const isSameValue = (previous, next) =>
-  JSON.stringify(previous) === JSON.stringify(next);
-
 const areEquivalentAudioValues = (authored, rendered) =>
   authored === rendered ||
   Math.abs(authored - rendered) <=
@@ -348,14 +345,6 @@ const createBaseEffect = (occurrence, targetId) => ({
   targetId,
 });
 
-const getTopLevelTransitionSoundGraph = (sound) => {
-  if (!sound) return sound;
-  const graph = { ...sound };
-  delete graph.beginEffect;
-  delete graph.endEffect;
-  return graph;
-};
-
 // Compile one authored property track on one side of a handoff. `side` is the
 // sound with its BGM and resources: the outgoing side for an exit track, the
 // incoming side otherwise. `baselineBgm` holds the channel pan that relative
@@ -450,16 +439,10 @@ export const resolveAudioEffect = ({
   const properties = {};
 
   if (resource.type === "transition") {
-    if (isSameSourceIdentity(previousSound, nextSound)) {
-      const sameGraph = isSameValue(
-        getTopLevelTransitionSoundGraph(previousSound),
-        getTopLevelTransitionSoundGraph(nextSound),
-      );
-      if (sameGraph) return null;
-      throw new Error(
-        `[${actionPath}.audioEffects]\n[${resourcePath}] Audio effect resource "${resourceId}" has type "transition", but the BGM action only updates a retained sound. Use an update resource.`,
-      );
-    }
+    // A transition plays only when a sound starts, stops, or changes source.
+    // Whether a line keeps the music playing depends on how the player reached
+    // it, so a kept sound takes its new mix at once instead of failing the line.
+    if (isSameSourceIdentity(previousSound, nextSound)) return null;
 
     for (const property of AUDIO_EFFECT_PROPERTIES) {
       const lifecycle = {};
@@ -650,16 +633,11 @@ export const resolveAudioEffects = (options) => {
     return resolveTargets(targets);
   }
 
-  const changedRetainedSound = previousSounds.find((previousSound) => {
-    const nextSound = nextById.get(previousSound.id);
-    return nextSound && !isSameValue(previousSound, nextSound);
-  });
+  // Every sound keeps playing, so the transition has nothing to play. Resolve
+  // one kept sound anyway so a selection that is invalid on every path, such
+  // as a bad playback speed, still fails here.
+  const [previousSound] = previousSounds;
   return resolveTargets([
-    {
-      previousSound: changedRetainedSound ?? previousSounds[0],
-      nextSound: changedRetainedSound
-        ? nextById.get(changedRetainedSound.id)
-        : nextSounds[0],
-    },
+    { previousSound, nextSound: nextById.get(previousSound?.id) },
   ]);
 };

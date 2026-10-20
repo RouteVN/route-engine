@@ -312,28 +312,7 @@ describe("resolveAudioEffect", () => {
     });
   });
 
-  it("rejects topology, resource type, and invalid final endpoints", () => {
-    expect(() =>
-      resolveAudioEffect({
-        occurrence,
-        resources: {
-          audioEffects: {
-            crossfade: {
-              type: "transition",
-              next: {
-                volume: { keyframes: [{ value: 20, duration: 100 }] },
-              },
-            },
-          },
-        },
-        previousChannel: oldChannel,
-        nextChannel: {
-          ...oldChannel,
-          children: [{ ...oldChannel.children[0], volume: 20 }],
-        },
-      }),
-    ).toThrow('has type "transition"');
-
+  it("rejects topology and invalid final endpoints", () => {
     expect(() =>
       resolveAudioEffect({
         occurrence: { ...occurrence, selection: { resourceId: "bad" } },
@@ -381,6 +360,90 @@ describe("resolveAudioEffect", () => {
       }),
     ).toThrow("require exactly one BGM sound");
   });
+
+  it("plays no transition on a sound that keeps its source", () => {
+    const resources = {
+      audioEffects: {
+        crossfade: {
+          type: "transition",
+          next: { volume: { keyframes: [{ value: 20, duration: 100 }] } },
+        },
+      },
+    };
+    const nextChannel = {
+      ...oldChannel,
+      children: [{ ...oldChannel.children[0], volume: 20, pan: 0.5 }],
+    };
+
+    expect(
+      resolveAudioEffect({
+        occurrence,
+        resources,
+        previousChannel: oldChannel,
+        nextChannel,
+      }),
+    ).toBeNull();
+    expect(
+      resolveAudioEffects({
+        occurrence,
+        resources,
+        previousChannel: oldChannel,
+        nextChannel,
+      }),
+    ).toEqual([]);
+  });
+
+  it("plays no transition when every BGM sound keeps its source", () => {
+    const ambience = {
+      ...oldChannel.children[0],
+      id: "bgm:ambience",
+      src: "ambience.ogg",
+      volume: 40,
+    };
+    const effects = resolveAudioEffects({
+      occurrence,
+      resources: { audioEffects: { crossfade: transitionResource } },
+      previousChannel: {
+        ...oldChannel,
+        children: [oldChannel.children[0], ambience],
+      },
+      nextChannel: {
+        ...oldChannel,
+        children: [oldChannel.children[0], { ...ambience, volume: 10 }],
+      },
+    });
+
+    expect(effects).toEqual([]);
+  });
+
+  it.each([
+    [{ resourceId: "missing" }, 'Unknown audio effect resource "missing"'],
+    [{ resourceId: "unsupported" }, 'Unsupported audio effect type "sequence"'],
+    [
+      { resourceId: "crossfade", playback: { speed: 0 } },
+      "must be a finite number greater than 0",
+    ],
+  ])(
+    "still rejects an invalid selection %j on a sound that keeps its source",
+    (selection, error) => {
+      expect(() =>
+        resolveAudioEffects({
+          occurrence: { ...occurrence, selection },
+          resources: {
+            audioEffects: {
+              crossfade: transitionResource,
+              unsupported: { type: "sequence" },
+            },
+          },
+          previousChannel: oldChannel,
+          nextChannel: {
+            ...oldChannel,
+            children: [{ ...oldChannel.children[0], volume: 60 }],
+          },
+        }),
+      ).toThrow(error);
+    },
+  );
 
   it("compiles entry-only and exit-only transitions", () => {
     const resources = { audioEffects: { crossfade: transitionResource } };
