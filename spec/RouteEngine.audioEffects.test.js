@@ -787,7 +787,7 @@ describe("RouteEngine audioEffects occurrences", () => {
       actions: {
         bgm: {
           volume: 30,
-          audioEffects: { resourceId: "crossfade" },
+          audioEffects: { resourceId: "missing" },
           sounds: [{ id: "main", resourceId: "old" }],
         },
         setMusicVolume: { value: 25 },
@@ -810,7 +810,7 @@ describe("RouteEngine audioEffects occurrences", () => {
     const engine = createEngine({ projectData });
 
     expect(() => enterNextLine(engine)).toThrow(
-      "only updates a retained sound",
+      'Unknown audio effect resource "missing"',
     );
     expect(engine.selectRuntime().musicVolume).toBe(50);
     expect(engine.selectRenderState().audioEffects).toBeUndefined();
@@ -1050,4 +1050,110 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(renderState.audioEffects).toBeUndefined();
     expect(renderState.audio[0].children[0]).toHaveProperty("beginEffect");
   });
+});
+
+describe("RouteEngine transition audioEffects on music that keeps playing", () => {
+  const keptMusicLine = (id) => ({
+    id,
+    actions: {
+      bgm: {
+        volume: 80,
+        audioEffects: { resourceId: "crossfade" },
+        sounds: [{ id: "main", resourceId: "old" }],
+      },
+    },
+  });
+
+  const createKeptMusicProjectData = () => {
+    const projectData = createProjectData();
+    const { sections } = projectData.story.scenes.scene;
+    sections.section.lines.splice(1, 0, keptMusicLine("kept"));
+    sections.destination = { lines: [keptMusicLine("destination")] };
+    return projectData;
+  };
+
+  const selectLineId = (engine) =>
+    engine.selectSystemState().contexts.at(-1).pointers.read.lineId;
+
+  const expectKeptMusicWithoutEffect = (engine) => {
+    const renderState = engine.selectRenderState();
+    expect(renderState.audioEffects).toBeUndefined();
+    expect(renderState.audio[0].children).toHaveLength(1);
+    // The transition's final next volume is the persistent mix on every path.
+    expect(renderState.audio[0].children[0]).toMatchObject({
+      id: "bgm:main",
+      src: "old.ogg",
+      volume: 100,
+    });
+  };
+
+  it("plays no transition when the next line keeps the music", () => {
+    const engine = createEngine({ projectData: createKeptMusicProjectData() });
+
+    expect(() => enterNextLine(engine)).not.toThrow();
+    expect(selectLineId(engine)).toBe("kept");
+    expectKeptMusicWithoutEffect(engine);
+  });
+
+  it.each(["sectionTransition", "resetStoryAtSection"])(
+    "plays no transition when a %s enters a line that keeps the music",
+    (actionType) => {
+      const engine = createEngine({
+        projectData: createKeptMusicProjectData(),
+      });
+
+      expect(() =>
+        engine.handleAction(actionType, { sectionId: "destination" }),
+      ).not.toThrow();
+      expect(selectLineId(engine)).toBe("destination");
+      expectKeptMusicWithoutEffect(engine);
+    },
+  );
+
+  it("still plays the transition when the same line starts the music", () => {
+    const projectData = createKeptMusicProjectData();
+    projectData.story.scenes.scene.sections.section.lines[1] = {
+      id: "stop",
+      actions: { bgm: { sounds: [] } },
+    };
+    const engine = createEngine({ projectData });
+    enterNextLine(engine);
+    engine.commitRenderState(engine.selectRenderState());
+
+    engine.handleAction("sectionTransition", { sectionId: "destination" });
+
+    expect(engine.selectRenderState().audioEffects).toEqual([
+      expect.objectContaining({
+        targetId: "bgm:main",
+        properties: {
+          volume: {
+            enter: expect.objectContaining({
+              initialValue: 0,
+              keyframes: [expect.objectContaining({ value: 100 })],
+            }),
+          },
+        },
+      }),
+    ]);
+  });
+
+  it.each([
+    [{ resourceId: "missing" }, 'Unknown audio effect resource "missing"'],
+    [{ resourceId: "unsupported" }, 'Unsupported audio effect type "sequence"'],
+    [
+      { resourceId: "crossfade", playback: { speed: 0 } },
+      "must be a finite number greater than 0",
+    ],
+  ])(
+    "still rejects an invalid selection %j when the line keeps the music",
+    (selection, error) => {
+      const projectData = createKeptMusicProjectData();
+      projectData.resources.audioEffects.unsupported = { type: "sequence" };
+      projectData.story.scenes.scene.sections.section.lines[1].actions.bgm.audioEffects =
+        selection;
+      const engine = createEngine({ projectData });
+
+      expect(() => enterNextLine(engine)).toThrow(error);
+    },
+  );
 });

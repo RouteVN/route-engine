@@ -2239,7 +2239,12 @@ Engine audio is authored with `sounds` and rendered as Route Graphics
   update that fades to 0 fades the music out. A sound removed while others play
   or enter stops without an effect; if those others do not change, the update
   has no effect at all. Transitions target only added, removed, or
-  source-replaced sounds.
+  source-replaced sounds. A sound that keeps playing from the same source
+  plays no transition and takes its new mix at once, including the final
+  `next` values that the transition writes into the persistent mix. Whether a
+  line keeps a sound depends on how the player reached it (the previous line,
+  a section transition, or a reset), so the same line can start the music
+  with the transition on one path and keep it on another.
 
 ```yaml
 actions:
