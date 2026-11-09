@@ -5,6 +5,8 @@
 It is for scoped data that lives outside save slots, such as device/account
 variables, account-level viewed state, and replay unlocks.
 
+See [Persisted Player Data](./PersistedData.md) for the stored record.
+
 ## Effect Shape
 
 ```ts

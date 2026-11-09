@@ -71,7 +71,7 @@ For browser-backed save/load hydration, the runtime also exports
 loading persisted data before init and when calling `engine.init(...)` so
 different visual novels on the same domain do not share persistence. The
 returned adapter also exposes `clear()` to delete persisted data for that
-namespace.
+namespace. See [Persisted Player Data](./PersistedData.md) for the record shape and hydration example.
 
 Persistence assumes one active engine writer per namespace. Saves replace the
 stored slot map with that engine's map; use distinct namespace keys for

@@ -5,6 +5,8 @@ A Visual Novel engine built in JavaScript
 ## Documentation
 
 - [Concepts](docs/Concepts.md) - Core architecture and data flow
+- [Persisted Player Data](docs/PersistedData.md) - Local record shape and cross-device sync
+- [Save/Load](docs/SaveLoad.md) - Save slot behavior and integration
 - [API Reference](docs/RouteEngine.md) - Engine methods and actions
 - [Computed Variables](docs/ComputedVariables.md) - Locked interface for derived read-only variables
 - [Achievements](docs/Achievements.md) - Platform-agnostic achievement resources, actions, selectors, and effects

@@ -405,6 +405,8 @@ Dedicated helpers such as `saveToSlot(slot)` are still viable for UIs where a cl
 
 ### Host App Responsibilities
 
+See [Persisted Player Data](./PersistedData.md) for the complete record shape and startup hydration example.
+
 The host app is responsible for:
 
 - hydrating `initialState.global.saveSlots` from durable storage before engine init
