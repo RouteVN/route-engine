@@ -115,6 +115,12 @@ jobs:
             item: robustness/layout-guarded-choice.yaml
           - id: layout-instance-continuity
             item: robustness/layout-instance-continuity.yaml
+          - id: layout-screen-size
+            item: robustness/layout-screen-size.yaml
+          - id: layout-canvas-anchor-rotation
+            item: robustness/layout-canvas-anchor-rotation.yaml
+          - id: layout-canvas-click-through
+            item: robustness/layout-canvas-click-through.yaml
           - id: inline-layout-click
             item: robustness/visual-inline-layout-click.yaml
           - id: inline-layout-transition
