@@ -70,6 +70,38 @@ describe("layout canvas sizes", () => {
       });
     }
   }
+  for (const field of ["width", "height"]) {
+    for (const [valueLabel, value] of [
+      ["a string", "bad"],
+      ["zero", 0],
+      ["a negative number", -1],
+      ["NaN", Number.NaN],
+      ["Infinity", Infinity],
+    ]) {
+      it(`rejects ${valueLabel} for inline visual layout ${field}`, () => {
+        const layout = { elements: [child], [field]: value };
+        const item = { id: "art", transform, layout };
+        expect(() => render({ visual: { items: [item] } })).toThrow(
+          `Visual item "art" layout.${field} must be a positive number`,
+        );
+      });
+
+      it(`rejects ${valueLabel} for resource visual layout ${field}`, () => {
+        const layout = { elements: [child], [field]: value };
+        const item = { id: "art", transform, resourceId: "canvas" };
+        expect(() => render({ visual: { items: [item] } }, layout)).toThrow(
+          `Layout "canvas" ${field} must be a positive number`,
+        );
+      });
+
+      it(`rejects ${valueLabel} for background layout ${field}`, () => {
+        const layout = { elements: [child], [field]: value };
+        expect(() =>
+          render({ background: { resourceId: "canvas" } }, layout),
+        ).toThrow(`Layout "canvas" ${field} must be a positive number`);
+      });
+    }
+  }
   it("keeps image visual dimensions unchanged", () => {
     const image = render({
       visual: { items: [{ id: "art", resourceId: "image", transform }] },
