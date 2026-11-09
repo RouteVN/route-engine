@@ -1372,6 +1372,8 @@ out:
       children:
         - id: "visual-rain"
           type: "container"
+          width: 1920
+          height: 1080
           x: 520
           y: 120
           anchorX: 0.25
@@ -1457,6 +1459,8 @@ out:
       children:
         - id: "visual-overlay"
           type: "container"
+          width: 1920
+          height: 1080
           x: 0
           y: 0
           anchorX: 0
@@ -1596,6 +1600,8 @@ out:
           scaleY: 1
         - id: "visual-particles"
           type: "container"
+          width: 1920
+          height: 1080
           x: 500
           y: 300
           anchorX: 0.5
@@ -1680,6 +1686,8 @@ out:
       children:
         - id: "visual-snow-effect"
           type: "container"
+          width: 1920
+          height: 1080
           x: 0
           y: 0
           anchorX: 0
@@ -1968,6 +1976,8 @@ out:
       children:
         - id: "visual-caption"
           type: "container"
+          width: 1920
+          height: 1080
           x: 20
           y: 30
           anchorX: 0
@@ -2035,6 +2045,8 @@ out:
       children:
         - id: "visual-overlay"
           type: "container"
+          width: 1920
+          height: 1080
           x: 20
           y: 30
           anchorX: 0
@@ -2097,6 +2109,8 @@ out:
       children:
         - id: "visual-overlay"
           type: "container"
+          width: 1920
+          height: 1080
           x: 20
           y: 30
           anchorX: 0
@@ -2856,6 +2870,8 @@ out:
       children:
         - id: "visual-status"
           type: "container"
+          width: 1920
+          height: 1080
           x: 120
           y: 80
           anchorX: 0

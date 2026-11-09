@@ -3293,6 +3293,8 @@ export const addBackgroundOrCg = (
             kind: "container",
           }),
           type: "container",
+          width: layout.width ?? screen?.width ?? 1920,
+          height: layout.height ?? screen?.height ?? 1080,
           children: layout.elements,
           ...getBackgroundAppearance(presentationState.background),
         };
@@ -3581,6 +3583,7 @@ export const addVisuals = (
     previousPresentationState,
     currentLineActions,
     resources,
+    screen,
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
@@ -3655,6 +3658,8 @@ export const addVisuals = (
         const visualContainer = {
           id: `visual-${item.id}`,
           type: "container",
+          width: item.layout.width ?? screen?.width ?? 1920,
+          height: item.layout.height ?? screen?.height ?? 1080,
           children: structuredClone(item.layout.elements),
           ...getElementTransform(transform, item),
         };
@@ -3778,6 +3783,8 @@ export const addVisuals = (
           const visualContainer = {
             id: `visual-${item.id}`,
             type: "container",
+            width: layout.width ?? screen?.width ?? 1920,
+            height: layout.height ?? screen?.height ?? 1080,
             children: structuredClone(layout.elements),
             ...getElementTransform(transform, item),
           };

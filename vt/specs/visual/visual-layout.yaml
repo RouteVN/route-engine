@@ -21,6 +21,8 @@ resources:
   layouts:
     menuLayout:
       name: Menu Layout
+      width: 300
+      height: 400
       elements:
         - id: menuBg
           type: rect

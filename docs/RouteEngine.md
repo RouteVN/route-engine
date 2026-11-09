@@ -1481,6 +1481,8 @@ Visual items can contain a layout directly instead of referencing an image,
 video, spritesheet, particle, or shared layout resource. Inline layouts use the
 same RouteGraphics element format and the same template and resource-reference
 resolution as `resources.layouts`.
+Visual and background layout containers default to the screen width and height.
+An optional layout `width` or `height` overrides the corresponding screen dimension, and transform anchors are relative to that layout canvas.
 
 A new visual item chooses one render subject:
 

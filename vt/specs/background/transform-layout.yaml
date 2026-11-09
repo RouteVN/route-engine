@@ -12,6 +12,8 @@ screen:
 resources:
   layouts:
     bg-layout:
+      width: 340
+      height: 180
       elements:
         - id: panel
           type: rect
