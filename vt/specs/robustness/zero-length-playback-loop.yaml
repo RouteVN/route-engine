@@ -17,6 +17,8 @@ screen:
 resources:
   layouts:
     marker:
+      width: 120
+      height: 120
       elements:
         - id: marker-shape
           type: rect

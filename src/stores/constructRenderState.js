@@ -3121,6 +3121,23 @@ export const createInitialState = () => {
   };
 };
 
+const getLayoutContainerSize = (layout, screen, label) => {
+  for (const field of ["width", "height"]) {
+    const value = layout[field];
+    if (
+      value !== undefined &&
+      (typeof value !== "number" || !Number.isFinite(value) || value <= 0)
+    ) {
+      throw new Error(`${label}${field} must be a positive number`);
+    }
+  }
+
+  return {
+    width: layout.width ?? screen?.width ?? 1920,
+    height: layout.height ?? screen?.height ?? 1080,
+  };
+};
+
 export const addBackgroundOrCg = (
   state,
   {
@@ -3287,12 +3304,19 @@ export const addBackgroundOrCg = (
       const { layouts = {} } = resources;
       const layout = layouts[currentBackgroundResourceId];
       if (layout) {
+        const { width, height } = getLayoutContainerSize(
+          layout,
+          screen,
+          `Layout "${currentBackgroundResourceId}" `,
+        );
         const bgContainer = {
           id: resolveBackgroundTargetId({
             resourceId: currentBackgroundResourceId,
             kind: "container",
           }),
           type: "container",
+          width,
+          height,
           children: layout.elements,
           ...getBackgroundAppearance(presentationState.background),
         };
@@ -3581,6 +3605,7 @@ export const addVisuals = (
     previousPresentationState,
     currentLineActions,
     resources,
+    screen,
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
@@ -3652,9 +3677,16 @@ export const addVisuals = (
 
       if (item.layout) {
         const transform = getRequiredVisualTransform(resources, item);
+        const { width, height } = getLayoutContainerSize(
+          item.layout,
+          screen,
+          `Visual item "${item.id}" layout.`,
+        );
         const visualContainer = {
           id: `visual-${item.id}`,
           type: "container",
+          width,
+          height,
           children: structuredClone(item.layout.elements),
           ...getElementTransform(transform, item),
         };
@@ -3775,9 +3807,16 @@ export const addVisuals = (
 
         if (layout) {
           const transform = getRequiredVisualTransform(resources, item);
+          const { width, height } = getLayoutContainerSize(
+            layout,
+            screen,
+            `Layout "${item.resourceId}" `,
+          );
           const visualContainer = {
             id: `visual-${item.id}`,
             type: "container",
+            width,
+            height,
             children: structuredClone(layout.elements),
             ...getElementTransform(transform, item),
           };

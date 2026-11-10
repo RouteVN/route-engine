@@ -1,0 +1,163 @@
+---
+title: Layout Canvas Click Through
+description: >-
+  The empty area advances to line 2 through the upper layout canvas; its button then advances to
+  line 3. The panel remains in place throughout.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 100
+  - action: screenshot
+  - action: click
+    x: 100
+    "y": 450
+  - action: wait
+    ms: 100
+  - action: screenshot
+  - action: click
+    x: 720
+    "y": 355
+  - action: wait
+    ms: 100
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+  backgroundColor: "#000000"
+resources:
+  colors:
+    white:
+      hex: "#FFFFFF"
+    light:
+      hex: "#A6A6A6"
+    medium:
+      hex: "#737373"
+    dark:
+      hex: "#4D4D4D"
+  fonts:
+    default:
+      fileId: Arial
+  textStyles:
+    status:
+      fontId: default
+      colorId: white
+      fontSize: 32
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+  layouts:
+    surface:
+      elements:
+        - id: surface
+          type: rect
+          x: 0
+          "y": 0
+          width: 960
+          height: 540
+          colorId: dark
+          click:
+            payload:
+              actions:
+                nextLine: {}
+    panel:
+      elements:
+        - id: panel
+          type: rect
+          x: 600
+          "y": 250
+          width: 240
+          height: 180
+          colorId: medium
+        - id: button
+          type: rect
+          x: 640
+          "y": 320
+          width: 160
+          height: 70
+          colorId: light
+          click:
+            payload:
+              actions:
+                nextLine: {}
+  transforms:
+    center:
+      x: 480
+      "y": 270
+      anchorX: 0.5
+      anchorY: 0.5
+      scaleX: 1
+      scaleY: 1
+      rotation: 0
+    origin:
+      x: 0
+      "y": 0
+      anchorX: 0
+      anchorY: 0
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: start
+              actions:
+                background:
+                  resourceId: surface
+                visual:
+                  items:
+                    - id: panel
+                      resourceId: panel
+                      transformId: center
+                      layer: 70
+                    - id: status
+                      layout:
+                        elements:
+                          - id: label
+                            type: text
+                            x: 40
+                            "y": 40
+                            content: 1 START
+                            textStyleId: status
+                      transformId: origin
+                      layer: 90
+            - id: below
+              actions:
+                visual:
+                  items:
+                    - id: panel
+                      x: 480
+                    - id: status
+                      layout:
+                        elements:
+                          - id: label
+                            type: text
+                            x: 40
+                            "y": 40
+                            content: 2 CLICK REACHED LAYER BELOW
+                            textStyleId: status
+                      transformId: origin
+                      layer: 90
+            - id: button
+              actions:
+                visual:
+                  items:
+                    - id: panel
+                      x: 480
+                    - id: status
+                      layout:
+                        elements:
+                          - id: label
+                            type: text
+                            x: 40
+                            "y": 40
+                            content: 3 LAYOUT BUTTON CLICKED
+                            textStyleId: status
+                      transformId: origin
+                      layer: 90

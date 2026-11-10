@@ -1,0 +1,89 @@
+---
+title: Layout Screen Size
+description: A layout visual without its own size uses the screen as its canvas, so a centred transform keeps elements at their authored positions. The white box must sit centred inside the grey reference box drawn by the untransformed background layout. A layout with an explicit width and height anchors to that size and sits in the bottom-right corner.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 100
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+resources:
+  layouts:
+    reference:
+      elements:
+        - id: reference-box
+          type: rect
+          x: 200
+          y: 150
+          width: 480
+          height: 270
+          colorId: fg30
+    screenCanvas:
+      elements:
+        - id: screen-canvas-box
+          type: rect
+          x: 240
+          y: 190
+          width: 400
+          height: 190
+          colorId: fg100
+    corner:
+      width: 120
+      height: 120
+      elements:
+        - id: corner-box
+          type: rect
+          width: 120
+          height: 120
+          colorId: fg60
+  transforms:
+    center:
+      x: 960
+      y: 540
+      anchorX: 0.5
+      anchorY: 0.5
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+    bottomRight:
+      x: 1820
+      y: 980
+      anchorX: 1
+      anchorY: 1
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+  colors:
+    fg100:
+      hex: "#FFFFFF"
+    fg60:
+      hex: "#A6A6A6"
+    fg30:
+      hex: "#4D4D4D"
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: first
+              actions:
+                background:
+                  resourceId: reference
+                visual:
+                  items:
+                    - id: screen-canvas
+                      resourceId: screenCanvas
+                      transformId: center
+                    - id: corner
+                      resourceId: corner
+                      transformId: bottomRight

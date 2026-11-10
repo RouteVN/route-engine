@@ -32,6 +32,8 @@ out:
           fill: "#000000"
         - id: "bg-cg-background-container"
           type: "container"
+          width: 1920
+          height: 1080
           children:
             - type: "container"
               id: "@layout/bg-cg-background-container--background-container"
@@ -399,6 +401,8 @@ out:
           fill: "#000000"
         - id: "bg-cg-background-container"
           type: "container"
+          width: 1920
+          height: 1080
           children:
             - type: "container"
               id: "@layout/bg-cg-background-container--old-container"

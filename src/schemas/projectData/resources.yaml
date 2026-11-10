@@ -667,6 +667,14 @@ properties:
         type: object
         description: Layout configuration. This schema is intentionally permissive because runtime-supported layout fields extend beyond the documented subset.
         properties:
+          width:
+            type: number
+            exclusiveMinimum: 0
+            description: Layout canvas width in pixels. Defaults to the screen width. Used as the container size when the layout is shown as a visual or background, so transform anchors are relative to the layout canvas.
+          height:
+            type: number
+            exclusiveMinimum: 0
+            description: Layout canvas height in pixels. Defaults to the screen height. Used as the container size when the layout is shown as a visual or background, so transform anchors are relative to the layout canvas.
           paginationSize:
             type: integer
             minimum: 1

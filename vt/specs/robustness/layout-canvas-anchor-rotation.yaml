@@ -1,0 +1,202 @@
+---
+title: Layout Canvas Anchor and Rotation
+description: >-
+  Layouts without their own size use the project screen (1280x720 here) as their canvas, so
+  transform anchors and the rotation pivot are relative to that canvas. Each grayscale box must
+  sit centred inside its white frame: the light background box stays at its authored position
+  with a bottom-right anchor, the medium resource-layout box is turned 180 degrees about the
+  screen centre into the top-right frame, and the dark inline-layout box stays at its authored
+  position with a bottom-centre anchor. With content-based sizing, or with the 1920x1080
+  fallback instead of the project screen, the boxes land outside their frames.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 100
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+  backgroundColor: "#000000"
+resources:
+  colors:
+    white:
+      hex: "#FFFFFF"
+    light:
+      hex: "#A6A6A6"
+    medium:
+      hex: "#737373"
+    dark:
+      hex: "#4D4D4D"
+  layouts:
+    background:
+      elements:
+        - id: bg-box
+          type: rect
+          x: 80
+          "y": 80
+          width: 320
+          height: 180
+          colorId: light
+    resource:
+      elements:
+        - id: resource-box
+          type: rect
+          x: 80
+          "y": 520
+          width: 240
+          height: 120
+          colorId: medium
+    frames:
+      elements:
+        - id: bg-top
+          type: rect
+          x: 69
+          "y": 69
+          width: 342
+          height: 3
+          colorId: white
+        - id: bg-bottom
+          type: rect
+          x: 69
+          "y": 268
+          width: 342
+          height: 3
+          colorId: white
+        - id: bg-left
+          type: rect
+          x: 69
+          "y": 72
+          width: 3
+          height: 196
+          colorId: white
+        - id: bg-right
+          type: rect
+          x: 408
+          "y": 72
+          width: 3
+          height: 196
+          colorId: white
+        - id: resource-top
+          type: rect
+          x: 949
+          "y": 69
+          width: 262
+          height: 3
+          colorId: white
+        - id: resource-bottom
+          type: rect
+          x: 949
+          "y": 208
+          width: 262
+          height: 3
+          colorId: white
+        - id: resource-left
+          type: rect
+          x: 949
+          "y": 72
+          width: 3
+          height: 136
+          colorId: white
+        - id: resource-right
+          type: rect
+          x: 1208
+          "y": 72
+          width: 3
+          height: 136
+          colorId: white
+        - id: inline-top
+          type: rect
+          x: 869
+          "y": 429
+          width: 342
+          height: 3
+          colorId: white
+        - id: inline-bottom
+          type: rect
+          x: 869
+          "y": 628
+          width: 342
+          height: 3
+          colorId: white
+        - id: inline-left
+          type: rect
+          x: 869
+          "y": 432
+          width: 3
+          height: 196
+          colorId: white
+        - id: inline-right
+          type: rect
+          x: 1208
+          "y": 432
+          width: 3
+          height: 196
+          colorId: white
+  transforms:
+    bottomRight:
+      x: 1280
+      "y": 720
+      anchorX: 1
+      anchorY: 1
+      scaleX: 1
+      scaleY: 1
+      rotation: 0
+    turn:
+      x: 640
+      "y": 360
+      anchorX: 0.5
+      anchorY: 0.5
+      scaleX: 1
+      scaleY: 1
+      rotation: 180
+    bottomCenter:
+      x: 640
+      "y": 720
+      anchorX: 0.5
+      anchorY: 1
+      scaleX: 1
+      scaleY: 1
+      rotation: 0
+    origin:
+      x: 0
+      "y": 0
+      anchorX: 0
+      anchorY: 0
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: first
+              actions:
+                background:
+                  resourceId: background
+                  transformId: bottomRight
+                visual:
+                  items:
+                    - id: resource
+                      resourceId: resource
+                      transformId: turn
+                    - id: inline
+                      layout:
+                        elements:
+                          - id: inline-box
+                            type: rect
+                            x: 880
+                            "y": 440
+                            width: 320
+                            height: 180
+                            colorId: dark
+                      transformId: bottomCenter
+                    - id: frames
+                      resourceId: frames
+                      transformId: origin
+                      layer: 90
