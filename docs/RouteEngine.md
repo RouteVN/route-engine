@@ -1094,6 +1094,18 @@ Playback timing semantics:
 - That completion is driven by Route Graphics `renderComplete`, so revealing text and other tracked render work finish first.
 - Global `skipMode` does not use that completion gate; it advances on its own fast timer.
 - `nextLineConfig.auto` is separate and may use `trigger: "fromStart"` or `trigger: "fromComplete"` depending on authored behavior.
+- Global `autoMode` and `skipMode` advance on the reader's behalf, so they follow
+  the current line's `nextLineConfig`:
+  - When `nextLineConfig.manual.enabled` is `false`, neither mode advances the
+    line. Both stay on and continue once the line advances through its own
+    authored timer or actions.
+  - When `nextLineConfig.auto` is enabled, its authored delay decides when the
+    line advances and global `autoMode` does not start its own timer for that
+    line. Skip mode can still pass the line when manual advance is allowed.
+  - When rollback suppresses a restored line's authored timer, global
+    `autoMode` times that line as usual.
+  - If skip mode stops at unseen content while the current line has manual
+    advance turned off, the line's own advance still moves to the next line.
 
 #### Playback scheduling and ownership
 

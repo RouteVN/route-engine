@@ -257,6 +257,10 @@ Global playback modes use a different timing model:
 - Global `skipMode` does not wait for completion; it advances aggressively on its own short timer.
 - `nextLineConfig.auto` is the only built-in auto-like behavior that can intentionally start from line start via `trigger: "fromStart"`.
 - `nextLineConfig.auto.delay` remains a fixed authored delay and is not length-adjusted.
+- Global `autoMode` and `skipMode` act for the reader, so they never advance a
+  line whose `nextLineConfig.manual.enabled` is `false`. Global `autoMode` also
+  leaves a line with an enabled `nextLineConfig.auto` to that authored delay.
+  Both modes stay on and resume on the following line.
 - The built-in effects handler reconciles all three timing sources onto one
   physical ticker callback. Co-due logical timers produce one progression,
   while unchanged descriptors preserve their exact remaining duration.

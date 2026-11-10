@@ -43,11 +43,11 @@ const authoredAuto = (trigger, delay) => ({
 });
 
 describe("reconciled playback scheduler integration", () => {
-  it("coalesces simultaneously due global-auto and authored timers into one progression", () => {
+  it("leaves an authored line to its own timer while global auto is on", () => {
     const harness = createEngineIntegrationHarness({
       global: { runtime: { autoForwardDelay: 100 } },
       projectData: createProject({
-        line1Actions: authoredAuto("fromComplete", 100),
+        line1Actions: authoredAuto("fromComplete", 300),
         line2Actions: incrementScore,
       }),
     });
@@ -56,12 +56,15 @@ describe("reconciled playback scheduler integration", () => {
     harness.engine.handleAction("startAutoMode", {});
 
     expect(harness.ticker.size).toBe(1);
-    harness.ticker.tick(100);
+    harness.ticker.tick(299);
+    expect(harness.getPointer().lineId).toBe("line1");
+    harness.ticker.tick(1);
 
     expect({
       pointer: harness.getPointer().lineId,
       score: harness.getState().contexts.at(-1).variables.score,
-    }).toEqual({ pointer: "line2", score: 1 });
+      autoMode: harness.getState().global.autoMode,
+    }).toEqual({ pointer: "line2", score: 1, autoMode: true });
   });
 
   it("coalesces simultaneously due skip and authored timers into one progression", () => {
@@ -546,5 +549,180 @@ describe("reconciled playback scheduler integration", () => {
 
     engine.handleAction("setMuteAll", { value: true });
     expect(ticker.size).toBe(1);
+  });
+});
+
+const noClickLine = (auto = { enabled: false }) => ({
+  setNextLineConfig: {
+    applyMode: "singleLine",
+    manual: { enabled: false },
+    auto,
+  },
+});
+
+const createTimedLineProject = (timedLineActions) =>
+  createIntegrationProject({
+    sections: {
+      main: {
+        lines: [
+          { id: "line1", actions: {} },
+          { id: "timed", actions: timedLineActions },
+          { id: "line3", actions: {} },
+          { id: "line4", actions: {} },
+        ],
+      },
+    },
+  });
+
+describe("global auto and skip follow the line's next-line config", () => {
+  it("waits for a no-click line's authored delay with auto on, then resumes auto", () => {
+    const harness = createEngineIntegrationHarness({
+      global: { runtime: { autoForwardDelay: 100 } },
+      projectData: createTimedLineProject(
+        noClickLine({ enabled: true, trigger: "fromComplete", delay: 1000 }),
+      ),
+    });
+    harness.completeLatestRender();
+    harness.engine.handleAction("startAutoMode", {});
+    harness.ticker.tick(100);
+    expect(harness.getPointer().lineId).toBe("timed");
+
+    harness.completeLatestRender();
+    harness.ticker.tick(999);
+    expect(harness.getPointer().lineId).toBe("timed");
+    harness.ticker.tick(1);
+    expect(harness.getPointer().lineId).toBe("line3");
+    expect(harness.getState().global.autoMode).toBe(true);
+
+    harness.completeLatestRender();
+    harness.ticker.tick(100);
+    expect(harness.getPointer().lineId).toBe("line4");
+  });
+
+  it("waits for a click-enabled line's authored delay with auto on", () => {
+    const harness = createEngineIntegrationHarness({
+      global: { runtime: { autoForwardDelay: 100 } },
+      projectData: createTimedLineProject({
+        setNextLineConfig: {
+          applyMode: "singleLine",
+          auto: { enabled: true, trigger: "fromComplete", delay: 1000 },
+        },
+      }),
+    });
+    harness.completeLatestRender();
+    harness.engine.handleAction("startAutoMode", {});
+    harness.ticker.tick(100);
+    harness.completeLatestRender();
+
+    harness.ticker.tick(999);
+    expect(harness.getPointer().lineId).toBe("timed");
+    harness.ticker.tick(1);
+    expect(harness.getPointer().lineId).toBe("line3");
+  });
+
+  it("keeps auto on without advancing a no-click line that has no authored timer", () => {
+    const harness = createEngineIntegrationHarness({
+      global: { runtime: { autoForwardDelay: 100 } },
+      projectData: createTimedLineProject(noClickLine()),
+    });
+    harness.completeLatestRender();
+    harness.engine.handleAction("startAutoMode", {});
+    harness.ticker.tick(100);
+    harness.completeLatestRender();
+
+    harness.ticker.tick(5000);
+    expect({
+      pointer: harness.getPointer().lineId,
+      autoMode: harness.getState().global.autoMode,
+      physicalCallbacks: harness.ticker.size,
+    }).toEqual({ pointer: "timed", autoMode: true, physicalCallbacks: 0 });
+  });
+
+  it("pauses skip on a no-click line and continues once its authored timer advances it", () => {
+    const harness = createEngineIntegrationHarness({
+      global: { runtime: { skipUnseenText: true } },
+      projectData: createTimedLineProject(
+        noClickLine({ enabled: true, trigger: "fromStart", delay: 500 }),
+      ),
+    });
+    harness.engine.handleAction("startSkipMode", {});
+    harness.ticker.tick(80);
+    expect(harness.getPointer().lineId).toBe("timed");
+
+    harness.ticker.tick(499);
+    expect(harness.getPointer().lineId).toBe("timed");
+    harness.ticker.tick(1);
+    expect(harness.getPointer().lineId).toBe("line3");
+    expect(harness.getState().global.skipMode).toBe(true);
+
+    harness.ticker.tick(80);
+    expect(harness.getPointer().lineId).toBe("line4");
+  });
+
+  it("advances a no-click line on its authored timer when skip stops at unseen text", () => {
+    const harness = createEngineIntegrationHarness({
+      global: { runtime: { skipUnseenText: false } },
+      projectData: createIntegrationProject({
+        sections: {
+          main: {
+            lines: [
+              {
+                id: "timed",
+                actions: noClickLine({
+                  enabled: true,
+                  trigger: "fromStart",
+                  delay: 500,
+                }),
+              },
+              { id: "unseen", actions: {} },
+            ],
+          },
+        },
+      }),
+    });
+    harness.engine.handleAction("startSkipMode", {});
+
+    harness.ticker.tick(499);
+    expect(harness.getPointer().lineId).toBe("timed");
+    harness.ticker.tick(1);
+    expect({
+      pointer: harness.getPointer().lineId,
+      skipMode: harness.getState().global.skipMode,
+    }).toEqual({ pointer: "unseen", skipMode: false });
+  });
+
+  it("still lets skip pass a timed line that allows manual advance", () => {
+    const harness = createEngineIntegrationHarness({
+      global: { runtime: { skipUnseenText: true } },
+      projectData: createTimedLineProject({
+        setNextLineConfig: {
+          applyMode: "singleLine",
+          auto: { enabled: true, trigger: "fromStart", delay: 1000 },
+        },
+      }),
+    });
+    harness.engine.handleAction("startSkipMode", {});
+    harness.ticker.tick(80);
+    expect(harness.getPointer().lineId).toBe("timed");
+    harness.ticker.tick(80);
+    expect(harness.getPointer().lineId).toBe("line3");
+  });
+
+  it("lets auto time a rollback-restored line whose authored timer is suppressed", () => {
+    const harness = createEngineIntegrationHarness({
+      global: { runtime: { autoForwardDelay: 100 } },
+      projectData: createProject({
+        line1Actions: authoredAuto("fromStart", 1000),
+      }),
+    });
+    harness.completeLatestRender();
+    harness.engine.handleAction("nextLine", {});
+    harness.engine.handleAction("rollbackByOffset", { offset: -1 });
+    expect(harness.getPointer().lineId).toBe("line1");
+    harness.completeLatestRender();
+
+    harness.engine.handleAction("startAutoMode", {});
+    harness.ticker.tick(100);
+    expect(harness.getPointer().lineId).toBe("line2");
   });
 });

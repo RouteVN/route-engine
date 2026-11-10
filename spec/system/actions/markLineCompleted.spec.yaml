@@ -292,3 +292,62 @@ out:
         delay: 2000
     pendingEffects:
       - name: render
+---
+case: auto mode leaves a line with authored auto-advance to the authored timer
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: true
+        autoForwardDelay: 1000
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: true
+            trigger: "fromComplete"
+            delay: 2000
+        pendingEffects: []
+out:
+  global:
+    isLineCompleted: true
+    autoMode: true
+    autoForwardDelay: 1000
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: true
+        trigger: "fromComplete"
+        delay: 2000
+    pendingEffects:
+      - name: nextLineConfigTimer
+        payload:
+          delay: 2000
+      - name: render
+---
+case: auto mode does not start its timer on a line that turns manual advance off
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: true
+        autoForwardDelay: 1000
+        nextLineConfig:
+          manual:
+            enabled: false
+          auto:
+            enabled: false
+        pendingEffects: []
+out:
+  global:
+    isLineCompleted: true
+    autoMode: true
+    autoForwardDelay: 1000
+    nextLineConfig:
+      manual:
+        enabled: false
+      auto:
+        enabled: false
+    pendingEffects:
+      - name: render

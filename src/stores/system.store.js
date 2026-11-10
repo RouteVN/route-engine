@@ -140,6 +140,20 @@ const disableNextLineConfigAuto = (state) => {
   });
 };
 
+// Auto mode and skip mode advance on the reader's behalf, so they follow the
+// same rule as a click: neither moves past a line whose config turns manual
+// advance off. Both modes stay on and continue once that line advances through
+// its own timer or actions.
+const isReaderAdvanceAllowed = (state) =>
+  state.global.nextLineConfig?.manual?.enabled !== false;
+
+// A line with its own authored auto-advance keeps that timing while auto mode
+// is on. Auto mode waits for the authored timer instead of racing it with the
+// shorter reading-time delay.
+const doesAutoModeTimeCurrentLine = (state) =>
+  isReaderAdvanceAllowed(state) &&
+  state.global.nextLineConfig?.auto?.enabled !== true;
+
 const cloneStateValue = (value) => {
   const source = isDraft(value) ? current(value) : value;
   return structuredClone(source);
@@ -1909,7 +1923,8 @@ const restoreSceneReplayReturnState = (state, returnState) => {
   if (
     state.global.autoMode &&
     state.global.isLineCompleted &&
-    !activeInteraction
+    !activeInteraction &&
+    doesAutoModeTimeCurrentLine(state)
   ) {
     state.global.pendingEffects.push({
       name: "startAutoNextTimer",
@@ -1918,7 +1933,11 @@ const restoreSceneReplayReturnState = (state, returnState) => {
       },
     });
   }
-  if (state.global.skipMode && !activeInteraction) {
+  if (
+    state.global.skipMode &&
+    !activeInteraction &&
+    isReaderAdvanceAllowed(state)
+  ) {
     state.global.pendingEffects.push({ name: "startSkipNextTimer" });
   }
   if (
@@ -4108,15 +4127,23 @@ const queueEnteredLineEffects = (state, pointer, { screenTransition } = {}) => {
   };
 };
 
-const resumeSkipTimerAfterBlockingInteraction = (
+// Skip mode pauses on a choice, a form, or a line that turns manual advance
+// off. Restart its timer once the reader leaves that line for one skip may
+// advance.
+const resumeSkipTimerAfterPause = (
   state,
-  previousInteraction,
-  nextInteraction,
+  { previousInteraction, nextInteraction, readerAdvanceWasAllowed },
 ) => {
   const leftBlockingInteraction =
     previousInteraction?.source === CHOICE_INTERACTION_SOURCE ||
     previousInteraction?.source === FORM_INTERACTION_SOURCE;
-  if (!leftBlockingInteraction || nextInteraction || !state.global.skipMode) {
+  const leftNoAdvanceLine = readerAdvanceWasAllowed === false;
+  if (
+    (!leftBlockingInteraction && !leftNoAdvanceLine) ||
+    nextInteraction ||
+    !state.global.skipMode ||
+    !isReaderAdvanceAllowed(state)
+  ) {
     return;
   }
 
@@ -4143,7 +4170,7 @@ export const startAutoMode = ({ state }) => {
 
   // Only start timer immediately if line is already completed
   // Otherwise, markLineCompleted will start it when renderComplete fires
-  if (state.global.isLineCompleted) {
+  if (state.global.isLineCompleted && doesAutoModeTimeCurrentLine(state)) {
     state.global.pendingEffects.push({
       name: "startAutoNextTimer",
       payload: {
@@ -4202,9 +4229,11 @@ export const startSkipMode = ({ state }) => {
   state.global.pendingEffects.push({
     name: "clearSkipNextTimer",
   });
-  state.global.pendingEffects.push({
-    name: "startSkipNextTimer",
-  });
+  if (isReaderAdvanceAllowed(state)) {
+    state.global.pendingEffects.push({
+      name: "startSkipNextTimer",
+    });
+  }
   state.global.pendingEffects.push({
     name: "render",
   });
@@ -4322,7 +4351,8 @@ export const setAutoForwardDelay = ({ state }, payload) => {
   if (
     state.global.autoMode &&
     state.global.isLineCompleted &&
-    !selectActiveInteraction({ state })
+    !selectActiveInteraction({ state }) &&
+    doesAutoModeTimeCurrentLine(state)
   ) {
     state.global.pendingEffects.push({
       name: "startAutoNextTimer",
@@ -4337,7 +4367,8 @@ export const setAutoForwardSpeed = ({ state }, payload) => {
   if (
     state.global.autoMode &&
     state.global.isLineCompleted &&
-    !selectActiveInteraction({ state })
+    !selectActiveInteraction({ state }) &&
+    doesAutoModeTimeCurrentLine(state)
   ) {
     state.global.pendingEffects.push({
       name: "startAutoNextTimer",
@@ -4528,6 +4559,7 @@ const transitionToSection = (
   }
 
   const previousInteraction = selectActiveInteraction({ state });
+  const readerAdvanceWasAllowed = isReaderAdvanceAllowed(state);
 
   if (resetStoryState && state.global.skipMode) {
     stopSkipMode({ state });
@@ -4572,11 +4604,11 @@ const transitionToSection = (
       screenTransition: screen,
     },
   );
-  resumeSkipTimerAfterBlockingInteraction(
-    state,
+  resumeSkipTimerAfterPause(state, {
     previousInteraction,
-    activeInteraction,
-  );
+    nextInteraction: activeInteraction,
+    readerAdvanceWasAllowed,
+  });
   return state;
 };
 
@@ -5653,6 +5685,8 @@ export const setNextLineConfig = (
   const previousAutoTrigger = state.global.nextLineConfig.auto?.trigger;
   const previousAutoDelay = state.global.nextLineConfig.auto?.delay;
   const previousApplyMode = state.global.nextLineConfig?.applyMode;
+  const autoModeTimedLine = doesAutoModeTimeCurrentLine(state);
+  const readerAdvanceWasAllowed = isReaderAdvanceAllowed(state);
   const isRollbackRestoring =
     state.contexts?.[state.contexts.length - 1]?.rollback?.isRestoring === true;
 
@@ -5709,6 +5743,35 @@ export const setNextLineConfig = (
     } else if (previousAutoEnabled === true) {
       state.global.pendingEffects.push({
         name: "clearNextLineConfigTimer",
+      });
+    }
+  }
+
+  // Auto mode and skip mode follow the line's new config: pause when it turns
+  // manual advance off or adds authored auto-advance, and resume when it
+  // stops doing so.
+  if (!isRollbackRestoring && !activeInteraction) {
+    const autoModeTimesLine = doesAutoModeTimeCurrentLine(state);
+    if (state.global.autoMode && autoModeTimesLine !== autoModeTimedLine) {
+      if (!autoModeTimesLine) {
+        state.global.pendingEffects.push({ name: "clearAutoNextTimer" });
+      } else if (state.global.isLineCompleted) {
+        state.global.pendingEffects.push({
+          name: "startAutoNextTimer",
+          payload: { delay: selectAutoForwardTimerDelay({ state }) },
+        });
+      }
+    }
+
+    const readerAdvanceAllowed = isReaderAdvanceAllowed(state);
+    if (
+      state.global.skipMode &&
+      readerAdvanceAllowed !== readerAdvanceWasAllowed
+    ) {
+      state.global.pendingEffects.push({
+        name: readerAdvanceAllowed
+          ? "startSkipNextTimer"
+          : "clearSkipNextTimer",
       });
     }
   }
@@ -5914,7 +5977,8 @@ export const updateLocalizationPackage = ({ state }, payload) => {
   if (
     state.global.autoMode &&
     state.global.isLineCompleted &&
-    !selectActiveInteraction({ state })
+    !selectActiveInteraction({ state }) &&
+    doesAutoModeTimeCurrentLine(state)
   ) {
     state.global.pendingEffects.push({
       name: "startAutoNextTimer",
@@ -5982,6 +6046,7 @@ export const jumpToLine = ({ state }, payload) => {
   }
 
   const previousInteraction = selectActiveInteraction({ state });
+  const readerAdvanceWasAllowed = isReaderAdvanceAllowed(state);
 
   // Update current pointer to new line
   const pointers = ensureReadPointerState(lastContext);
@@ -5991,11 +6056,11 @@ export const jumpToLine = ({ state }, payload) => {
   };
 
   const { activeInteraction } = queueEnteredLineEffects(state, pointers.read);
-  resumeSkipTimerAfterBlockingInteraction(
-    state,
+  resumeSkipTimerAfterPause(state, {
     previousInteraction,
-    activeInteraction,
-  );
+    nextInteraction: activeInteraction,
+    readerAdvanceWasAllowed,
+  });
 
   return state;
 };
@@ -6044,16 +6109,6 @@ export const nextLine = ({ state, rollbackActionBatchStack }, payload) => {
     // Clear any running nextLineConfigTimer to prevent auto-advance after manual click
     state.global.pendingEffects.push({ name: "clearNextLineConfigTimer" });
 
-    // If auto mode is on, continue auto-advancing after the skip
-    if (state.global.autoMode && !activeInteraction) {
-      state.global.pendingEffects.push({
-        name: "startAutoNextTimer",
-        payload: {
-          delay: selectAutoForwardTimerDelay({ state }),
-        },
-      });
-    }
-
     // If scene mode (nextLineConfig.auto) is enabled with fromComplete trigger, restart the timer
     const nextLineConfig = state.global.nextLineConfig;
     const section = selectSection({ state }, { sectionId });
@@ -6070,6 +6125,21 @@ export const nextLine = ({ state, rollbackActionBatchStack }, payload) => {
           payload: { delay: nextLineConfig.auto.delay },
         });
       }
+    }
+
+    // If auto mode is on, continue auto-advancing after the skip. Checked
+    // after the last-line handling above, which may turn authored auto off.
+    if (
+      state.global.autoMode &&
+      !activeInteraction &&
+      doesAutoModeTimeCurrentLine(state)
+    ) {
+      state.global.pendingEffects.push({
+        name: "startAutoNextTimer",
+        payload: {
+          delay: selectAutoForwardTimerDelay({ state }),
+        },
+      });
     }
 
     state.global.pendingEffects.push({ name: "render" });
@@ -6137,6 +6207,7 @@ export const nextLine = ({ state, rollbackActionBatchStack }, payload) => {
       sectionId,
       lineId: nextLine.id,
     });
+    const readerAdvanceWasAllowed = isReaderAdvanceAllowed(state);
     resetNextLineConfigIfSingleLine(state);
     const { activeInteraction: nextInteraction } = queueEnteredLineEffects(
       state,
@@ -6145,11 +6216,11 @@ export const nextLine = ({ state, rollbackActionBatchStack }, payload) => {
         lineId: nextLine.id,
       },
     );
-    resumeSkipTimerAfterBlockingInteraction(
-      state,
-      activeInteraction,
+    resumeSkipTimerAfterPause(state, {
+      previousInteraction: activeInteraction,
       nextInteraction,
-    );
+      readerAdvanceWasAllowed,
+    });
   } else {
     if (getActiveSceneReplayContext(state)) {
       console.warn(
@@ -6186,7 +6257,11 @@ export const markLineCompleted = ({ state }) => {
   const activeInteraction = selectActiveInteraction({ state });
 
   // If auto mode is on, start the delay timer to advance after completion
-  if (state.global.autoMode && !activeInteraction) {
+  if (
+    state.global.autoMode &&
+    !activeInteraction &&
+    doesAutoModeTimeCurrentLine(state)
+  ) {
     state.global.pendingEffects.push({
       name: "startAutoNextTimer",
       payload: {
@@ -6249,7 +6324,7 @@ export const nextLineFromSystem = (
 
   if (state.global.dialogueUIHidden && !isConditionalContinuation) {
     showDialogueUI({ state, rollbackActionBatchStack });
-    if (state.global.autoMode) {
+    if (state.global.autoMode && doesAutoModeTimeCurrentLine(state)) {
       state.global.pendingEffects.push({
         name: "startAutoNextTimer",
         payload: { delay: selectAutoForwardTimerDelay({ state }) },
@@ -6318,9 +6393,11 @@ export const nextLineFromSystem = (
       );
 
       if (!isNextLineViewed) {
-        // Stop skip mode when encountering an unviewed line
+        // Stop skip mode when encountering an unviewed line. Skip never
+        // advances a line the reader cannot advance, so on such a line this
+        // attempt came from the line's own timer and still moves on.
         stopSkipMode({ state });
-        if (!isConditionalContinuation) {
+        if (!isConditionalContinuation && isReaderAdvanceAllowed(state)) {
           return state;
         }
       }
@@ -6347,6 +6424,7 @@ export const nextLineFromSystem = (
       sectionId,
       lineId: nextLine.id,
     });
+    const readerAdvanceWasAllowed = isReaderAdvanceAllowed(state);
     resetNextLineConfigIfSingleLine(state);
     const { activeInteraction: nextInteraction } = queueEnteredLineEffects(
       state,
@@ -6355,11 +6433,11 @@ export const nextLineFromSystem = (
         lineId: nextLine.id,
       },
     );
-    resumeSkipTimerAfterBlockingInteraction(
-      state,
-      activeInteraction,
+    resumeSkipTimerAfterPause(state, {
+      previousInteraction: activeInteraction,
       nextInteraction,
-    );
+      readerAdvanceWasAllowed,
+    });
   } else {
     if (getActiveSceneReplayContext(state)) {
       console.warn(
@@ -7329,22 +7407,30 @@ const finalizePlaybackOwnership = ({
 const selectDesiredPlaybackTimers = ({ state, playbackOwnership }) => {
   const activeInteraction = selectActiveInteraction({ state });
   const lineEntryId = playbackOwnership.lineEntryId;
+  const readerAdvanceAllowed = isReaderAdvanceAllowed(state);
+  const authoredConfig = getNormalizedAuthoredConfig(state);
+  const authoredSuppression = playbackOwnership.rollbackAuthoredSuppression;
+  const authoredSuppressed =
+    authoredSuppression?.lineEntryId === lineEntryId &&
+    authoredSuppression.configKey === getNormalizedAuthoredConfigKey(state);
+  // The authored timer owns a line it will time. Rollback suppression stops
+  // that timer, so auto mode times the restored line instead.
+  const authoredOwnsLine = authoredConfig.enabled && !authoredSuppressed;
   const autoEligible =
     !activeInteraction &&
     state.global.autoMode === true &&
-    state.global.isLineCompleted === true;
-  const skipEligible = !activeInteraction && state.global.skipMode === true;
-  const authoredConfig = getNormalizedAuthoredConfig(state);
-  const authoredSuppression = playbackOwnership.rollbackAuthoredSuppression;
+    state.global.isLineCompleted === true &&
+    readerAdvanceAllowed &&
+    !authoredOwnsLine;
+  const skipEligible =
+    !activeInteraction &&
+    state.global.skipMode === true &&
+    readerAdvanceAllowed;
   const authoredEligible =
     !activeInteraction &&
-    authoredConfig.enabled &&
+    authoredOwnsLine &&
     (authoredConfig.trigger === "fromStart" ||
-      state.global.isLineCompleted === true) &&
-    !(
-      authoredSuppression?.lineEntryId === lineEntryId &&
-      authoredSuppression.configKey === getNormalizedAuthoredConfigKey(state)
-    );
+      state.global.isLineCompleted === true);
   const autoContentKey = autoEligible
     ? selectCurrentLineAutoForwardText(state)
     : null;

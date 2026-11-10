@@ -1,6 +1,6 @@
 ---
 title: Playback Auto And Authored Co-Due
-description: Global auto and authored auto expiring together must advance exactly one line.
+description: With global auto on, a line with authored auto advances on its authored delay and moves exactly one line, even when the global auto delay matches it.
 skipInitialScreenshot: true
 viewport:
   id: capture
