@@ -247,6 +247,9 @@ pointers: {
 - `enabled`: Whether auto-advance is active
 - `trigger`: When to advance (`'fromStart'` or `'fromComplete'`)
 - `delay`: Milliseconds to wait before advancing
+- `applyMode: "singleLine"` limits the config to the current line. It ends
+  when the story leaves that line in any way, including `sectionTransition`
+  and `jumpToLine`.
 
 Global playback modes use a different timing model:
 

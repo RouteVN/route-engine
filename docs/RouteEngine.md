@@ -1103,7 +1103,9 @@ Playback timing semantics:
     line advances and global `autoMode` does not start its own timer for that
     line. Skip mode can still pass the line when manual advance is allowed.
   - When rollback suppresses a restored line's authored timer, global
-    `autoMode` times that line as usual.
+    `autoMode` times that line as usual. Rollback does not suppress the
+    authored timer of a line with manual advance turned off, because that
+    timer is the line's only way forward.
   - If skip mode stops at unseen content while the current line has manual
     advance turned off, the line's own advance still moves to the next line.
 
@@ -1131,7 +1133,9 @@ Timer ownership is private runtime metadata. It is absent from
 Loading, reinitializing, or entering a fresh occurrence derives a new schedule
 from the settled semantic state; partial elapsed time is never serialized.
 Rollback deliberately suppresses a restored line's authored auto deadline
-until that line occurrence or its authored auto configuration changes.
+until that line occurrence or its authored auto configuration changes. A
+line with manual advance turned off is the exception: its authored deadline
+runs again after rollback, because the reader cannot advance it.
 
 The engine reconciles only after an outer action batch and all of its effects
 settle. Effect or reconciliation failures send an `unsettled` schedule and

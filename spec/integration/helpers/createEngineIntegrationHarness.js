@@ -109,6 +109,9 @@ export const createEngineIntegrationHarness = ({
   ticker: providedTicker,
   persistence: providedPersistence,
   autoInitialize = true,
+  // Run playback on the legacy timer effects that a custom effects handler
+  // without reconcilePlaybackScheduleV1 receives.
+  legacyPlaybackTimers = false,
 } = {}) => {
   const ticker = providedTicker ?? createIntegrationTicker();
   const persistence = providedPersistence ?? createIntegrationPersistence();
@@ -148,7 +151,11 @@ export const createEngineIntegrationHarness = ({
     preprocessPayload,
     onEvent: onRendererEvent,
   });
-  engine = createRouteEngine({ handlePendingEffects: effectsHandler });
+  engine = createRouteEngine({
+    handlePendingEffects: legacyPlaybackTimers
+      ? (...args) => effectsHandler(...args)
+      : effectsHandler,
+  });
 
   const initialState = {
     ...(global === undefined ? {} : { global }),

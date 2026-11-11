@@ -25,6 +25,14 @@ steps:
       deltaMS: 1000
   - action: wait
     ms: 100
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: line2
   - action: screenshot
   - action: customEvent
     name: vt:tickPlayback
@@ -38,6 +46,14 @@ steps:
       deltaMS: 80
   - action: wait
     ms: 300
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: line4
   - action: screenshot
 ---
 screen:
