@@ -136,12 +136,11 @@ describe("action pipeline deterministic work counts", () => {
     trace.dispatchActions({
       setNextLineConfig: {
         manual: { enabled: true, requireLineCompleted: false },
-        auto: { enabled: true, trigger: "fromComplete", delay: 900 },
+        auto: { enabled: true, trigger: "fromStart", delay: 900 },
         applyMode: "persistent",
       },
-      startAutoMode: {},
+      startSkipMode: {},
     });
-    trace.harness.completeLatestRender();
 
     const activeSchedule = trace.transcript
       .filter(({ type }) => type === "playbackSchedule")
@@ -152,13 +151,13 @@ describe("action pipeline deterministic work counts", () => {
       "skip",
       "authored",
     ]);
-    expect(activeSchedule.payload.timers.skip).toBeNull();
+    expect(activeSchedule.payload.timers.auto).toBeNull();
     expect(activeSchedule.payload).toMatchObject({
       contractVersion: 1,
       status: "settled",
       lineEntryId: 1,
       timers: {
-        auto: { owner: { sessionId: 1, lineEntryId: 1 } },
+        skip: { owner: { sessionId: 1 } },
         authored: { owner: { lineEntryId: 1 } },
       },
     });
@@ -178,7 +177,7 @@ describe("action pipeline deterministic work counts", () => {
 
     await trace.clearTranscript();
     trace.dispatchActions({
-      stopAutoMode: {},
+      stopSkipMode: {},
       setNextLineConfig: {
         manual: { enabled: true, requireLineCompleted: false },
         auto: { enabled: false },

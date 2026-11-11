@@ -1,0 +1,275 @@
+---
+title: Playback Auto Waits For A No-Click Line
+description: Global auto mode does not advance a line that turns manual advance off and sets its own 3000ms auto-advance delay. Auto mode stays on during that line and advances the following line once the authored delay has passed. Each line moves a white block one lane to the right, and a full-width bar shows that auto mode is on.
+specs:
+  - auto mode advances the first line after its 420ms reading delay
+  - 1000ms into the no-click line, well past the 420ms global auto delay, the block is still in lane 2 and the auto bar is shown
+  - after the authored 3000ms delay the line advances, and auto mode advances the next line after its own 420ms delay (lane 4, auto bar shown)
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 300
+  - action: customEvent
+    name: vt:tickPlayback
+    detail:
+      deltaMS: 420
+  - action: wait
+    ms: 300
+  - action: customEvent
+    name: vt:tickPlayback
+    detail:
+      deltaMS: 1000
+  - action: wait
+    ms: 100
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: line2
+  - action: screenshot
+  - action: customEvent
+    name: vt:tickPlayback
+    detail:
+      deltaMS: 2000
+  - action: wait
+    ms: 300
+  - action: customEvent
+    name: vt:tickPlayback
+    detail:
+      deltaMS: 420
+  - action: wait
+    ms: 300
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: line4
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  layouts:
+    marker1:
+      elements:
+        - id: marker-block
+          type: rect
+          x: 80
+          y: 180
+          width: 200
+          height: 240
+          colorId: markerColor
+        - id: marker-label
+          type: text
+          x: 150
+          y: 270
+          content: "L1"
+          textStyleId: markerText
+    marker2:
+      elements:
+        - id: marker-block
+          type: rect
+          x: 310
+          y: 180
+          width: 200
+          height: 240
+          colorId: markerColor
+        - id: marker-label
+          type: text
+          x: 380
+          y: 270
+          content: "L2"
+          textStyleId: markerText
+    marker3:
+      elements:
+        - id: marker-block
+          type: rect
+          x: 540
+          y: 180
+          width: 200
+          height: 240
+          colorId: markerColor
+        - id: marker-label
+          type: text
+          x: 610
+          y: 270
+          content: "L3"
+          textStyleId: markerText
+    marker4:
+      elements:
+        - id: marker-block
+          type: rect
+          x: 770
+          y: 180
+          width: 200
+          height: 240
+          colorId: markerColor
+        - id: marker-label
+          type: text
+          x: 840
+          y: 270
+          content: "L4"
+          textStyleId: markerText
+    marker5:
+      elements:
+        - id: marker-block
+          type: rect
+          x: 1000
+          y: 180
+          width: 200
+          height: 240
+          colorId: markerColor
+        - id: marker-label
+          type: text
+          x: 1070
+          y: 270
+          content: "L5"
+          textStyleId: markerText
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 40
+          y: 520
+          width: 1200
+          height: 150
+          colorId: dialogueColor
+        - id: dialogue-text
+          type: text
+          x: 72
+          y: 566
+          width: 1140
+          content: ${dialogue.content[0].text}
+          textStyleId: statusText
+        - id: status-bar
+          $when: runtime.autoMode
+          type: rect
+          x: 0
+          y: 0
+          width: 1280
+          height: 120
+          colorId: barColor
+        - id: status-on
+          $when: runtime.autoMode
+          type: text
+          x: 40
+          y: 40
+          content: "AUTO: ON"
+          textStyleId: barText
+        - id: status-off
+          $when: "!runtime.autoMode"
+          type: text
+          x: 40
+          y: 40
+          content: "AUTO: OFF"
+          textStyleId: statusText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    textColor:
+      hex: "#FFFFFF"
+    darkTextColor:
+      hex: "#000000"
+    markerColor:
+      hex: "#FFFFFF"
+    barColor:
+      hex: "#D9D9D9"
+    dialogueColor:
+      hex: "#4D4D4D"
+  textStyles:
+    statusText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    barText:
+      fontId: fontDefault
+      colorId: darkTextColor
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    markerText:
+      fontId: fontDefault
+      colorId: darkTextColor
+      fontSize: 48
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+  variables:
+    vtDeterministicPlaybackTicker:
+      type: boolean
+      scope: context
+      default: true
+story:
+  initialSceneId: autoNoClick
+  scenes:
+    autoNoClick:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                setAutoForwardDelay:
+                  value: 300
+                startAutoMode: {}
+                background:
+                  resourceId: marker1
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "L1"
+            - id: line2
+              actions:
+                setNextLineConfig:
+                  applyMode: singleLine
+                  manual:
+                    enabled: false
+                  auto:
+                    enabled: true
+                    trigger: fromComplete
+                    delay: 3000
+                background:
+                  resourceId: marker2
+                dialogue:
+                  content:
+                    - text: "L2"
+            - id: line3
+              actions:
+                background:
+                  resourceId: marker3
+                dialogue:
+                  content:
+                    - text: "L3"
+            - id: line4
+              actions:
+                background:
+                  resourceId: marker4
+                dialogue:
+                  content:
+                    - text: "L4"
+            - id: line5
+              actions:
+                background:
+                  resourceId: marker5
+                dialogue:
+                  content:
+                    - text: "L5"

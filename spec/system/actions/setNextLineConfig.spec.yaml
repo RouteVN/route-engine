@@ -238,6 +238,7 @@ out:
     skipMode: false
     dialogueUIHidden: false
     pendingEffects:
+      - name: "clearAutoNextTimer"
       - name: "render"
 ---
 case: enable auto with trigger fromStart starts timer immediately
@@ -454,3 +455,87 @@ out:
   contexts:
     - rollback:
         isRestoring: true
+---
+case: turning manual advance off pauses skip mode
+in:
+  - state:
+      global:
+        skipMode: true
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: false
+        pendingEffects: []
+  - manual:
+      enabled: false
+out:
+  global:
+    skipMode: true
+    nextLineConfig:
+      manual:
+        enabled: false
+      auto:
+        enabled: false
+    pendingEffects:
+      - name: "clearSkipNextTimer"
+      - name: "render"
+---
+case: turning manual advance back on resumes skip mode
+in:
+  - state:
+      global:
+        skipMode: true
+        nextLineConfig:
+          manual:
+            enabled: false
+          auto:
+            enabled: false
+        pendingEffects: []
+  - manual:
+      enabled: true
+out:
+  global:
+    skipMode: true
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: false
+    pendingEffects:
+      - name: "startSkipNextTimer"
+      - name: "render"
+---
+case: adding authored auto-advance on a completed line pauses auto mode
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        autoMode: true
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: false
+        pendingEffects: []
+  - auto:
+      enabled: true
+      trigger: "fromComplete"
+      delay: 2000
+out:
+  global:
+    isLineCompleted: true
+    autoMode: true
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: true
+        trigger: "fromComplete"
+        delay: 2000
+    pendingEffects:
+      - name: "nextLineConfigTimer"
+        payload:
+          delay: 2000
+      - name: "clearAutoNextTimer"
+      - name: "render"

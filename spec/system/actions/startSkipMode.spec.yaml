@@ -141,3 +141,28 @@ out:
     skipMode: false
     autoMode: false
     pendingEffects: []
+---
+case: start skip mode on a line that turns manual advance off waits without a timer
+in:
+  - state:
+      global:
+        skipMode: false
+        autoMode: false
+        nextLineConfig:
+          manual:
+            enabled: false
+          auto:
+            enabled: false
+        pendingEffects: []
+out:
+  global:
+    skipMode: true
+    autoMode: false
+    nextLineConfig:
+      manual:
+        enabled: false
+      auto:
+        enabled: false
+    pendingEffects:
+      - name: clearSkipNextTimer
+      - name: render

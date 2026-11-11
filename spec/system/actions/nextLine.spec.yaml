@@ -1242,7 +1242,7 @@ out:
           sectionId: "section1"
           lineId: "1"
 ---
-case: complete line with scene mode (fromStart) does not restart scene timer
+case: complete line with scene mode (fromStart) keeps the scene timer running
 in:
   - state:
       global:
@@ -1285,7 +1285,6 @@ out:
         trigger: "fromStart"
         delay: 1500
     pendingEffects:
-      - name: "clearNextLineConfigTimer"
       - name: "render"
   projectData:
     story:

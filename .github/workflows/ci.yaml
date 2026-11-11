@@ -91,6 +91,12 @@ jobs:
             item: robustness/section-media-continuity.yaml
           - id: playback-skip-authored
             item: robustness/playback-skip-authored-co-due.yaml
+          - id: playback-auto-no-click-line
+            item: robustness/playback-auto-waits-for-no-click-line.yaml
+          - id: playback-skip-no-click-line
+            item: robustness/playback-skip-waits-for-no-click-line.yaml
+          - id: playback-auto-section-change
+            item: robustness/playback-auto-timed-line-before-section-change.yaml
           - id: runtime-dialogue-bindings
             item: robustness/runtime-dialogue-bindings.yaml
           - id: runtime-dialogue-auto-delay
