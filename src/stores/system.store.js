@@ -4230,7 +4230,8 @@ export const stopAutoMode = ({ state }) => {
   return state;
 };
 
-export const toggleAutoMode = ({ state }) => {
+export const toggleAutoMode = (context) => {
+  const { state } = context;
   const autoMode = state.global.autoMode;
   if (selectActiveInteraction({ state }) && !autoMode) {
     return state;
@@ -4239,7 +4240,9 @@ export const toggleAutoMode = ({ state }) => {
   if (autoMode) {
     stopAutoMode({ state });
   } else {
-    startAutoMode({ state });
+    // Pass the whole context: startAutoMode reads playbackOwnership to see
+    // whether rollback stopped this line's authored timer.
+    startAutoMode(context);
   }
   return state;
 };
@@ -6393,8 +6396,14 @@ export const nextLineFromSystem = (
     }
     // Showing the dialogue UI used up this advance. Time the line again, or a
     // line that only advances on its authored timer would never move on.
+    // Legacy timers all dispatch this action, so while skip mode can pass the
+    // line the skip timer may be the one that fired. Then the authored timer
+    // keeps its deadline and skip moves the line on.
     const authoredConfig = getNormalizedAuthoredConfig(state);
+    const skipTimerRuns =
+      state.global.skipMode === true && isReaderAdvanceAllowed(state);
     if (
+      !skipTimerRuns &&
       !selectActiveInteraction({ state }) &&
       doesAuthoredTimerOwnLine(state, playbackOwnership) &&
       (authoredConfig.trigger === "fromStart" ||

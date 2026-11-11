@@ -716,22 +716,71 @@ describe.each([
       expect(harness.getPointer().lineId).toBe("line3");
     });
 
-    it("lets auto time a rollback-restored line whose authored timer is suppressed", () => {
+    it.each(["startAutoMode", "toggleAutoMode"])(
+      "lets auto time a rollback-restored line whose authored timer is suppressed (%s)",
+      (autoAction) => {
+        const harness = createHarness({
+          global: { runtime: { autoForwardDelay: 100 } },
+          projectData: createProject({
+            line1Actions: authoredAuto("fromStart", 1000),
+          }),
+        });
+        harness.completeLatestRender();
+        harness.engine.handleAction("nextLine", {});
+        harness.engine.handleAction("rollbackByOffset", { offset: -1 });
+        expect(harness.getPointer().lineId).toBe("line1");
+        harness.completeLatestRender();
+
+        harness.engine.handleAction(autoAction, {});
+        harness.ticker.tick(100);
+        expect(harness.getPointer().lineId).toBe("line2");
+      },
+    );
+
+    it("keeps a timed line's deadline when a skip tick only shows the hidden dialogue UI", () => {
       const harness = createHarness({
-        global: { runtime: { autoForwardDelay: 100 } },
-        projectData: createProject({
-          line1Actions: authoredAuto("fromStart", 1000),
+        global: { runtime: { skipUnseenText: false } },
+        projectData: createIntegrationProject({
+          sections: {
+            main: {
+              lines: [
+                {
+                  id: "timed",
+                  actions: {
+                    setNextLineConfig: {
+                      applyMode: "singleLine",
+                      auto: {
+                        enabled: true,
+                        trigger: "fromStart",
+                        delay: 1000,
+                      },
+                    },
+                  },
+                },
+                { id: "unseen", actions: {} },
+              ],
+            },
+          },
         }),
       });
-      harness.completeLatestRender();
-      harness.engine.handleAction("nextLine", {});
-      harness.engine.handleAction("rollbackByOffset", { offset: -1 });
-      expect(harness.getPointer().lineId).toBe("line1");
-      harness.completeLatestRender();
+      harness.engine.handleAction("hideDialogueUI", {});
+      harness.ticker.tick(500);
+      harness.engine.handleAction("startSkipMode", {});
 
-      harness.engine.handleAction("startAutoMode", {});
-      harness.ticker.tick(100);
-      expect(harness.getPointer().lineId).toBe("line2");
+      // The first skip tick shows the dialogue UI; the second stops skip at
+      // the unseen line without advancing.
+      harness.ticker.tick(80);
+      expect(harness.getState().global.dialogueUIHidden).toBe(false);
+      harness.ticker.tick(80);
+      expect({
+        pointer: harness.getPointer().lineId,
+        skipMode: harness.getState().global.skipMode,
+      }).toEqual({ pointer: "timed", skipMode: false });
+
+      harness.ticker.tick(339);
+      expect(harness.getPointer().lineId).toBe("timed");
+      harness.ticker.tick(1);
+      expect(harness.getPointer().lineId).toBe("unseen");
     });
 
     it("keeps a fromStart authored deadline when a click completes the reveal with auto on", () => {
