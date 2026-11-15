@@ -1,3 +1,4 @@
+import { resetActionCases } from "./helpers/resetActionCases.js";
 import { describe, expect, it } from "vitest";
 import {
   createEngineIntegrationHarness,
@@ -97,8 +98,12 @@ const getAudioNode = (renderState, id) =>
 const getVideoBackground = (renderState) =>
   renderState.elements[0].children.find((element) => element.type === "video");
 
-const enterDestination = (harness, action = "sectionTransition") => {
-  harness.engine.handleAction(action, { sectionId: "destination" });
+const enterDestination = (
+  harness,
+  action = "sectionTransition",
+  options = {},
+) => {
+  harness.engine.handleAction(action, { sectionId: "destination", ...options });
   return harness.engine.selectRenderState();
 };
 
@@ -138,9 +143,9 @@ describe("RouteEngine section presentation continuity", () => {
     expect(after.dialogue).toBeUndefined();
   });
 
-  it.each(["resetStoryAtSection", "choice click"])(
-    "continues identical entry media through %s",
-    async (entryPath) => {
+  it.each([...resetActionCases, ["choice click", {}]])(
+    "continues identical entry media through %s %j",
+    async (entryPath, options) => {
       const harness = createHarness({
         destinationActions: entryMediaActions(),
         withChoice: entryPath === "choice click",
@@ -149,7 +154,7 @@ describe("RouteEngine section presentation continuity", () => {
       const after =
         entryPath === "choice click"
           ? await enterDestinationByChoice(harness)
-          : enterDestination(harness, entryPath);
+          : enterDestination(harness, entryPath, options);
 
       expectSameMediaRender(after, before);
       expect(harness.getPointer()).toEqual({
@@ -159,16 +164,20 @@ describe("RouteEngine section presentation continuity", () => {
     },
   );
 
-  it.each(["sectionTransition", "resetStoryAtSection", "choice click"])(
-    "stops source media omitted from the destination through %s",
-    async (entryPath) => {
+  it.each([
+    ["sectionTransition", {}],
+    ...resetActionCases,
+    ["choice click", {}],
+  ])(
+    "stops source media omitted from the destination through %s %j",
+    async (entryPath, options) => {
       const harness = createHarness({
         withChoice: entryPath === "choice click",
       });
       const after =
         entryPath === "choice click"
           ? await enterDestinationByChoice(harness)
-          : enterDestination(harness, entryPath);
+          : enterDestination(harness, entryPath, options);
 
       expectNoMedia(after);
     },

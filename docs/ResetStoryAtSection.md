@@ -1,8 +1,41 @@
 # Reset Story At Section
 
-This document defines the public behavior of `resetStoryAtSection`.
+This document defines what a story reset does when entering a section.
 
 Status: implemented
+
+## Preferred Form
+
+Reset the story with `sectionTransition` and `resetStory: true`:
+
+```yaml
+sectionTransition:
+  sectionId: gameStart
+  resetStory: true
+```
+
+`resetStory` defaults to `false`, which is plain non-destructive navigation.
+
+## Deprecated `resetStoryAtSection`
+
+`resetStoryAtSection` is deprecated. It keeps working so existing project data
+does not break, and it behaves exactly like `sectionTransition` with
+`resetStory: true`:
+
+```yaml
+# Deprecated
+resetStoryAtSection:
+  sectionId: gameStart
+
+# Equivalent
+sectionTransition:
+  sectionId: gameStart
+  resetStory: true
+```
+
+Both forms accept the same optional `screen` payload. Everything below
+describes the reset under either spelling; the examples use the deprecated
+action name.
 
 ## Goal
 
@@ -102,26 +135,30 @@ first destination render can consume the screen transition.
 
 ## Relation To `sectionTransition`
 
-Use `sectionTransition` for non-destructive movement within the current story
-state:
+Use `sectionTransition` without `resetStory` for non-destructive movement
+within the current story state:
 
 ```yaml
 sectionTransition:
   sectionId: chapter2
 ```
 
-Use `resetStoryAtSection` when the destination must start from fresh
-story-local state:
+Set `resetStory: true` when the destination must start from fresh story-local
+state:
 
 ```yaml
-resetStoryAtSection:
+sectionTransition:
   sectionId: title
+  resetStory: true
 ```
 
 The difference is intentional:
 
-- `sectionTransition` preserves rollback, runtime viewed state, account viewed state, and context variables
-- `resetStoryAtSection` clears rollback, runtime viewed state, and context variables, but preserves account viewed state
+- a plain `sectionTransition` preserves rollback, runtime viewed state, account viewed state, and context variables
+- a resetting transition clears rollback, runtime viewed state, and context variables, but preserves account viewed state
+
+A resetting transition is also rejected while a scene replay is active, and an
+action batch may still contain only one navigation action.
 
 ## Examples
 
@@ -195,11 +232,12 @@ engine.handleAction("resetStoryAtSection", {
 
 ## Rationale
 
-Why not overload `sectionTransition`:
+Why the reset is an option on `sectionTransition`:
 
-- destructive fresh-start behavior is too easy to miss behind a flag
-- normal navigation and destructive restart have different review/debug risk
-- common destructive behavior deserves a first-class authored verb
+- both are the same navigation to a section's first line, so one action with
+  an explicit option is simpler to author and to present in editors
+- `resetStory` defaults to `false`, so the destructive behavior is always
+  opted into explicitly
 
 Why not keep a public reset-only action:
 

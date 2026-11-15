@@ -1,3 +1,4 @@
+import { resetActionCases } from "./helpers/resetActionCases.js";
 import { describe, expect, it, vi } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 import createEffectsHandler from "../src/createEffectsHandler.js";
@@ -781,59 +782,60 @@ describe("conditional fallthrough runtime invariants", () => {
     },
   );
 
-  it("processes reset destination actions before rendering target state", () => {
-    const renderedStates = [];
-    const { engine } = createRenderingEngine(
-      createProjectData({
-        initialSectionId: "title",
-        sections: {
-          title: {
-            lines: [
-              {
-                id: "titleLine",
-                actions: {},
-              },
-            ],
-          },
-          game: {
-            lines: [
-              {
-                id: "gameLine",
-                actions: {
-                  ...setScoreAction("initializeGameScore", 7),
-                  ...destinationDialogueAction,
+  it.each(resetActionCases)(
+    "processes reset destination actions before rendering target state via %s %j",
+    (actionType, options) => {
+      const renderedStates = [];
+      const { engine } = createRenderingEngine(
+        createProjectData({
+          initialSectionId: "title",
+          sections: {
+            title: {
+              lines: [
+                {
+                  id: "titleLine",
+                  actions: {},
                 },
-              },
-            ],
+              ],
+            },
+            game: {
+              lines: [
+                {
+                  id: "gameLine",
+                  actions: {
+                    ...setScoreAction("initializeGameScore", 7),
+                    ...destinationDialogueAction,
+                  },
+                },
+              ],
+            },
           },
+        }),
+        (renderState, routeEngine) => {
+          const state = routeEngine.selectSystemState();
+          renderedStates.push({
+            lineId: state.contexts.at(-1).pointers.read.lineId,
+            score: state.contexts.at(-1).variables.score,
+            text: findElementById(
+              renderState.elements,
+              "@layout/dialogue-container--destination-dialogue-text",
+            )?.content,
+          });
         },
-      }),
-      (renderState, routeEngine) => {
-        const state = routeEngine.selectSystemState();
-        renderedStates.push({
-          lineId: state.contexts.at(-1).pointers.read.lineId,
-          score: state.contexts.at(-1).variables.score,
-          text: findElementById(
-            renderState.elements,
-            "@layout/dialogue-container--destination-dialogue-text",
-          )?.content,
-        });
-      },
-    );
+      );
 
-    renderedStates.length = 0;
-    engine.handleAction("resetStoryAtSection", {
-      sectionId: "game",
-    });
+      renderedStates.length = 0;
+      engine.handleAction(actionType, { ...options, sectionId: "game" });
 
-    expect(renderedStates).toEqual([
-      {
-        lineId: "gameLine",
-        score: 7,
-        text: "Score 7",
-      },
-    ]);
-  });
+      expect(renderedStates).toEqual([
+        {
+          lineId: "gameLine",
+          score: 7,
+          text: "Score 7",
+        },
+      ]);
+    },
+  );
 
   it("iteratively processes mixed conditional lines without re-entering the effect handler", () => {
     const lineCount = 100;

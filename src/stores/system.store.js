@@ -4652,6 +4652,10 @@ const transitionToSection = (
   return state;
 };
 
+/**
+ * @deprecated Use sectionTransition with `resetStory: true`. Kept so existing
+ * project data keeps working.
+ */
 export const resetStoryAtSection = ({ state }, payload) => {
   if (getActiveSceneReplayContext(state)) {
     throw new Error("Cannot reset the story while a scene replay is active");
@@ -6362,6 +6366,8 @@ export const markLineCompleted = ({ state, playbackOwnership }) => {
  * @param {Object} state - Current state object
  * @param {Object} payload - Action payload
  * @param {string} payload.sectionId - The section ID to transition to
+ * @param {boolean} [payload.resetStory] - Reset story-local state before
+ *   entering the section, the same as the deprecated resetStoryAtSection
  * @returns {Object} Updated state object
  * @description
  * - Finds target section across all scenes
@@ -6371,6 +6377,9 @@ export const markLineCompleted = ({ state, playbackOwnership }) => {
  * - Logs warnings if section or lines not found
  */
 export const sectionTransition = ({ state }, payload) => {
+  if (payload?.resetStory === true) {
+    return resetStoryAtSection({ state }, payload);
+  }
   return transitionToSection(state, {
     sectionId: payload?.sectionId,
     screen: payload?.screen,

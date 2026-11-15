@@ -435,7 +435,8 @@ properties:
 
   resetStoryAtSection:
     type: object
-    description: Reset story-local state and enter the first line of a section
+    deprecated: true
+    description: Deprecated. Use sectionTransition with resetStory true. Reset story-local state and enter the first line of a section
     properties:
       sectionId:
         type: string
@@ -453,6 +454,9 @@ properties:
       sectionId:
         type: string
         description: Target section ID
+      resetStory:
+        type: boolean
+        description: When true, reset story-local state (context variables, rollback history, and transient playback state) before entering the section. Defaults to false, which keeps the current story state.
       screen:
         description: Optional whole-screen transition for entering the destination section. Takes precedence over destination line screen.animations for the first destination render only.
         $ref: "presentationActions.yaml#/properties/screen"

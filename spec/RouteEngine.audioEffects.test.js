@@ -1,3 +1,4 @@
+import { resetActionCases } from "./helpers/resetActionCases.js";
 import { describe, expect, it } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 
@@ -1095,18 +1096,45 @@ describe("RouteEngine transition audioEffects on music that keeps playing", () =
     expectKeptMusicWithoutEffect(engine);
   });
 
-  it.each(["sectionTransition", "resetStoryAtSection"])(
-    "plays no transition when a %s enters a line that keeps the music",
-    (actionType) => {
+  it.each([["sectionTransition", {}], ...resetActionCases])(
+    "plays no transition when a %s %j enters a line that keeps the music",
+    (actionType, options) => {
       const engine = createEngine({
         projectData: createKeptMusicProjectData(),
       });
 
       expect(() =>
-        engine.handleAction(actionType, { sectionId: "destination" }),
+        engine.handleAction(actionType, {
+          sectionId: "destination",
+          ...options,
+        }),
       ).not.toThrow();
       expect(selectLineId(engine)).toBe("destination");
       expectKeptMusicWithoutEffect(engine);
+    },
+  );
+
+  it.each([
+    ["resetStoryAtSection", {}],
+    ["sectionTransition", { resetStory: true }],
+  ])(
+    "drops a running transition when %s %j resets the story",
+    (actionType, options) => {
+      const projectData = createProjectData();
+      projectData.story.scenes.scene.sections.destination = {
+        lines: [{ id: "destination", actions: {} }],
+      };
+      const engine = createEngine({ projectData });
+      enterNextLine(engine);
+      expect(engine.selectRenderState().audioEffects).toHaveLength(1);
+
+      engine.handleAction(actionType, {
+        sectionId: "destination",
+        ...options,
+      });
+
+      expect(selectLineId(engine)).toBe("destination");
+      expect(engine.selectRenderState().audioEffects).toBeUndefined();
     },
   );
 

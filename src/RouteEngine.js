@@ -45,6 +45,14 @@ const PERSISTENT_PLAYBACK_RESTORE_ACTIONS = new Set([
   "rollbackToLine",
 ]);
 
+// A sectionTransition that resets the story is the deprecated
+// resetStoryAtSection under its current name, so the engine classifies both
+// the same way.
+const getClassifiedActionType = (actionType, payload) =>
+  actionType === "sectionTransition" && payload?.resetStory === true
+    ? "resetStoryAtSection"
+    : actionType;
+
 const CONDITIONAL_ACTION_TYPE = "conditional";
 const RANDOM_ACTION_TYPE = "random";
 const CONDITIONAL_AUTO_CONTINUE = Symbol("conditionalAutoContinue");
@@ -1262,7 +1270,11 @@ export default function createRouteEngine(options) {
     if (nextLocalizationPackageId !== undefined) {
       _localizationPackageId = nextLocalizationPackageId;
     }
-    if (PERSISTENT_PLAYBACK_RESET_ACTIONS.has(actionType)) {
+    const classifiedActionType = getClassifiedActionType(
+      actionType,
+      storePayload,
+    );
+    if (PERSISTENT_PLAYBACK_RESET_ACTIONS.has(classifiedActionType)) {
       _restoredPersistentAnimationSessions =
         persistentAnimationSessionsBeforeAction ?? new Map();
       _persistentAnimationSessions = new Map();
@@ -1303,7 +1315,7 @@ export default function createRouteEngine(options) {
       refreshActiveRollbackSaveIdentities();
     }
     updateActiveRollbackNavigation(
-      actionType,
+      classifiedActionType,
       cursorBeforeAction,
       cursorAfterAction,
     );

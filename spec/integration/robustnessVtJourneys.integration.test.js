@@ -1,3 +1,4 @@
+import { resetActionCases } from "../helpers/resetActionCases.js";
 import { readFileSync } from "node:fs";
 import { loadAll } from "js-yaml";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -120,38 +121,43 @@ describe("robustness VT companion journeys", () => {
     });
   });
 
-  it("recovers from the exact VT cycle without admitting stale renderer completion", async () => {
-    const h = setup("routing-cycle-recovery");
-    const oldRenderId = h.renderStates.at(-1).id;
-    const original = h.engine.handleLineActions;
-    let entries = 0;
-    vi.spyOn(h.engine, "handleLineActions").mockImplementation((...args) => {
-      if (++entries > 1100)
-        throw new Error("Test watchdog: immediate routing did not terminate");
-      return original(...args);
-    });
-    await h.click("main", "loop");
-    expect(h.getError().matched).toBe(true);
-    expect(h.ticker.size).toBe(0);
-    dispatchEngineActionsEvent(h.engine, {
-      detail: {
-        actions: JSON.stringify({ resetStoryAtSection: { sectionId: "safe" } }),
-      },
-    });
-    h.effectsHandler.handleRouteGraphicsEvent("renderComplete", {
-      id: oldRenderId,
-      aborted: false,
-    });
-    expect(h.checkpoint().completed).toBe(false);
-    h.completeLatestRender();
-    await h.click("safe", "next");
-    expect(h.checkpoint()).toMatchObject({
-      pointer: { sectionId: "safe", lineId: "recovered" },
-      completed: true,
-      pendingEffects: [],
-      timerCount: 0,
-    });
-  });
+  it.each(resetActionCases)(
+    "recovers from the exact VT cycle without admitting stale renderer completion via %s %j",
+    async (actionType, options) => {
+      const h = setup("routing-cycle-recovery");
+      const oldRenderId = h.renderStates.at(-1).id;
+      const original = h.engine.handleLineActions;
+      let entries = 0;
+      vi.spyOn(h.engine, "handleLineActions").mockImplementation((...args) => {
+        if (++entries > 1100)
+          throw new Error("Test watchdog: immediate routing did not terminate");
+        return original(...args);
+      });
+      await h.click("main", "loop");
+      expect(h.getError().matched).toBe(true);
+      expect(h.ticker.size).toBe(0);
+      dispatchEngineActionsEvent(h.engine, {
+        detail: {
+          actions: JSON.stringify({
+            [actionType]: { sectionId: "safe", ...options },
+          }),
+        },
+      });
+      h.effectsHandler.handleRouteGraphicsEvent("renderComplete", {
+        id: oldRenderId,
+        aborted: false,
+      });
+      expect(h.checkpoint().completed).toBe(false);
+      h.completeLatestRender();
+      await h.click("safe", "next");
+      expect(h.checkpoint()).toMatchObject({
+        pointer: { sectionId: "safe", lineId: "recovered" },
+        completed: true,
+        pendingEffects: [],
+        timerCount: 0,
+      });
+    },
+  );
 
   it("preserves appended dialogue across the VT checkpoint, rollback, save and load", async () => {
     const h = setup("cached-dialogue-save-rollback");

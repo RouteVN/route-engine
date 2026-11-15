@@ -1,3 +1,4 @@
+import { resetActionCases } from "./helpers/resetActionCases.js";
 import { describe, expect, it } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 
@@ -89,7 +90,7 @@ const createRollbackChoiceProjectData = () => ({
   },
 });
 
-const createResetStoryAtSectionProjectData = () => ({
+const createStoryResetProjectData = () => ({
   screen: {
     width: 1920,
     height: 1080,
@@ -397,71 +398,73 @@ describe("RouteEngine selectSystemState", () => {
     ]);
   });
 
-  it("resets story-local state and enters the destination section", () => {
-    const engine = createRouteEngineWithInlineEffects();
+  it.each(resetActionCases)(
+    "resets story-local state and enters the destination section via %s %j",
+    (actionType, options) => {
+      const engine = createRouteEngineWithInlineEffects();
 
-    engine.init({
-      initialState: {
-        projectData: createResetStoryAtSectionProjectData(),
-      },
-    });
-
-    expect(engine.selectSystemState().contexts[0].variables.score).toBe(7);
-
-    engine.handleAction("resetStoryAtSection", {
-      sectionId: "gameStart",
-    });
-
-    const state = engine.selectSystemState();
-
-    expect(state.contexts[0].pointers.read).toEqual({
-      sectionId: "gameStart",
-      lineId: "gameLine",
-    });
-    expect(state.contexts[0].variables.score).toBe(1);
-    expect(state.global).not.toHaveProperty("viewedRegistry");
-    expect(state.contexts[0].rollback).toEqual({
-      currentIndex: 0,
-      isRestoring: false,
-      replayStartIndex: 0,
-      timeline: [
-        {
-          sectionId: "gameStart",
-          lineId: "gameLine",
-          rollbackPolicy: "free",
+      engine.init({
+        initialState: {
+          projectData: createStoryResetProjectData(),
         },
-      ],
-    });
-  });
+      });
 
-  it("leaves the current story state untouched when resetStoryAtSection targets a missing section", () => {
-    const engine = createRouteEngineWithInlineEffects();
+      expect(engine.selectSystemState().contexts[0].variables.score).toBe(7);
 
-    engine.init({
-      initialState: {
-        projectData: createResetStoryAtSectionProjectData(),
-      },
-    });
+      engine.handleAction(actionType, { ...options, sectionId: "gameStart" });
 
-    engine.handleAction("resetStoryAtSection", {
-      sectionId: "missing",
-    });
+      const state = engine.selectSystemState();
 
-    const state = engine.selectSystemState();
+      expect(state.contexts[0].pointers.read).toEqual({
+        sectionId: "gameStart",
+        lineId: "gameLine",
+      });
+      expect(state.contexts[0].variables.score).toBe(1);
+      expect(state.global).not.toHaveProperty("viewedRegistry");
+      expect(state.contexts[0].rollback).toEqual({
+        currentIndex: 0,
+        isRestoring: false,
+        replayStartIndex: 0,
+        timeline: [
+          {
+            sectionId: "gameStart",
+            lineId: "gameLine",
+            rollbackPolicy: "free",
+          },
+        ],
+      });
+    },
+  );
 
-    expect(state.contexts[0].pointers.read).toMatchObject({
-      sectionId: "title",
-      lineId: "titleLine",
-    });
-    expect(state.contexts[0].variables.score).toBe(7);
-    expect(state.contexts[0].rollback.timeline).toEqual([
-      {
+  it.each(resetActionCases)(
+    "leaves the current story state untouched when a reset targets a missing section via %s %j",
+    (actionType, options) => {
+      const engine = createRouteEngineWithInlineEffects();
+
+      engine.init({
+        initialState: {
+          projectData: createStoryResetProjectData(),
+        },
+      });
+
+      engine.handleAction(actionType, { ...options, sectionId: "missing" });
+
+      const state = engine.selectSystemState();
+
+      expect(state.contexts[0].pointers.read).toMatchObject({
         sectionId: "title",
         lineId: "titleLine",
-        rollbackPolicy: "free",
-      },
-    ]);
-  });
+      });
+      expect(state.contexts[0].variables.score).toBe(7);
+      expect(state.contexts[0].rollback.timeline).toEqual([
+        {
+          sectionId: "title",
+          lineId: "titleLine",
+          rollbackPolicy: "free",
+        },
+      ]);
+    },
+  );
 
   it("does not reopen transient overlays when rolling back after load", () => {
     const engine = createRouteEngineWithInlineEffects();

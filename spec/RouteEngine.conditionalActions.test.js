@@ -1,3 +1,4 @@
+import { resetActionCases } from "./helpers/resetActionCases.js";
 import { describe, expect, it, vi } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 
@@ -417,9 +418,14 @@ describe("RouteEngine conditional actions", () => {
   it.each([
     ["sectionTransition", { sectionId: "target" }, "targetLine1"],
     ["resetStoryAtSection", { sectionId: "target" }, "targetLine1"],
+    [
+      "sectionTransition",
+      { sectionId: "target", resetStory: true },
+      "targetLine1",
+    ],
     ["jumpToLine", { lineId: "line2" }, "line2"],
   ])(
-    "does not add another advance after a matched branch uses %s",
+    "does not add another advance after a matched branch uses %s %j",
     (actionType, payload, expectedLineId) => {
       const projectData = createProjectData({
         extraLines: [
@@ -464,9 +470,9 @@ describe("RouteEngine conditional actions", () => {
     },
   );
 
-  it.each(["sectionTransition", "resetStoryAtSection"])(
-    "suppresses continuation when a matched branch attempts an invalid %s",
-    (actionType) => {
+  it.each([["sectionTransition", {}], ...resetActionCases])(
+    "suppresses continuation when a matched branch attempts an invalid %s %j",
+    (actionType, options) => {
       const engine = createEngine(
         createProjectData({
           extraLines: [
@@ -487,6 +493,7 @@ describe("RouteEngine conditional actions", () => {
               actions: {
                 [actionType]: {
                   sectionId: "missing",
+                  ...options,
                 },
               },
             },
@@ -896,66 +903,76 @@ describe("RouteEngine conditional actions", () => {
     expect(engine.selectSystemState().contexts.at(-1).variables.score).toBe(9);
   });
 
-  it.each([
+  it.each(
     [
-      "matched",
       [
-        {
-          when: true,
-          actions: setScoreAction("matched", 1),
-        },
-      ],
-    ],
-    [
-      "default",
-      [
-        {
-          when: false,
-          actions: setScoreAction("unreachable", 1),
-        },
-        {
-          actions: setScoreAction("default", 2),
-        },
-      ],
-    ],
-    [
-      "unmatched",
-      [
-        {
-          when: false,
-          actions: setScoreAction("unreachable", 1),
-        },
-      ],
-    ],
-  ])(
-    "cancels %s conditional continuation after later same-pointer navigation",
-    (_outcome, branches) => {
-      for (const controlFlowAction of [
-        { jumpToLine: { lineId: "line1" } },
-        { resetStoryAtSection: { sectionId: "section1" } },
-      ]) {
-        const engine = createEngine(
-          createProjectData({
-            extraLines: [
-              {
-                id: "line2",
-                actions: {},
-              },
-            ],
-          }),
-        );
-
-        engine.handleActions({
-          conditional: {
-            branches,
+        "matched",
+        [
+          {
+            when: true,
+            actions: setScoreAction("matched", 1),
           },
-          ...controlFlowAction,
-        });
+        ],
+      ],
+      [
+        "default",
+        [
+          {
+            when: false,
+            actions: setScoreAction("unreachable", 1),
+          },
+          {
+            actions: setScoreAction("default", 2),
+          },
+        ],
+      ],
+      [
+        "unmatched",
+        [
+          {
+            when: false,
+            actions: setScoreAction("unreachable", 1),
+          },
+        ],
+      ],
+    ].flatMap(([outcome, branches]) =>
+      [
+        ["jumpToLine", { lineId: "line1" }],
+        ...resetActionCases.map(([actionType, options]) => [
+          actionType,
+          { sectionId: "section1", ...options },
+        ]),
+      ].map(([actionType, payload]) => [
+        outcome,
+        actionType,
+        payload,
+        branches,
+      ]),
+    ),
+  )(
+    "cancels %s conditional continuation after later same-pointer %s %j",
+    (_outcome, actionType, payload, branches) => {
+      const engine = createEngine(
+        createProjectData({
+          extraLines: [
+            {
+              id: "line2",
+              actions: {},
+            },
+          ],
+        }),
+      );
 
-        expect(
-          engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
-        ).toBe("line1");
-      }
+      engine.handleActions({
+        conditional: {
+          branches,
+        },
+        [actionType]: payload,
+      });
+
+      expect(
+        engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+      ).toBe("line1");
     },
   );
 

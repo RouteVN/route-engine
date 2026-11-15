@@ -793,3 +793,438 @@ out:
         read:
           sectionId: "section1"
           lineId: "1"
+---
+case: resetting section transition - reset story at section clears story-local state and anchors rollback at the destination
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+            hasKey:
+              type: boolean
+              scope: context
+              default: false
+            volume:
+              type: number
+              scope: device
+              default: 80
+            unlockedEnding:
+              type: boolean
+              scope: account
+              default: false
+        story:
+          initialSceneId: scene1
+          scenes:
+            scene1:
+              initialSectionId: title
+              sections:
+                title:
+                  lines:
+                    - id: intro
+                      actions: {}
+                    - id: titleLine
+                      actions: {}
+                gameStart:
+                  lines:
+                    - id: gameLine
+                      actions:
+                        background:
+                          resourceId: bg2
+      global:
+        autoMode: true
+        skipMode: true
+        dialogueUIHidden: true
+        confirmDialog:
+          resourceId: resetConfirm
+          confirmActions:
+            hideConfirmDialog: {}
+          cancelActions:
+            hideConfirmDialog: {}
+        nextLineConfig:
+          manual:
+            enabled: false
+            requireLineCompleted: true
+          auto:
+            enabled: true
+            trigger: fromStart
+            delay: 250
+          applyMode: singleLine
+        overlayStack:
+          - resourceId: overlay
+        isLineCompleted: false
+        variables:
+          volume: 15
+          unlockedEnding: true
+        saveSlots:
+          "1":
+            formatVersion: 1
+            slotId: 1
+            savedAt: 1704110400
+            image: save.png
+            state:
+              contexts:
+                - pointers:
+                    read:
+                      sectionId: title
+                      lineId: titleLine
+        pendingEffects:
+          - name: existingEffect
+      contexts:
+        - currentPointerMode: history
+          pointers:
+            read:
+              sectionId: title
+              lineId: titleLine
+            history:
+              sectionId: title
+              lineId: intro
+          configuration:
+            page: 2
+          views:
+            - resourceId: contextOverlay
+          bgm:
+            resourceId: bgm_theme
+          variables:
+            score: 9
+            hasKey: true
+          rollback:
+            currentIndex: 1
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: title
+                lineId: intro
+                rollbackPolicy: free
+              - sectionId: title
+                lineId: titleLine
+                rollbackPolicy: free
+  - sectionId: gameStart
+    resetStory: true
+out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+        hasKey:
+          type: boolean
+          scope: context
+          default: false
+        volume:
+          type: number
+          scope: device
+          default: 80
+        unlockedEnding:
+          type: boolean
+          scope: account
+          default: false
+    story:
+      initialSceneId: scene1
+      scenes:
+        scene1:
+          initialSectionId: title
+          sections:
+            title:
+              lines:
+                - id: intro
+                  actions: {}
+                - id: titleLine
+                  actions: {}
+            gameStart:
+              lines:
+                - id: gameLine
+                  actions:
+                    background:
+                      resourceId: bg2
+  global:
+    autoMode: false
+    skipMode: false
+    dialogueUIHidden: false
+    confirmDialog: null
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+      applyMode: persistent
+    overlayStack: []
+    isLineCompleted: false
+    variables:
+      volume: 15
+      unlockedEnding: true
+    saveSlots:
+      "1":
+        formatVersion: 1
+        slotId: 1
+        savedAt: 1704110400
+        image: save.png
+        state:
+          contexts:
+            - pointers:
+                read:
+                  sectionId: title
+                  lineId: titleLine
+    pendingEffects:
+      - name: existingEffect
+      - name: clearAutoNextTimer
+      - name: clearSkipNextTimer
+      - name: clearNextLineConfigTimer
+      - name: render
+      - name: handleLineActions
+  contexts:
+    - currentPointerMode: read
+      pointers:
+        read:
+          sectionId: gameStart
+          lineId: gameLine
+      configuration: {}
+      views: []
+      bgm:
+        resourceId: __undefined__
+      variables:
+        score: 0
+        hasKey: false
+      rollback:
+        currentIndex: 0
+        isRestoring: false
+        replayStartIndex: 0
+        timeline:
+          - sectionId: gameStart
+            lineId: gameLine
+            rollbackPolicy: free
+---
+case: resetting section transition - reset story at section stores a pending screen transition for the destination render
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+        story:
+          initialSceneId: scene1
+          scenes:
+            scene1:
+              initialSectionId: title
+              sections:
+                title:
+                  lines:
+                    - id: titleLine
+                      actions:
+                        background:
+                          resourceId: titleBg
+                gameStart:
+                  lines:
+                    - id: gameLine
+                      actions:
+                        background:
+                          resourceId: gameBg
+      global:
+        autoMode: false
+        skipMode: false
+        dialogueUIHidden: true
+        confirmDialog: null
+        formDrafts: {}
+        pendingEffects: []
+        isLineCompleted: true
+      contexts:
+        - currentPointerMode: read
+          pointers:
+            read:
+              sectionId: title
+              lineId: titleLine
+          variables:
+            score: 9
+  - sectionId: gameStart
+    resetStory: true
+    screen:
+      animations:
+        resourceId: screenCrossFade
+out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+    story:
+      initialSceneId: scene1
+      scenes:
+        scene1:
+          initialSectionId: title
+          sections:
+            title:
+              lines:
+                - id: titleLine
+                  actions:
+                    background:
+                      resourceId: titleBg
+            gameStart:
+              lines:
+                - id: gameLine
+                  actions:
+                    background:
+                      resourceId: gameBg
+  global:
+    autoMode: false
+    skipMode: false
+    dialogueUIHidden: false
+    confirmDialog: null
+    formDrafts: {}
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+      applyMode: persistent
+    overlayStack: []
+    pendingScreenTransition:
+      animations:
+        resourceId: screenCrossFade
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: clearSkipNextTimer
+      - name: clearNextLineConfigTimer
+      - name: handleLineActions
+    isLineCompleted: false
+  contexts:
+    - currentPointerMode: read
+      pointers:
+        read:
+          sectionId: gameStart
+          lineId: gameLine
+      configuration: {}
+      views: []
+      bgm:
+        resourceId: __undefined__
+      variables:
+        score: 0
+      rollback:
+        currentIndex: 0
+        isRestoring: false
+        replayStartIndex: 0
+        timeline:
+          - sectionId: gameStart
+            lineId: gameLine
+            rollbackPolicy: free
+---
+case: resetting section transition - section not found leaves state unchanged
+in:
+  - state:
+      projectData:
+        story:
+          initialSceneId: scene1
+          scenes:
+            scene1:
+              initialSectionId: title
+              sections:
+                title:
+                  lines:
+                    - id: titleLine
+                      actions: {}
+      global:
+        pendingEffects: []
+        autoMode: true
+        skipMode: true
+      contexts:
+        - currentPointerMode: read
+          pointers:
+            read:
+              sectionId: title
+              lineId: titleLine
+          variables:
+            score: 4
+  - sectionId: missing
+    resetStory: true
+out:
+  projectData:
+    story:
+      initialSceneId: scene1
+      scenes:
+        scene1:
+          initialSectionId: title
+          sections:
+            title:
+              lines:
+                - id: titleLine
+                  actions: {}
+  global:
+    pendingEffects: []
+    autoMode: true
+    skipMode: true
+  contexts:
+    - currentPointerMode: read
+      pointers:
+        read:
+          sectionId: title
+          lineId: titleLine
+      variables:
+        score: 4
+---
+case: resetting section transition - empty destination section leaves state unchanged
+in:
+  - state:
+      projectData:
+        story:
+          initialSceneId: scene1
+          scenes:
+            scene1:
+              initialSectionId: title
+              sections:
+                title:
+                  lines:
+                    - id: titleLine
+                      actions: {}
+                empty:
+                  lines: []
+      global:
+        pendingEffects: []
+        autoMode: true
+        skipMode: true
+      contexts:
+        - currentPointerMode: read
+          pointers:
+            read:
+              sectionId: title
+              lineId: titleLine
+          variables:
+            score: 4
+  - sectionId: empty
+    resetStory: true
+out:
+  projectData:
+    story:
+      initialSceneId: scene1
+      scenes:
+        scene1:
+          initialSectionId: title
+          sections:
+            title:
+              lines:
+                - id: titleLine
+                  actions: {}
+            empty:
+              lines: []
+  global:
+    pendingEffects: []
+    autoMode: true
+    skipMode: true
+  contexts:
+    - currentPointerMode: read
+      pointers:
+        read:
+          sectionId: title
+          lineId: titleLine
+      variables:
+        score: 4

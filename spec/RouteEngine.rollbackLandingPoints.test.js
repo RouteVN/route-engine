@@ -1,3 +1,4 @@
+import { resetActionCases } from "./helpers/resetActionCases.js";
 import { describe, expect, it, vi } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 import {
@@ -999,121 +1000,128 @@ describe("RouteEngine rollback landing points", () => {
     expect(getContext(engine).variables.score).toBe(1);
   });
 
-  it("does not cross a resetStoryAtSection rollback boundary", () => {
-    const engine = createEngine(
-      createProjectData({
-        sections: {
-          source: {
-            lines: [settledLine("before"), settledLine("sourceCurrent")],
+  it.each(resetActionCases)(
+    "does not cross a story reset rollback boundary via %s %j",
+    (actionType, options) => {
+      const engine = createEngine(
+        createProjectData({
+          sections: {
+            source: {
+              lines: [settledLine("before"), settledLine("sourceCurrent")],
+            },
+            resetTarget: {
+              lines: [settledLine("newStart")],
+            },
           },
-          resetTarget: {
-            lines: [settledLine("newStart")],
+          initialSectionId: "source",
+        }),
+      );
+
+      advance(engine);
+      engine.handleAction(actionType, { ...options, sectionId: "resetTarget" });
+
+      const stateAfterReset = engine.selectSystemState();
+      expect(getTimeline(engine)).toHaveLength(1);
+      expect(selectCanRollback({ state: stateAfterReset })).toBe(false);
+
+      engine.handleAction("rollbackByOffset", {});
+
+      expect(getPointer(engine)).toEqual({
+        sectionId: "resetTarget",
+        lineId: "newStart",
+      });
+    },
+  );
+
+  it.each(resetActionCases)(
+    "rejects reset plus sibling routing without replacing rollback state via %s %j",
+    (actionType, options) => {
+      const engine = createEngine(
+        createProjectData({
+          initialSectionId: "source",
+          sections: {
+            source: {
+              lines: [settledLine("before")],
+            },
+            main: {
+              lines: [settledLine("router")],
+            },
+            destination: {
+              lines: [settledLine("after")],
+            },
           },
-        },
-        initialSectionId: "source",
-      }),
-    );
+        }),
+      );
 
-    advance(engine);
-    engine.handleAction("resetStoryAtSection", {
-      sectionId: "resetTarget",
-    });
+      engine.handleAction("sectionTransition", {
+        sectionId: "main",
+      });
+      const before = engine.selectSystemState();
 
-    const stateAfterReset = engine.selectSystemState();
-    expect(getTimeline(engine)).toHaveLength(1);
-    expect(selectCanRollback({ state: stateAfterReset })).toBe(false);
+      expect(() =>
+        engine.handleActions({
+          [actionType]: { sectionId: "main", ...options },
+          jumpToLine: { sectionId: "destination", lineId: "after" },
+        }),
+      ).toThrow(
+        `action batch cannot contain multiple navigation actions: ${actionType}, jumpToLine`,
+      );
+      expect(engine.selectSystemState()).toEqual(before);
+    },
+  );
 
-    engine.handleAction("rollbackByOffset", {});
-
-    expect(getPointer(engine)).toEqual({
-      sectionId: "resetTarget",
-      lineId: "newStart",
-    });
-  });
-
-  it("rejects reset plus sibling routing without replacing rollback state", () => {
-    const engine = createEngine(
-      createProjectData({
-        initialSectionId: "source",
-        sections: {
-          source: {
-            lines: [settledLine("before")],
+  it.each(resetActionCases)(
+    "keeps a separately saved occurrence returnable across a later reset via %s %j",
+    (actionType, options) => {
+      const engine = createEngine(
+        createProjectData({
+          initialSectionId: "source",
+          sections: {
+            source: {
+              lines: [settledLine("before")],
+            },
+            destination: {
+              lines: [settledLine("router")],
+            },
+            final: {
+              lines: [settledLine("after")],
+            },
           },
-          main: {
-            lines: [settledLine("router")],
-          },
-          destination: {
-            lines: [settledLine("after")],
-          },
-        },
-      }),
-    );
+        }),
+      );
 
-    engine.handleAction("sectionTransition", {
-      sectionId: "main",
-    });
-    const before = engine.selectSystemState();
-
-    expect(() =>
       engine.handleActions({
-        resetStoryAtSection: { sectionId: "main" },
         sectionTransition: { sectionId: "destination" },
-      }),
-    ).toThrow(
-      "action batch cannot contain multiple navigation actions: resetStoryAtSection, sectionTransition",
-    );
-    expect(engine.selectSystemState()).toEqual(before);
-  });
+      });
+      engine.handleActions({
+        saveSlot: { slotId: 1, savedAt: 1700000000000 },
+      });
+      engine.handleActions({
+        [actionType]: { sectionId: "destination", ...options },
+      });
 
-  it("keeps a separately saved occurrence returnable across a later reset", () => {
-    const engine = createEngine(
-      createProjectData({
-        initialSectionId: "source",
-        sections: {
-          source: {
-            lines: [settledLine("before")],
-          },
-          destination: {
-            lines: [settledLine("router")],
-          },
-          final: {
-            lines: [settledLine("after")],
-          },
-        },
-      }),
-    );
+      expect(getTimeline(engine)).toHaveLength(1);
+      expect(
+        getCheckpoint(engine, "destination", "router")?.returnable,
+      ).not.toBe(false);
+      const savedRollback =
+        engine.selectSystemState().global.saveSlots["1"].state.contexts[0]
+          .rollback;
+      expect(
+        savedRollback.timeline.find(({ lineId }) => lineId === "router")
+          ?.returnable,
+      ).not.toBe(false);
 
-    engine.handleActions({
-      sectionTransition: { sectionId: "destination" },
-    });
-    engine.handleActions({
-      saveSlot: { slotId: 1, savedAt: 1700000000000 },
-    });
-    engine.handleActions({
-      resetStoryAtSection: { sectionId: "destination" },
-    });
+      engine.handleAction("loadSlot", { slotId: 1 });
+      engine.handleAction("sectionTransition", { sectionId: "final" });
+      engine.handleAction("rollbackByOffset", {});
 
-    expect(getTimeline(engine)).toHaveLength(1);
-    expect(getCheckpoint(engine, "destination", "router")?.returnable).not.toBe(
-      false,
-    );
-    const savedRollback =
-      engine.selectSystemState().global.saveSlots["1"].state.contexts[0]
-        .rollback;
-    expect(
-      savedRollback.timeline.find(({ lineId }) => lineId === "router")
-        ?.returnable,
-    ).not.toBe(false);
-
-    engine.handleAction("loadSlot", { slotId: 1 });
-    engine.handleAction("sectionTransition", { sectionId: "final" });
-    engine.handleAction("rollbackByOffset", {});
-
-    expect(getPointer(engine)).toMatchObject({
-      sectionId: "destination",
-      lineId: "router",
-    });
-  });
+      expect(getPointer(engine)).toMatchObject({
+        sectionId: "destination",
+        lineId: "router",
+      });
+    },
+  );
 
   it("tracks eligibility per repeated line occurrence", () => {
     const engine = createEngine(
