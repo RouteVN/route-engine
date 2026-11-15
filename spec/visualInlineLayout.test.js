@@ -477,17 +477,117 @@ describe("inline visual layouts", () => {
     );
   });
 
-  it("requires a transform source for a renderable inline layout", () => {
-    expect(() =>
+  it("centers an inline layout without a transform on the screen", () => {
+    const renderState = constructRenderState({
+      presentationState: {
+        visual: {
+          items: [
+            {
+              id: "screen-layer",
+              layout: {
+                elements: [
+                  {
+                    id: "badge",
+                    type: "rect",
+                    x: 1500,
+                    y: 80,
+                    width: 200,
+                    height: 100,
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+      resources: createResources(),
+    });
+
+    const story = renderState.elements.find(
+      (element) => element.id === "story",
+    );
+    const layer = story.children.find(
+      (element) => element.id === "visual-screen-layer",
+    );
+    expect(layer).toMatchObject({
+      type: "container",
+      width: 1920,
+      height: 1080,
+      x: 960,
+      y: 540,
+      anchorX: 0.5,
+      anchorY: 0.5,
+      scaleX: 1,
+      scaleY: 1,
+      rotation: 0,
+    });
+    expect(layer.children[0]).toMatchObject({
+      type: "rect",
+      x: 1500,
+      y: 80,
+    });
+  });
+
+  it("centers a layout resource without a transform on the screen", () => {
+    const resources = createResources();
+    resources.layouts.card = {
+      elements: [
+        { id: "panel", type: "rect", x: 1500, y: 80, width: 200, height: 100 },
+      ],
+    };
+    const renderState = constructRenderState({
+      presentationState: {
+        visual: {
+          items: [{ id: "shared", resourceId: "card" }],
+        },
+      },
+      resources,
+    });
+
+    const layer = findVisual(renderState, "shared");
+    expect(layer).toMatchObject({
+      type: "container",
+      width: 1920,
+      height: 1080,
+      x: 960,
+      y: 540,
+      anchorX: 0.5,
+      anchorY: 0.5,
+      scaleX: 1,
+      scaleY: 1,
+      rotation: 0,
+    });
+    expect(layer.children[0]).toMatchObject({ type: "rect", x: 1500, y: 80 });
+  });
+
+  it("still places a layout resource by its transform", () => {
+    const resources = createResources();
+    resources.layouts.card = {
+      elements: [{ id: "panel", type: "rect", width: 200, height: 100 }],
+    };
+    const layer = findVisual(
       constructRenderState({
         presentationState: {
           visual: {
             items: [
-              {
-                id: "missing-transform",
-                layout: { elements: [] },
-              },
+              { id: "shared", resourceId: "card", transformId: "center" },
             ],
+          },
+        },
+        resources,
+      }),
+      "shared",
+    );
+
+    expect(layer).toMatchObject({ x: 400, y: 240, anchorX: 0.5, anchorY: 0.5 });
+  });
+
+  it("still requires a transform source for a resource visual", () => {
+    expect(() =>
+      constructRenderState({
+        presentationState: {
+          visual: {
+            items: [{ id: "missing-transform", resourceId: "badge" }],
           },
         },
         resources: createResources(),
@@ -495,5 +595,44 @@ describe("inline visual layouts", () => {
     ).toThrow(
       'Visual item "missing-transform" requires transformId or transform',
     );
+  });
+
+  it("keeps a layout's source in the presentation state and does not draw it", () => {
+    const source = { form: "what the author edits", elements: { panel: {} } };
+    const presentationState = constructPresentationState([
+      {
+        visual: {
+          items: [
+            {
+              id: "card",
+              layout: {
+                elements: [
+                  { id: "panel", type: "rect", width: 40, height: 20 },
+                ],
+                source,
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    expect(presentationState.visual.items[0].layout.source).toEqual(source);
+    const visual = findVisual(
+      constructRenderState({
+        presentationState,
+        resources: createResources(),
+      }),
+      "card",
+    );
+    expect(visual.children).toEqual([
+      {
+        id: "@layout/visual-card--panel",
+        type: "rect",
+        width: 40,
+        height: 20,
+      },
+    ]);
+    expect(JSON.stringify(visual)).not.toContain("what the author edits");
   });
 });

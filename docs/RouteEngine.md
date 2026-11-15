@@ -1669,6 +1669,21 @@ Or it can own an inline transform without creating a transform resource:
 `transformId` and `transform` are mutually exclusive. Existing top-level
 transform fields remain supported as overrides for compatibility.
 
+A layout visual without `transformId` or `transform`, whether it has an
+inline `layout` or a `resourceId` that names a layout resource, is centered on
+the screen at scale 1, like a background: its container, the size of the
+screen unless the layout sets `width` and `height`, is drawn at the screen's
+center with anchor `0.5, 0.5`. A layout the size of the screen covers it, so
+each element keeps the screen position it was authored at, and a scale or
+rotation turns the layout around the screen's center. Top-level transform
+fields still override that placement. Image, video, spritesheet, particle and
+text visuals still need a transform.
+
+An inline layout may carry a `source`: what the authoring tool built it from,
+such as the form its author edits. The engine does not read it. It stays with
+the layout in the presentation state, so the tool can map what is presented
+back to what it edits.
+
 #### Updating an inline layout
 
 A complete inline `layout` reauthors the visual subject and creates a fresh
