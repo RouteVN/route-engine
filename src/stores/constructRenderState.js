@@ -82,12 +82,50 @@ const normalizeLoopDirectives = (node) => {
   );
 };
 
+const LAYOUT_ELEMENT_LIST_KEYS = ["children", "elements"];
+
+const isHiddenLoopItem = (item) =>
+  !!item &&
+  typeof item === "object" &&
+  !Array.isArray(item) &&
+  Object.keys(item).length === 0;
+
+// jempl renders each item of a loop whose `$when` is false as an empty
+// object. In an element list that is not an element: Route Graphics cannot
+// parse it, and its parent container then fails with "Width or height is
+// missing". Drop these items from element lists, copying only what changes.
+const removeHiddenLoopItems = (node) => {
+  if (!node || typeof node !== "object" || Array.isArray(node)) {
+    return node;
+  }
+
+  let result = node;
+  for (const key of LAYOUT_ELEMENT_LIST_KEYS) {
+    const list = node[key];
+    if (!Array.isArray(list)) {
+      continue;
+    }
+
+    const nextList = list
+      .filter((item) => !isHiddenLoopItem(item))
+      .map(removeHiddenLoopItems);
+    const changed =
+      nextList.length !== list.length ||
+      nextList.some((item, index) => item !== list[index]);
+    if (changed) {
+      if (result === node) {
+        result = { ...node };
+      }
+      result[key] = nextList;
+    }
+  }
+  return result;
+};
+
 const renderLayoutTemplate = (template, templateData) => {
   const options = { functions: jemplFunctions };
-  return parseAndRender(
-    normalizeLoopDirectives(template),
-    templateData,
-    options,
+  return removeHiddenLoopItems(
+    parseAndRender(normalizeLoopDirectives(template), templateData, options),
   );
 };
 
