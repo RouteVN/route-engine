@@ -1,3 +1,4 @@
+import { resetActionCases } from "../helpers/resetActionCases.js";
 import { describe, expect, it, vi } from "vitest";
 import createRouteEngine from "../../src/RouteEngine.js";
 import createEffectsHandler from "../../src/createEffectsHandler.js";
@@ -270,45 +271,51 @@ describe("bounded synchronous routing", () => {
     },
   );
 
-  it("invalidates automatic timers after a two-section cycle and allows reset", () => {
-    const project = createProject([
-      { id: "start", actions: {} },
-      { id: "loop", actions: { sectionTransition: { sectionId: "other" } } },
-    ]);
-    project.story.scenes.scene.sections.other = {
-      lines: [
-        {
-          id: "loop",
-          actions: { jumpToLine: { sectionId: "main", lineId: "loop" } },
-        },
-      ],
-    };
-    const guarded = createGuardedEngine(project);
-    guarded.initialize();
-    guarded.engine.handleAction("markLineCompleted", {});
-    guarded.engine.handleAction("startAutoMode", {});
-    expect(guarded.ticker.size).toBe(1);
+  it.each(resetActionCases)(
+    "invalidates automatic timers after a two-section cycle and allows reset via %s %j",
+    (actionType, options) => {
+      const project = createProject([
+        { id: "start", actions: {} },
+        { id: "loop", actions: { sectionTransition: { sectionId: "other" } } },
+      ]);
+      project.story.scenes.scene.sections.other = {
+        lines: [
+          {
+            id: "loop",
+            actions: { jumpToLine: { sectionId: "main", lineId: "loop" } },
+          },
+        ],
+      };
+      const guarded = createGuardedEngine(project);
+      guarded.initialize();
+      guarded.engine.handleAction("markLineCompleted", {});
+      guarded.engine.handleAction("startAutoMode", {});
+      expect(guarded.ticker.size).toBe(1);
 
-    expect(() => guarded.ticker.tick(1000)).toThrow(
-      expect.objectContaining({
-        message: expect.stringMatching(
-          /exceeded 1000 synchronous effect batches/,
-        ),
-        code: "routing_cycle",
-        pointer: {
-          sectionId: expect.stringMatching(/^(main|other)$/),
-          lineId: "loop",
-        },
-      }),
-    );
-    expect(guarded.ticker.size).toBe(0);
-    guarded.resetWatchdog();
-    guarded.engine.handleAction("resetStoryAtSection", { sectionId: "safe" });
-    expect(
-      guarded.engine.selectSystemState().contexts[0].pointers.read.sectionId,
-    ).toBe("safe");
-    guarded.engine.dispose();
-  });
+      expect(() => guarded.ticker.tick(1000)).toThrow(
+        expect.objectContaining({
+          message: expect.stringMatching(
+            /exceeded 1000 synchronous effect batches/,
+          ),
+          code: "routing_cycle",
+          pointer: {
+            sectionId: expect.stringMatching(/^(main|other)$/),
+            lineId: "loop",
+          },
+        }),
+      );
+      expect(guarded.ticker.size).toBe(0);
+      guarded.resetWatchdog();
+      guarded.engine.handleAction(actionType, {
+        ...options,
+        sectionId: "safe",
+      });
+      expect(
+        guarded.engine.selectSystemState().contexts[0].pointers.read.sectionId,
+      ).toBe("safe");
+      guarded.engine.dispose();
+    },
+  );
 
   it("permits long finite routing chains and starts a fresh budget after settling", () => {
     const lines = Array.from({ length: 100 }, (_, index) => ({

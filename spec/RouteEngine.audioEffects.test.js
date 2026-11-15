@@ -1,3 +1,4 @@
+import { resetActionCases } from "./helpers/resetActionCases.js";
 import { describe, expect, it } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 
@@ -1095,15 +1096,18 @@ describe("RouteEngine transition audioEffects on music that keeps playing", () =
     expectKeptMusicWithoutEffect(engine);
   });
 
-  it.each(["sectionTransition", "resetStoryAtSection"])(
-    "plays no transition when a %s enters a line that keeps the music",
-    (actionType) => {
+  it.each([["sectionTransition", {}], ...resetActionCases])(
+    "plays no transition when a %s %j enters a line that keeps the music",
+    (actionType, options) => {
       const engine = createEngine({
         projectData: createKeptMusicProjectData(),
       });
 
       expect(() =>
-        engine.handleAction(actionType, { sectionId: "destination" }),
+        engine.handleAction(actionType, {
+          sectionId: "destination",
+          ...options,
+        }),
       ).not.toThrow();
       expect(selectLineId(engine)).toBe("destination");
       expectKeptMusicWithoutEffect(engine);

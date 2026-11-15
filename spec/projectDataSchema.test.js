@@ -1,119 +1,17 @@
+import { resetActionCases } from "./helpers/resetActionCases.js";
+import {
+  repoRoot,
+  projectDataSchemaId,
+  presentationActionsSchemaId,
+  systemActionsSchemaId,
+  l10nDataSchemaId,
+  collectYamlFiles,
+  createValidator,
+} from "./helpers/createSchemaValidator.js";
 import { describe, expect, it } from "vitest";
-import Ajv from "ajv";
-import { load, loadAll } from "js-yaml";
-import { readdirSync, readFileSync } from "node:fs";
+import { loadAll } from "js-yaml";
+import { readFileSync } from "node:fs";
 import path from "node:path";
-
-const repoRoot = path.resolve(import.meta.dirname, "..");
-const schemasRoot = path.join(repoRoot, "src", "schemas");
-const schemaBaseUrl = "https://route-engine.test/schemas/";
-const projectDataSchemaId = new URL(
-  "projectData/projectData.yaml",
-  schemaBaseUrl,
-).href;
-const presentationActionsSchemaId = new URL(
-  "presentationActions.yaml",
-  schemaBaseUrl,
-).href;
-const systemActionsSchemaId = new URL("systemActions.yaml", schemaBaseUrl).href;
-const l10nDataSchemaId = new URL("l10nData.yaml", schemaBaseUrl).href;
-const projectDataSchemaPaths = [
-  path.join(schemasRoot, "projectData"),
-  path.join(schemasRoot, "presentationActions.yaml"),
-  path.join(schemasRoot, "systemActions.yaml"),
-  path.join(schemasRoot, "l10nData.yaml"),
-];
-
-const collectYamlFiles = (dirPath) => {
-  const entries = readdirSync(dirPath, { withFileTypes: true });
-  return entries.flatMap((entry) => {
-    const fullPath = path.join(dirPath, entry.name);
-
-    if (entry.isDirectory()) {
-      return collectYamlFiles(fullPath);
-    }
-
-    if (entry.isFile() && fullPath.endsWith(".yaml")) {
-      return [fullPath];
-    }
-
-    return [];
-  });
-};
-
-const rewriteSchemaRefs = (value, schemaId) => {
-  if (Array.isArray(value)) {
-    return value.map((item) => rewriteSchemaRefs(item, schemaId));
-  }
-
-  if (!value || typeof value !== "object") {
-    return value;
-  }
-
-  return Object.fromEntries(
-    Object.entries(value).map(([key, entryValue]) => {
-      if (
-        key === "$ref" &&
-        typeof entryValue === "string" &&
-        !entryValue.startsWith("#") &&
-        !entryValue.includes("://")
-      ) {
-        return [
-          key,
-          new URL(
-            path.posix.normalize(
-              path.posix.join(path.posix.dirname(schemaId), entryValue),
-            ),
-            schemaBaseUrl,
-          ).href,
-        ];
-      }
-
-      return [key, rewriteSchemaRefs(entryValue, schemaId)];
-    }),
-  );
-};
-
-const loadSchemas = () => {
-  const schemaPaths = projectDataSchemaPaths.flatMap((schemaPath) => {
-    if (schemaPath.endsWith(".yaml")) {
-      return [schemaPath];
-    }
-
-    return collectYamlFiles(schemaPath);
-  });
-
-  return schemaPaths.map((schemaPath) => {
-    const schemaId = path
-      .relative(schemasRoot, schemaPath)
-      .split(path.sep)
-      .join("/");
-    const schema = load(readFileSync(schemaPath, "utf8"));
-    const rewrittenSchema = rewriteSchemaRefs(schema, schemaId);
-    return {
-      ...rewrittenSchema,
-      $id: new URL(schemaId, schemaBaseUrl).href,
-    };
-  });
-};
-
-const createValidator = (schemaId) => {
-  const ajv = new Ajv({
-    allErrors: true,
-    strict: false,
-  });
-
-  for (const schema of loadSchemas()) {
-    ajv.addSchema(schema);
-  }
-
-  const validate = ajv.getSchema(schemaId);
-  if (!validate) {
-    throw new Error(`Schema "${schemaId}" not found`);
-  }
-
-  return validate;
-};
 
 const validateProjectData = createValidator(projectDataSchemaId);
 const validatePresentationActions = createValidator(
@@ -2012,114 +1910,119 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
-  it("accepts whole-screen transition payloads on section navigation actions", () => {
-    for (const actions of [
-      {
-        sectionTransition: {
-          sectionId: "chapter2",
-          screen: {
-            animations: {
-              resourceId: "screenCrossFade",
+  it.each(resetActionCases)(
+    "accepts whole-screen transition payloads on section navigation actions via %s %j",
+    (actionType, options) => {
+      for (const actions of [
+        {
+          sectionTransition: {
+            sectionId: "chapter2",
+            screen: {
+              animations: {
+                resourceId: "screenCrossFade",
+              },
             },
           },
         },
-      },
-      {
-        resetStoryAtSection: {
-          sectionId: "title",
-          screen: {
-            animations: {
-              resourceId: "screenMaskReveal",
+        {
+          [actionType]: {
+            ...options,
+            sectionId: "title",
+            screen: {
+              animations: {
+                resourceId: "screenMaskReveal",
+              },
             },
           },
         },
-      },
-      {
-        sectionTransition: {
-          sectionId: "title",
-          resetStory: true,
+        {
+          sectionTransition: {
+            sectionId: "title",
+            resetStory: true,
+          },
         },
-      },
-      {
-        sectionTransition: {
-          sectionId: "title",
-          resetStory: false,
-          screen: {
-            animations: {
-              resourceId: "screenMaskReveal",
+        {
+          sectionTransition: {
+            sectionId: "title",
+            resetStory: false,
+            screen: {
+              animations: {
+                resourceId: "screenMaskReveal",
+              },
             },
           },
         },
-      },
-    ]) {
-      expect(validateSystemActions(actions)).toBe(true);
-      expect(validateSystemActions.errors).toBeNull();
-    }
+      ]) {
+        expect(validateSystemActions(actions)).toBe(true);
+        expect(validateSystemActions.errors).toBeNull();
+      }
 
-    expect(
-      validateSystemActions({
-        sectionTransition: {
-          sectionId: "title",
-          resetStory: "yes",
-        },
-      }),
-    ).toBe(false);
+      expect(
+        validateSystemActions({
+          sectionTransition: {
+            sectionId: "title",
+            resetStory: "yes",
+          },
+        }),
+      ).toBe(false);
 
-    expect(
-      validateProjectData(
-        createMinimalProjectData({
-          story: {
-            initialSceneId: "scene1",
-            scenes: {
-              scene1: {
-                name: "Scene 1",
-                initialSectionId: "section1",
-                sections: {
-                  section1: {
-                    name: "Section 1",
-                    lines: [
-                      {
-                        id: "line1",
-                        actions: {
-                          sectionTransition: {
-                            sectionId: "section2",
-                            screen: {
-                              animations: {
-                                resourceId: "screenCrossFade",
+      expect(
+        validateProjectData(
+          createMinimalProjectData({
+            story: {
+              initialSceneId: "scene1",
+              scenes: {
+                scene1: {
+                  name: "Scene 1",
+                  initialSectionId: "section1",
+                  sections: {
+                    section1: {
+                      name: "Section 1",
+                      lines: [
+                        {
+                          id: "line1",
+                          actions: {
+                            sectionTransition: {
+                              sectionId: "section2",
+                              screen: {
+                                animations: {
+                                  resourceId: "screenCrossFade",
+                                },
                               },
                             },
                           },
                         },
-                      },
-                    ],
-                  },
-                  section2: {
-                    name: "Section 2",
-                    lines: [
-                      {
-                        id: "line1",
-                        actions: {
-                          resetStoryAtSection: {
-                            sectionId: "section1",
-                            screen: {
-                              animations: {
-                                resourceId: "screenMaskReveal",
+                      ],
+                    },
+                    section2: {
+                      name: "Section 2",
+                      lines: [
+                        {
+                          id: "line1",
+                          actions: {
+                            [actionType]: {
+                              ...options,
+                              sectionId: "section1",
+                              screen: {
+                                animations: {
+                                  resourceId: "screenMaskReveal",
+                                },
                               },
                             },
                           },
                         },
-                      },
-                    ],
+                      ],
+                    },
                   },
                 },
               },
             },
-          },
-        }),
-      ),
-    ).toBe(true);
-    expect(validateProjectData.errors).toBeNull();
-  });
+          }),
+        ),
+      ).toBe(true);
+      expect(validateProjectData.errors).toBeNull();
+    },
+  );
 
   it("accepts independent dialogue speaker and sprite persistence", () => {
     expect(

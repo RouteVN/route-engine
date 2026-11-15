@@ -1,3 +1,4 @@
+import { resetActionCases } from "./helpers/resetActionCases.js";
 import { describe, expect, it } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 
@@ -870,50 +871,53 @@ describe("RouteEngine music room lifecycle", () => {
     ).toBe(commandIdBeforeRollback);
   });
 
-  it("clears selection and releases BGM focus on successful load, reset, and replacement", () => {
-    const projectData = createProjectData();
-    projectData.story.scenes.scene1.sections.section1.lines.push({
-      id: "line2",
-      actions: {},
-    });
-    const { engine } = createEngine({
-      projectData,
-      viewedSoundIds: ["openingSound"],
-    });
-    engine.handleAction("saveSlot", { slotId: 1, savedAt: 1 });
-
-    const assertReset = (previousCommandId) => {
-      const state = engine.selectSystemState().global;
-      expect(engine.selectMusicRoom()?.selection ?? null).toBeNull();
-      expect(state.musicRoomPlayer.trackId).toBeNull();
-      expect(state.musicRoomPlayer.pageIndex).toBe(0);
-      expect(state.musicRoomPlayer.bgmPlayback).toEqual({
-        commandId: previousCommandId + 1,
-        operation: "resume",
+  it.each(resetActionCases)(
+    "clears selection and releases BGM focus on successful load, reset, and replacement via %s %j",
+    (actionType, options) => {
+      const projectData = createProjectData();
+      projectData.story.scenes.scene1.sections.section1.lines.push({
+        id: "line2",
+        actions: {},
       });
-      expect(state.audioCommandId).toBe(previousCommandId + 1);
-    };
+      const { engine } = createEngine({
+        projectData,
+        viewedSoundIds: ["openingSound"],
+      });
+      engine.handleAction("saveSlot", { slotId: 1, savedAt: 1 });
 
-    engine.handleAction("playMusicRoomTrack", { trackId: "opening" });
-    let previousCommandId =
-      engine.selectSystemState().global.musicRoomPlayer.playback.commandId;
-    engine.handleAction("loadSlot", { slotId: 1 });
-    assertReset(previousCommandId);
+      const assertReset = (previousCommandId) => {
+        const state = engine.selectSystemState().global;
+        expect(engine.selectMusicRoom()?.selection ?? null).toBeNull();
+        expect(state.musicRoomPlayer.trackId).toBeNull();
+        expect(state.musicRoomPlayer.pageIndex).toBe(0);
+        expect(state.musicRoomPlayer.bgmPlayback).toEqual({
+          commandId: previousCommandId + 1,
+          operation: "resume",
+        });
+        expect(state.audioCommandId).toBe(previousCommandId + 1);
+      };
 
-    engine.handleAction("playMusicRoomTrack", { trackId: "opening" });
-    previousCommandId =
-      engine.selectSystemState().global.musicRoomPlayer.playback.commandId;
-    engine.handleAction("resetStoryAtSection", { sectionId: "section1" });
-    assertReset(previousCommandId);
+      engine.handleAction("playMusicRoomTrack", { trackId: "opening" });
+      let previousCommandId =
+        engine.selectSystemState().global.musicRoomPlayer.playback.commandId;
+      engine.handleAction("loadSlot", { slotId: 1 });
+      assertReset(previousCommandId);
 
-    engine.handleAction("playMusicRoomTrack", { trackId: "opening" });
-    previousCommandId =
-      engine.selectSystemState().global.musicRoomPlayer.playback.commandId;
-    engine.handleAction("updateProjectData", {
-      projectData: createProjectData(),
-    });
-    assertReset(previousCommandId);
-  });
+      engine.handleAction("playMusicRoomTrack", { trackId: "opening" });
+      previousCommandId =
+        engine.selectSystemState().global.musicRoomPlayer.playback.commandId;
+      engine.handleAction(actionType, { ...options, sectionId: "section1" });
+      assertReset(previousCommandId);
+
+      engine.handleAction("playMusicRoomTrack", { trackId: "opening" });
+      previousCommandId =
+        engine.selectSystemState().global.musicRoomPlayer.playback.commandId;
+      engine.handleAction("updateProjectData", {
+        projectData: createProjectData(),
+      });
+      assertReset(previousCommandId);
+    },
+  );
 
   it("keeps a changed logical BGM paused until selection is cleared", () => {
     const projectData = createProjectData({

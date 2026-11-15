@@ -1,3 +1,4 @@
+import { resetActionCases } from "./helpers/resetActionCases.js";
 import { describe, expect, it } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 import { selectDialogueHistory } from "../src/stores/system.store.js";
@@ -554,19 +555,24 @@ describe("RouteEngine cross-section dialogue history", () => {
     expect(getHistoryText(engine)).toEqual(["Alternate branch"]);
   });
 
-  it("starts a fresh history when story state is reset", () => {
-    const engine = createEngine(createHistoryProjectData());
-    advance(engine);
+  it.each(resetActionCases)(
+    "starts a fresh history when story state is reset via %s %j",
+    (actionType, options) => {
+      const engine = createEngine(createHistoryProjectData());
+      advance(engine);
 
-    engine.handleAction("resetStoryAtSection", { sectionId: "reset" });
+      engine.handleAction(actionType, { ...options, sectionId: "reset" });
 
-    expect(getHistoryText(engine)).toEqual(["Fresh story"]);
-    expect(engine.selectSystemState().contexts.at(-1).dialogueHistory).toEqual({
-      entries: [{ sectionId: "reset", lineId: "reset-1" }],
-      currentLength: 1,
-      checkpointLengths: [1],
-    });
-  });
+      expect(getHistoryText(engine)).toEqual(["Fresh story"]);
+      expect(
+        engine.selectSystemState().contexts.at(-1).dialogueHistory,
+      ).toEqual({
+        entries: [{ sectionId: "reset", lineId: "reset-1" }],
+        currentLength: 1,
+        checkpointLengths: [1],
+      });
+    },
+  );
 
   it("isolates scene-replay dialogue from the main story history", () => {
     const projectData = createHistoryProjectData();
