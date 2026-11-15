@@ -2034,10 +2034,36 @@ describe("projectData schema", () => {
           },
         },
       },
+      {
+        sectionTransition: {
+          sectionId: "title",
+          resetStory: true,
+        },
+      },
+      {
+        sectionTransition: {
+          sectionId: "title",
+          resetStory: false,
+          screen: {
+            animations: {
+              resourceId: "screenMaskReveal",
+            },
+          },
+        },
+      },
     ]) {
       expect(validateSystemActions(actions)).toBe(true);
       expect(validateSystemActions.errors).toBeNull();
     }
+
+    expect(
+      validateSystemActions({
+        sectionTransition: {
+          sectionId: "title",
+          resetStory: "yes",
+        },
+      }),
+    ).toBe(false);
 
     expect(
       validateProjectData(

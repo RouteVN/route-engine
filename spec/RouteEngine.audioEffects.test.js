@@ -1110,6 +1110,30 @@ describe("RouteEngine transition audioEffects on music that keeps playing", () =
     },
   );
 
+  it.each([
+    ["resetStoryAtSection", {}],
+    ["sectionTransition", { resetStory: true }],
+  ])(
+    "drops a running transition when %s %j resets the story",
+    (actionType, options) => {
+      const projectData = createProjectData();
+      projectData.story.scenes.scene.sections.destination = {
+        lines: [{ id: "destination", actions: {} }],
+      };
+      const engine = createEngine({ projectData });
+      enterNextLine(engine);
+      expect(engine.selectRenderState().audioEffects).toHaveLength(1);
+
+      engine.handleAction(actionType, {
+        sectionId: "destination",
+        ...options,
+      });
+
+      expect(selectLineId(engine)).toBe("destination");
+      expect(engine.selectRenderState().audioEffects).toBeUndefined();
+    },
+  );
+
   it("still plays the transition when the same line starts the music", () => {
     const projectData = createKeptMusicProjectData();
     projectData.story.scenes.scene.sections.section.lines[1] = {

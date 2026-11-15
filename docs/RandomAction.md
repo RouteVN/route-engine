@@ -164,7 +164,7 @@ Continuation follows the same rules as `conditional`:
 - If no action moves the story pointer, the engine advances to the next line
   once.
 - A move to another line or section suppresses that automatic advance.
-- `sectionTransition` and `resetStoryAtSection` also suppress it.
+- `sectionTransition` and the deprecated `resetStoryAtSection` also suppress it.
 - Nested conditional/random continuation requests coalesce, so the outer batch
   advances at most once.
 - Existing choice and form authorization remains in force.

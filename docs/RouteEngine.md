@@ -141,7 +141,7 @@ for that line; identify it by `code` rather than by message text.
 This bounds immediate routing cycles, including conditional cycles. Each
 completed dispatch gets a fresh budget, so loops that pause for player input
 continue to work. After a limit error, the host can reinitialize, dispose, or
-reset to a safe section with `resetStoryAtSection`.
+reset to a safe section with `sectionTransition` and `resetStory: true`.
 
 ### `dispose()`
 
@@ -913,13 +913,13 @@ before Persistence. Authored project schemas reject unknown actions. Direct
 
 ### Navigation Actions
 
-| Action              | Payload                  | Description                                                 |
-| ------------------- | ------------------------ | ----------------------------------------------------------- |
-| `nextLine`          | -                        | Advance to the next line (respects `nextLineConfig.manual`) |
-| `rollbackByOffset`  | `{ offset? }`            | Roll back by eligible landing points (`-1` means Back)      |
-| `rollbackToLine`    | `{ sectionId, lineId }`  | Roll back to a specific line in the rollback timeline       |
-| `jumpToLine`        | `{ sectionId?, lineId }` | Jump to specific line                                       |
-| `sectionTransition` | `{ sectionId, screen? }` | Transition to a different section                           |
+| Action              | Payload                               | Description                                                               |
+| ------------------- | ------------------------------------- | ------------------------------------------------------------------------- |
+| `nextLine`          | -                                     | Advance to the next line (respects `nextLineConfig.manual`)               |
+| `rollbackByOffset`  | `{ offset? }`                         | Roll back by eligible landing points (`-1` means Back)                    |
+| `rollbackToLine`    | `{ sectionId, lineId }`               | Roll back to a specific line in the rollback timeline                     |
+| `jumpToLine`        | `{ sectionId?, lineId }`              | Jump to specific line                                                     |
+| `sectionTransition` | `{ sectionId, resetStory?, screen? }` | Transition to a different section, optionally resetting story-local state |
 
 `sectionTransition.screen` uses the same shape as line-level `screen`:
 
@@ -935,6 +935,23 @@ This transition is scoped to the edge between sections. If both
 `sectionTransition.screen` and the destination line's `screen.animations` are
 defined, the `sectionTransition.screen` animation wins for the first destination
 render only.
+
+`sectionTransition.resetStory` controls whether the story keeps its state
+across the transition. It defaults to `false`, which preserves context
+variables and rollback history. Set it to `true` for a fresh start such as
+title -> start game or in-game -> return to title:
+
+```yaml
+sectionTransition:
+  sectionId: title
+  resetStory: true
+```
+
+A resetting transition restores context variables to their project defaults,
+starts a new rollback history at the destination, and clears transient
+playback state. It replaces the deprecated `resetStoryAtSection` action and
+behaves identically. See [ResetStoryAtSection.md](./ResetStoryAtSection.md)
+for exactly what is preserved and reset.
 
 Rollback design treats a source line that invokes `sectionTransition` during
 line-entry processing as transient. Player-facing Back must skip that source
@@ -987,8 +1004,8 @@ events:
 The conditional runs the first matching branch, or its default branch when one
 is authored. If nothing matches and there is no default, it runs no branch
 actions. In every case, the engine automatically continues once after the
-entire action batch finishes. Invoking `sectionTransition` or
-`resetStoryAtSection` suppresses that continuation. Any other action that
+entire action batch finishes. Invoking `sectionTransition` (or the deprecated
+`resetStoryAtSection`) suppresses that continuation. Any other action that
 changes the current pointer, such as `jumpToLine` or an advancing `nextLine`,
 also suppresses it so the batch cannot skip a second line. Nested conditionals
 coalesce into the same single batch continuation. This is an immediate
@@ -1241,11 +1258,11 @@ documented in [ConfirmDialog.md](./ConfirmDialog.md).
 
 ### State Management Actions
 
-| Action                | Payload                  | Description                                 |
-| --------------------- | ------------------------ | ------------------------------------------- |
-| `setNextLineConfig`   | `{ manual?, auto? }`     | Configure line advancement                  |
-| `updateProjectData`   | `{ projectData }`        | Replace project data                        |
-| `resetStoryAtSection` | `{ sectionId, screen? }` | Reset story-local state and enter a section |
+| Action                | Payload                  | Description                                                 |
+| --------------------- | ------------------------ | ----------------------------------------------------------- |
+| `setNextLineConfig`   | `{ manual?, auto? }`     | Configure line advancement                                  |
+| `updateProjectData`   | `{ projectData }`        | Replace project data                                        |
+| `resetStoryAtSection` | `{ sectionId, screen? }` | Deprecated. Use `sectionTransition` with `resetStory: true` |
 
 ### Registry Actions
 

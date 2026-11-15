@@ -951,6 +951,11 @@ describe("RouteEngine scene replay catalog", () => {
     ).toThrow("Cannot reset the story while a scene replay is active");
     expect(() =>
       engine.handleActions({
+        sectionTransition: { sectionId: "caller", resetStory: true },
+      }),
+    ).toThrow("Cannot reset the story while a scene replay is active");
+    expect(() =>
+      engine.handleActions({
         updateProjectData: {
           projectData: createProjectData(),
         },

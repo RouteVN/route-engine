@@ -67,7 +67,8 @@ Dialogue history retention follows these rules:
 
 - it is isolated per context, including scene replay contexts
 - it is stored and restored with save slots
-- `resetStoryAtSection` starts a fresh history
+- `sectionTransition` with `resetStory: true` (or the deprecated
+  `resetStoryAtSection`) starts a fresh history
 - abandoned future entries are removed when play continues after rollback
 - entries are otherwise retained without an engine-imposed count limit
 
