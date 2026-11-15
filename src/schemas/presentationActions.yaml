@@ -283,7 +283,7 @@ definitions:
 
   visualInlineLayout:
     type: object
-    description: Inline RouteGraphics layout rendered as one visual item. A complete layout defines a fresh visual subject and resets omitted item state. The visual item owns placement, layer, appearance, and animations.
+    description: Inline RouteGraphics layout rendered as one visual item. A complete layout defines a fresh visual subject and resets omitted item state. The visual item owns placement, layer, appearance, and animations; without a transform it is centered on the screen.
     properties:
       width:
         type: number
@@ -299,6 +299,8 @@ definitions:
         items:
           type: object
           additionalProperties: true
+      source:
+        description: What the authoring tool built the layout from, such as the form its author edits. The engine does not read it, and keeps it with the layout in the presentation state, so the tool can map what is presented back to what it edits.
     required: [elements]
     additionalProperties: false
 
@@ -653,7 +655,7 @@ properties:
               $ref: "#/definitions/visualInlineLayout"
             transformId:
               type: string
-              description: ID of the transform where visual appears
+              description: ID of the transform where visual appears. A layout visual, with an inline layout or a layout resource, without transformId or transform is centered on the screen.
             transform:
               $ref: "#/definitions/visualInlineTransform"
             x:

@@ -2954,7 +2954,7 @@ out:
   animations: []
   audio: []
 ---
-case: inline visual layout requires transform source
+case: inline visual layout without a transform is centered on the screen
 in:
   - elements:
       - id: "story"
@@ -2969,9 +2969,41 @@ in:
         items:
           - id: "status"
             layout:
-              elements: []
+              elements:
+                - id: "badge"
+                  type: "rect"
+                  x: 1500
+                  y: 80
+                  width: 200
+                  height: 100
     resources: {}
-throws: 'Visual item "status" requires transformId or transform'
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-status"
+          type: "container"
+          width: 1920
+          height: 1080
+          x: 960
+          y: 540
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - id: "badge"
+              type: "rect"
+              x: 1500
+              y: 80
+              width: 200
+              height: 100
+  animations: []
+  audio: []
 ---
 case: inline visual layout supports transition animation on removal
 in:

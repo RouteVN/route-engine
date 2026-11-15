@@ -736,6 +736,25 @@ const getRequiredVisualTransform = (resources, item) => {
   return transform;
 };
 
+// A layout visual, inline or a layout resource, without a transform is
+// centered on the screen at scale 1, like a background. A layout the size of
+// the screen then covers it, so its elements keep their screen positions, and
+// a scale or rotation turns it around the screen's center.
+const getDefaultVisualLayoutTransform = (screen) => ({
+  x: (screen?.width ?? 1920) / 2,
+  y: (screen?.height ?? 1080) / 2,
+  anchorX: 0.5,
+  anchorY: 0.5,
+  scaleX: 1,
+  scaleY: 1,
+  rotation: 0,
+});
+
+const getVisualLayoutTransform = (resources, item, screen) =>
+  item.transformId || item.transform
+    ? getRequiredVisualTransform(resources, item)
+    : getDefaultVisualLayoutTransform(screen);
+
 const getBackgroundTransform = (resources, background = {}) => {
   if (!background?.transformId) {
     return undefined;
@@ -3676,7 +3695,7 @@ export const addVisuals = (
       assertVisualItemConfig(item);
 
       if (item.layout) {
-        const transform = getRequiredVisualTransform(resources, item);
+        const transform = getVisualLayoutTransform(resources, item, screen);
         const { width, height } = getLayoutContainerSize(
           item.layout,
           screen,
@@ -3806,7 +3825,7 @@ export const addVisuals = (
         let layout = getOwnProperty(layouts, item.resourceId);
 
         if (layout) {
-          const transform = getRequiredVisualTransform(resources, item);
+          const transform = getVisualLayoutTransform(resources, item, screen);
           const { width, height } = getLayoutContainerSize(
             layout,
             screen,
