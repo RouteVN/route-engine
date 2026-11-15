@@ -23,6 +23,8 @@ const render = (
     engine,
     routeGraphics,
     trackRenderDispatch,
+    holdRenderState,
+    markRenderStateCommitted,
     lifecycleGeneration,
     isCurrentLifecycle,
   },
@@ -35,12 +37,21 @@ const render = (
   const renderState =
     engine.prepareRenderState?.(payload) ?? engine.selectRenderState(payload);
   trackRenderDispatch?.(renderState);
-  routeGraphics.render(renderState);
+  const presented = routeGraphics.render(renderState);
 
   if (!isCurrentLifecycle(lifecycleGeneration)) {
     return;
   }
 
+  // A host that cannot draw the state yet, for example while its assets load,
+  // returns false. The state stays uncommitted until the host reports it with
+  // commitRenderState, so the next state is built from what is on screen.
+  if (presented === false) {
+    holdRenderState?.(renderState);
+    return;
+  }
+
+  markRenderStateCommitted?.();
   engine.commitRenderState?.(renderState);
 };
 
@@ -50,6 +61,8 @@ const handleLineActions = (
     routeGraphics,
     trackRenderDispatch,
     getRenderDispatchCount,
+    holdRenderState,
+    markRenderStateCommitted,
     lifecycleGeneration,
     isCurrentLifecycle,
   },
@@ -66,6 +79,8 @@ const handleLineActions = (
         engine,
         routeGraphics,
         trackRenderDispatch,
+        holdRenderState,
+        markRenderStateCommitted,
         lifecycleGeneration,
         isCurrentLifecycle,
       },
@@ -182,6 +197,9 @@ const createEffectsHandler = ({
   let lastHandledRenderCompleteId = null;
   let handledIdlessRenderComplete = false;
   let renderDispatchCount = 0;
+  // Render states the host held back, with their place in the dispatch order.
+  let heldRenderStates = new Map();
+  let committedRenderDispatch = 0;
   let lifecycleGeneration = 0;
   let isActive = true;
   const playbackScheduler = createPlaybackScheduler({
@@ -197,6 +215,8 @@ const createEffectsHandler = ({
     lastHandledRenderCompleteId = null;
     handledIdlessRenderComplete = false;
     renderDispatchCount = 0;
+    heldRenderStates = new Map();
+    committedRenderDispatch = 0;
   };
 
   const reset = () => {
@@ -284,6 +304,41 @@ const createEffectsHandler = ({
   };
 
   const getRenderDispatchCount = () => renderDispatchCount;
+
+  const dropRenderStatesHeldBefore = (dispatch) => {
+    for (const [renderState, heldDispatch] of heldRenderStates) {
+      if (heldDispatch < dispatch) {
+        heldRenderStates.delete(renderState);
+      }
+    }
+  };
+
+  const holdRenderState = (renderState) => {
+    heldRenderStates.set(renderState, renderDispatchCount);
+  };
+
+  const markRenderStateCommitted = () => {
+    committedRenderDispatch = renderDispatchCount;
+    dropRenderStatesHeldBefore(renderDispatchCount);
+  };
+
+  const commitRenderState = (renderState) => {
+    const dispatch = heldRenderStates.get(renderState);
+    if (!isActive || dispatch === undefined) {
+      return false;
+    }
+
+    heldRenderStates.delete(renderState);
+    // A state dispatched later is already on screen.
+    if (dispatch < committedRenderDispatch) {
+      return false;
+    }
+
+    committedRenderDispatch = dispatch;
+    dropRenderStatesHeldBefore(dispatch);
+    getEngine()?.commitRenderState?.(renderState);
+    return true;
+  };
 
   const shouldHandleRenderComplete = (payload = {}) => {
     if (!isActive) {
@@ -560,6 +615,8 @@ const createEffectsHandler = ({
       ticker,
       trackRenderDispatch,
       getRenderDispatchCount,
+      holdRenderState,
+      markRenderStateCommitted,
       enqueuePersistenceWrite,
       lifecycleGeneration,
       isCurrentLifecycle,
@@ -594,6 +651,7 @@ const createEffectsHandler = ({
   handlePendingEffects.handleRouteGraphicsEvent = handleRouteGraphicsEvent;
   handlePendingEffects.createRouteGraphicsEventHandler =
     createRouteGraphicsEventHandler;
+  handlePendingEffects.commitRenderState = commitRenderState;
   handlePendingEffects.reset = reset;
   handlePendingEffects.dispose = dispose;
   handlePendingEffects.reconcilePlaybackScheduleV1 = (schedule) =>

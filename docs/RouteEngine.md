@@ -1436,6 +1436,52 @@ Built-in effect handling notes:
 - Unknown effect names are not silently dropped; `createEffectsHandler(...)` throws unless you provide `handleUnhandledEffect`.
 - The coalescing rule is specific to the built-in effect handler, not the store queue itself.
 
+### Render states the host cannot draw yet
+
+The built-in handler passes each render state to `routeGraphics.render(renderState)`
+and then commits it with `engine.commitRenderState(renderState)`. The engine builds
+the next state's BGM audio effects from the committed state, so the committed state
+has to be the one on screen.
+
+A host that cannot draw a state at once, for example while its assets load, has two
+valid choices:
+
+- Draw every held state later, in the order it received them. Nothing else is
+  needed: return nothing from `render`.
+- Draw only the latest held state. Return `false` from `render` for each state it
+  holds back, and call `effectsHandler.commitRenderState(renderState)` with the
+  same object when it draws one. A held state that is never reported is never
+  committed.
+
+```js
+const effectsHandler = createEffectsHandler({
+  getEngine: () => engine,
+  routeGraphics: {
+    render: (renderState) => {
+      if (!assetsAreLoaded(renderState)) {
+        drawWhenLoaded(renderState, () => {
+          routeGraphics.render(renderState);
+          effectsHandler.commitRenderState(renderState);
+        });
+        return false;
+      }
+
+      routeGraphics.render(renderState);
+    },
+  },
+  ticker,
+});
+```
+
+`effectsHandler.commitRenderState(renderState)` returns `true` when it committed the
+state. It returns `false`, and commits nothing, for a state the handler did not
+hold, a state it already committed, a state dispatched before one that is already
+committed, and a state held before `reset()` or `dispose()`.
+
+Do not mix the two choices: a host that draws every held state in order must not
+return `false`, or the effects of a later state would be built from a state that
+is no longer the one before it on screen.
+
 ## Line Actions (Presentation)
 
 Actions that can be attached to lines to control presentation:
