@@ -560,6 +560,126 @@ describe("inline visual layouts", () => {
     expect(layer.children[0]).toMatchObject({ type: "rect", x: 1500, y: 80 });
   });
 
+  it("centers a layout without a transform on a screen of another size", () => {
+    const layer = findVisual(
+      constructRenderState({
+        presentationState: {
+          visual: { items: [{ id: "card", layout: { elements: [] } }] },
+        },
+        resources: createResources(),
+        screen: { width: 1280, height: 720 },
+      }),
+      "card",
+    );
+
+    expect(layer).toMatchObject({
+      width: 1280,
+      height: 720,
+      x: 640,
+      y: 360,
+      anchorX: 0.5,
+      anchorY: 0.5,
+    });
+  });
+
+  it("centers a layout with its own size, at that size", () => {
+    const layer = findVisual(
+      constructRenderState({
+        presentationState: {
+          visual: {
+            items: [
+              {
+                id: "card",
+                layout: { width: 400, height: 200, elements: [] },
+              },
+            ],
+          },
+        },
+        resources: createResources(),
+      }),
+      "card",
+    );
+
+    expect(layer).toMatchObject({
+      width: 400,
+      height: 200,
+      x: 960,
+      y: 540,
+      anchorX: 0.5,
+      anchorY: 0.5,
+    });
+  });
+
+  it("lets top-level transform fields override the centered placement", () => {
+    const layer = findVisual(
+      constructRenderState({
+        presentationState: {
+          visual: {
+            items: [
+              {
+                id: "card",
+                layout: { elements: [] },
+                x: 100,
+                anchorX: 0,
+                scaleX: 0.5,
+                rotation: 15,
+              },
+            ],
+          },
+        },
+        resources: createResources(),
+      }),
+      "card",
+    );
+
+    expect(layer).toMatchObject({
+      x: 100,
+      y: 540,
+      anchorX: 0,
+      anchorY: 0.5,
+      scaleX: 0.5,
+      scaleY: 1,
+      rotation: 15,
+    });
+  });
+
+  it("keeps a layout visual centered when a later line changes only its opacity", () => {
+    const presentationState = constructPresentationState([
+      {
+        visual: {
+          items: [
+            {
+              id: "card",
+              layout: {
+                elements: [
+                  { id: "panel", type: "rect", width: 40, height: 20 },
+                ],
+              },
+            },
+          ],
+        },
+      },
+      { visual: { items: [{ id: "card", opacity: 0.5 }] } },
+    ]);
+
+    const layer = findVisual(
+      constructRenderState({
+        presentationState,
+        resources: createResources(),
+      }),
+      "card",
+    );
+
+    expect(layer).toMatchObject({
+      x: 960,
+      y: 540,
+      anchorX: 0.5,
+      anchorY: 0.5,
+      alpha: 0.5,
+    });
+    expect(layer.children).toHaveLength(1);
+  });
+
   it("still places a layout resource by its transform", () => {
     const resources = createResources();
     resources.layouts.card = {
