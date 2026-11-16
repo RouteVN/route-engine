@@ -117,6 +117,10 @@ jobs:
             item: robustness/visual-spritesheet-named-frames.yaml
           - id: layout-each-missing-source
             item: robustness/layout-each-missing-source.yaml
+          - id: layout-each-hidden-save-slots
+            item: robustness/layout-each-hidden-save-slots.yaml
+          - id: layout-each-hidden-choice-item
+            item: robustness/layout-each-hidden-choice-item.yaml
           - id: layout-guarded-choice
             item: robustness/layout-guarded-choice.yaml
           - id: layout-instance-continuity
