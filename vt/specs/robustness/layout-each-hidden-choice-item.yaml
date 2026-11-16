@@ -1,0 +1,232 @@
+---
+title: Layout Each Hidden Choice Item
+description: >-
+  A choice layout whose repeated item has a $when that hides the second item
+  draws the other two, and the item after the hidden one routes to its own
+  section.
+specs:
+  - the first and third choices are drawn and the second is left out
+  - clicking the second drawn row routes to the third item's section
+  - the camp branch shows its own arrival content
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 150
+  - action: customEvent
+    name: vt:checkpoint
+    detail:
+      layoutRootId: choice-container
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById
+    value:
+      prompt: SELECT ROUTE
+      choice-label-0: Follow the river north
+      choice-label-2: Rest at the camp
+  - action: screenshot
+  - action: click
+    x: 480
+    "y": 390
+  - action: wait
+    ms: 150
+  - action: customEvent
+    name: vt:checkpoint
+    detail:
+      layoutRootId: layout-campArrival
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value: { sectionId: camp, lineId: camp-arrival }
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.camp-arrival
+    value: ARRIVED SOUTHERN CAMP
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+  backgroundColor: "#000000"
+resources:
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#000000"
+    row:
+      hex: "#4D4D4D"
+    prompt:
+      hex: "#A6A6A6"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    prompt:
+      fontId: default
+      colorId: prompt
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    choice:
+      fontId: default
+      colorId: text
+      fontSize: 34
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+    arrival:
+      fontId: default
+      colorId: text
+      fontSize: 44
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+  layouts:
+    choices:
+      elements:
+        - id: background
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: prompt
+          type: text
+          x: 120
+          "y": 60
+          content: SELECT ROUTE
+          textStyleId: prompt
+        - id: choice-list
+          type: container
+          x: 120
+          "y": 150
+          direction: vertical
+          gapY: 60
+          children:
+            - $each: item, i in choice.items
+              $when: i != 1
+              id: choice-row-${i}
+              type: container
+              x: 0
+              "y": 0
+              children:
+                - id: choice-hit-${i}
+                  type: rect
+                  x: 0
+                  "y": 0
+                  width: 720
+                  height: 120
+                  colorId: row
+                  click:
+                    payload:
+                      actions:
+                        sectionTransition: ${item.events.click.actions.sectionTransition}
+                - id: choice-label-${i}
+                  type: text
+                  x: 60
+                  "y": 40
+                  content: ${item.content}
+                  textStyleId: choice
+    northArrival:
+      elements:
+        - id: background
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: north-arrival
+          type: text
+          x: 480
+          "y": 250
+          anchorX: 0.5
+          content: ARRIVED NORTH OUTPOST
+          textStyleId: arrival
+    bridgeArrival:
+      elements:
+        - id: background
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: bridge-arrival
+          type: text
+          x: 480
+          "y": 250
+          anchorX: 0.5
+          content: ARRIVED AT THE BRIDGE
+          textStyleId: arrival
+    campArrival:
+      elements:
+        - id: background
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: camp-arrival
+          type: text
+          x: 480
+          "y": 250
+          anchorX: 0.5
+          content: ARRIVED SOUTHERN CAMP
+          textStyleId: arrival
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Main
+      initialSectionId: chooser
+      sections:
+        chooser:
+          name: Chooser
+          lines:
+            - id: route-choice
+              actions:
+                choice:
+                  resourceId: choices
+                  items:
+                    - id: north
+                      content: Follow the river north
+                      events:
+                        click:
+                          actions:
+                            sectionTransition:
+                              sectionId: north
+                    - id: bridge
+                      content: Cross the bridge
+                      events:
+                        click:
+                          actions:
+                            sectionTransition:
+                              sectionId: bridge
+                    - id: camp
+                      content: Rest at the camp
+                      events:
+                        click:
+                          actions:
+                            sectionTransition:
+                              sectionId: camp
+        north:
+          name: North
+          lines:
+            - id: north-arrival
+              actions:
+                layout:
+                  resourceId: northArrival
+        bridge:
+          name: Bridge
+          lines:
+            - id: bridge-arrival
+              actions:
+                layout:
+                  resourceId: bridgeArrival
+        camp:
+          name: Camp
+          lines:
+            - id: camp-arrival
+              actions:
+                layout:
+                  resourceId: campArrival
