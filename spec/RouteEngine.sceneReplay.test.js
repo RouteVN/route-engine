@@ -936,6 +936,47 @@ describe("RouteEngine scene replay catalog", () => {
 
     expect(() =>
       engine.handleActions({
+        updateVariable: {
+          id: "rollAccount",
+          operations: [
+            {
+              variableId: "affection",
+              op: "random",
+              distribution: { type: "integer", min: 60, max: 60 },
+            },
+            {
+              variableId: "accountFlag",
+              op: "random",
+              distribution: {
+                type: "weighted",
+                values: [{ weight: 1, value: true }],
+              },
+            },
+          ],
+        },
+      }),
+    ).toThrow(
+      'Cannot update account-scoped variable "accountFlag" while a scene replay is active',
+    );
+    expect(selectCurrentContext(engine).variables.affection).toBe(10);
+
+    engine.handleActions({
+      updateVariable: {
+        id: "rollContext",
+        operations: [
+          {
+            variableId: "affection",
+            op: "random",
+            distribution: { type: "integer", min: 60, max: 60 },
+          },
+          { variableId: "affection", op: "decrement", value: 40 },
+        ],
+      },
+    });
+    expect(selectCurrentContext(engine).variables.affection).toBe(20);
+
+    expect(() =>
+      engine.handleActions({
         saveSlot: { slotId: 1 },
       }),
     ).toThrow("Cannot save while a scene replay is active");

@@ -109,20 +109,16 @@ const sampleUnit53 = (randomSource) => {
   return (high * 0x4_000_000 + low) / UINT53_CARDINALITY;
 };
 
-const sampleInteger = (distribution, randomSource) => {
-  assertAllowedKeys(
-    distribution,
-    new Set(["type", "min", "max"]),
-    "random.distribution",
-  );
+const validateIntegerDistribution = (distribution, path) => {
+  assertAllowedKeys(distribution, new Set(["type", "min", "max"]), path);
   if (!Object.prototype.hasOwnProperty.call(distribution, "min")) {
-    throw new Error("random.distribution.min is required");
+    throw new Error(`${path}.min is required`);
   }
   if (!Object.prototype.hasOwnProperty.call(distribution, "max")) {
-    throw new Error("random.distribution.max is required");
+    throw new Error(`${path}.max is required`);
   }
-  const min = assertSafeInteger(distribution.min, "random.distribution.min");
-  const max = assertSafeInteger(distribution.max, "random.distribution.max");
+  const min = assertSafeInteger(distribution.min, `${path}.min`);
+  const max = assertSafeInteger(distribution.max, `${path}.max`);
   const cardinality = max - min + 1;
   if (
     !Number.isSafeInteger(cardinality) ||
@@ -133,6 +129,15 @@ const sampleInteger = (distribution, randomSource) => {
       "random integer range must contain from 1 through 4294967296 values",
     );
   }
+  return { min, cardinality };
+};
+
+const sampleInteger = (
+  distribution,
+  randomSource,
+  path = "random.distribution",
+) => {
+  const { min, cardinality } = validateIntegerDistribution(distribution, path);
   return cloneAndFreeze({
     type: "integer",
     value:
@@ -142,71 +147,148 @@ const sampleInteger = (distribution, randomSource) => {
   });
 };
 
-const sampleWeighted = (distribution, randomSource) => {
-  assertAllowedKeys(
-    distribution,
-    new Set(["type", "outcomes"]),
-    "random.distribution",
-  );
+// Validates the weights of a weighted distribution's entries and returns them
+// rescaled by the largest weight.
+const validateWeightedEntries = (entries, path, allowedKeys, validateEntry) => {
   if (
-    !Array.isArray(distribution.outcomes) ||
-    distribution.outcomes.length < 1 ||
-    distribution.outcomes.length > MAX_WEIGHTED_OUTCOMES
+    !Array.isArray(entries) ||
+    entries.length < 1 ||
+    entries.length > MAX_WEIGHTED_OUTCOMES
   ) {
-    throw new Error(
-      "random.distribution.outcomes must contain from 1 through 1000 items",
-    );
+    throw new Error(`${path} must contain from 1 through 1000 items`);
   }
 
-  const outcomes = distribution.outcomes.map((outcome, index) => {
-    const path = `random.distribution.outcomes[${index}]`;
-    assertRecord(outcome, path);
-    assertAllowedKeys(outcome, new Set(["weight", "actions"]), path);
-    if (!Object.prototype.hasOwnProperty.call(outcome, "weight")) {
-      throw new Error(`${path}.weight is required`);
+  const weights = entries.map((entry, index) => {
+    const entryPath = `${path}[${index}]`;
+    assertRecord(entry, entryPath);
+    assertAllowedKeys(entry, allowedKeys, entryPath);
+    if (!Object.prototype.hasOwnProperty.call(entry, "weight")) {
+      throw new Error(`${entryPath}.weight is required`);
     }
-    assertRecord(outcome.actions, `${path}.actions`);
-    return {
-      weight: assertFiniteNumber(outcome.weight, `${path}.weight`, {
-        min: 0,
-      }),
-    };
+    validateEntry(entry, entryPath);
+    return assertFiniteNumber(entry.weight, `${entryPath}.weight`, {
+      min: 0,
+    });
   });
-  const maxWeight = Math.max(...outcomes.map(({ weight }) => weight));
+  const maxWeight = Math.max(...weights);
   if (maxWeight <= 0) {
     throw new Error("random weighted total weight must be positive");
   }
-  const scaledOutcomes = outcomes.map((outcome) => ({
-    ...outcome,
-    weight: outcome.weight / maxWeight,
-  }));
-  const totalWeight = scaledOutcomes.reduce(
-    (total, outcome) => total + outcome.weight,
+  const scaledWeights = weights.map((weight) => weight / maxWeight);
+  const totalWeight = scaledWeights.reduce(
+    (total, weight) => total + weight,
     0,
   );
-  scaledOutcomes.forEach((outcome, index) => {
+  scaledWeights.forEach((weight, index) => {
     if (
-      outcomes[index].weight > 0 &&
-      (outcome.weight === 0 || outcome.weight / totalWeight <= MIN_WEIGHT_SHARE)
+      weights[index] > 0 &&
+      (weight === 0 || weight / totalWeight <= MIN_WEIGHT_SHARE)
     ) {
       throw new Error(
-        `random.distribution.outcomes[${index}].weight is below the supported probability resolution`,
+        `${path}[${index}].weight is below the supported probability resolution`,
       );
     }
   });
+  return { scaledWeights, totalWeight };
+};
 
+const sampleWeightedIndex = ({ scaledWeights, totalWeight }, randomSource) => {
   const target = sampleUnit53(randomSource) * totalWeight;
   let cumulativeWeight = 0;
-  let outcomeIndex = scaledOutcomes.findLastIndex(({ weight }) => weight > 0);
-  for (let index = 0; index < scaledOutcomes.length; index += 1) {
-    const outcome = scaledOutcomes[index];
-    cumulativeWeight += outcome.weight;
+  let outcomeIndex = scaledWeights.findLastIndex((weight) => weight > 0);
+  for (let index = 0; index < scaledWeights.length; index += 1) {
+    cumulativeWeight += scaledWeights[index];
     if (target < cumulativeWeight) {
       outcomeIndex = index;
       break;
     }
   }
   return cloneAndFreeze({ type: "weighted", outcomeIndex });
+};
+
+const sampleWeighted = (distribution, randomSource) => {
+  assertAllowedKeys(
+    distribution,
+    new Set(["type", "outcomes"]),
+    "random.distribution",
+  );
+  const weights = validateWeightedEntries(
+    distribution.outcomes,
+    "random.distribution.outcomes",
+    new Set(["weight", "actions"]),
+    (outcome, path) => {
+      assertRecord(outcome.actions, `${path}.actions`);
+    },
+  );
+  return sampleWeightedIndex(weights, randomSource);
+};
+
+const VARIABLE_DISTRIBUTION_PATH = "updateVariable random distribution";
+
+// A weighted value is stored in a variable as it is, so it is one of the
+// scalar variable types.
+const isRandomVariableValue = (value) =>
+  typeof value === "string" ||
+  typeof value === "boolean" ||
+  (typeof value === "number" && Number.isFinite(value));
+
+const validateWeightedValues = (distribution) => {
+  assertAllowedKeys(
+    distribution,
+    new Set(["type", "values"]),
+    VARIABLE_DISTRIBUTION_PATH,
+  );
+  return validateWeightedEntries(
+    distribution.values,
+    `${VARIABLE_DISTRIBUTION_PATH}.values`,
+    new Set(["weight", "value"]),
+    (entry, path) => {
+      if (!isRandomVariableValue(entry.value)) {
+        throw new Error(
+          `${path}.value must be a string, a finite number or a boolean`,
+        );
+      }
+    },
+  );
+};
+
+const VARIABLE_DISTRIBUTION_TYPE_ERROR =
+  'updateVariable random distribution.type must be "integer" or "weighted"';
+
+// Checks the distribution of an updateVariable random operation without
+// drawing from the random source.
+export const validateVariableRandomDistribution = (distribution) => {
+  assertRecord(distribution, VARIABLE_DISTRIBUTION_PATH);
+  if (distribution.type === "integer") {
+    validateIntegerDistribution(distribution, VARIABLE_DISTRIBUTION_PATH);
+  } else if (distribution.type === "weighted") {
+    validateWeightedValues(distribution);
+  } else {
+    throw new Error(VARIABLE_DISTRIBUTION_TYPE_ERROR);
+  }
+};
+
+// Draws the result of an updateVariable random operation: the integer itself,
+// or the index of the selected weighted value.
+export const sampleVariableRandomDistribution = (
+  distribution,
+  { randomSource },
+) => {
+  assertRecord(distribution, VARIABLE_DISTRIBUTION_PATH);
+  if (distribution.type === "integer") {
+    return sampleInteger(
+      distribution,
+      randomSource,
+      VARIABLE_DISTRIBUTION_PATH,
+    );
+  }
+  if (distribution.type === "weighted") {
+    return sampleWeightedIndex(
+      validateWeightedValues(distribution),
+      randomSource,
+    );
+  }
+  throw new Error(VARIABLE_DISTRIBUTION_TYPE_ERROR);
 };
 
 export const sampleRandomDistribution = (distribution, { randomSource }) => {

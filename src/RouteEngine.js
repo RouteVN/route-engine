@@ -4,8 +4,10 @@ import {
   evaluateRouteCondition,
   getOwnProperty,
   isComputedVariableConfig,
+  isVariableValueCompatible,
   processActionTemplates,
   RUN_STORE_TRANSACTION,
+  validateVariableScope,
   validateComputedVariableConfigs,
   validateImageGalleryConfig,
   validateMusicRoomConfig,
@@ -23,7 +25,12 @@ import {
   resolveL10nProjectData,
 } from "./l10n.js";
 import { PLAYBACK_TIMER_EFFECT_NAMES } from "./playbackScheduler.js";
-import { normalizeRandomSource, sampleRandomDistribution } from "./random.js";
+import {
+  normalizeRandomSource,
+  sampleRandomDistribution,
+  sampleVariableRandomDistribution,
+  validateVariableRandomDistribution,
+} from "./random.js";
 import {
   assertUnambiguousNavigationActions,
   isTerminalNavigationActionType,
@@ -55,6 +62,8 @@ const getClassifiedActionType = (actionType, payload) =>
 
 const CONDITIONAL_ACTION_TYPE = "conditional";
 const RANDOM_ACTION_TYPE = "random";
+const UPDATE_VARIABLE_ACTION_TYPE = "updateVariable";
+const RANDOM_VARIABLE_OPERATION = "random";
 const CONDITIONAL_AUTO_CONTINUE = Symbol("conditionalAutoContinue");
 const CONDITIONAL_ROUTING_ACTION_TYPES = new Set([
   "sectionTransition",
@@ -1606,6 +1615,14 @@ export default function createRouteEngine(options) {
       }, options);
     }
 
+    if (actionType === UPDATE_VARIABLE_ACTION_TYPE) {
+      dispatchStoreAction(
+        actionType,
+        resolveRandomVariableOperations(payload, payload, options),
+      );
+      return;
+    }
+
     dispatchStoreAction(actionType, payload);
   };
 
@@ -1918,6 +1935,129 @@ export default function createRouteEngine(options) {
       : autoContinue;
   };
 
+  const assertRandomVariableOperation = (operation, index) => {
+    const label = `updateVariable random operation at index ${index}`;
+    const unexpectedKey = Object.keys(operation).find(
+      (key) => key !== "variableId" && key !== "op" && key !== "distribution",
+    );
+    if (unexpectedKey !== undefined) {
+      throw new Error(`${label} does not support ${unexpectedKey}`);
+    }
+    const { variableId, distribution } = operation;
+    const variableConfig = getOwnProperty(
+      _canonicalProjectData?.resources?.variables,
+      variableId,
+    );
+    if (
+      typeof variableId !== "string" ||
+      !variableConfig ||
+      variableConfig.readonly === true ||
+      isComputedVariableConfig(variableConfig)
+    ) {
+      throw new Error(
+        `${label} must reference a writable variable: ${variableId}`,
+      );
+    }
+    validateVariableScope(variableConfig.scope, variableId);
+    validateVariableRandomDistribution(distribution);
+    if (distribution.type === "integer") {
+      if (variableConfig.type !== "number") {
+        throw new Error(
+          `${label} needs a number variable for an integer distribution: ${variableId}`,
+        );
+      }
+      return variableConfig;
+    }
+    const incompatibleIndex = distribution.values.findIndex(
+      ({ value }) => !isVariableValueCompatible(variableConfig, value),
+    );
+    if (incompatibleIndex !== -1) {
+      throw new Error(
+        `${label} has a value at index ${incompatibleIndex} that does not match the ${variableConfig.type} variable: ${variableId}`,
+      );
+    }
+    return variableConfig;
+  };
+
+  // A random operation is drawn here, where the random source lives, and
+  // reaches the store as a set of the drawn value. The roll of a line-source
+  // operation on a context variable is also recorded on the rollback
+  // occurrence, so replaying the line sets the same value again.
+  const resolveRandomVariableOperations = (
+    authoredPayload,
+    payload,
+    options = {},
+  ) => {
+    const operations = payload?.operations;
+    if (
+      !Array.isArray(operations) ||
+      !operations.some(
+        (operation) => operation?.op === RANDOM_VARIABLE_OPERATION,
+      )
+    ) {
+      return payload;
+    }
+
+    // Every random operation is checked before the first one is drawn.
+    const variableConfigs = operations.map((operation, index) => {
+      if (operation?.op !== RANDOM_VARIABLE_OPERATION) {
+        return undefined;
+      }
+      // The recorded roll is matched against the authored operation when it
+      // is replayed, so the operation cannot come out of a template.
+      if (
+        JSON.stringify(authoredPayload?.operations?.[index]) !==
+        JSON.stringify(operation)
+      ) {
+        throw new Error(
+          `updateVariable random operation at index ${index} does not support templates`,
+        );
+      }
+      return assertRandomVariableOperation(operation, index);
+    });
+
+    const actionPath = options.actionPath ?? [UPDATE_VARIABLE_ACTION_TYPE];
+    const resolvedOperations = operations.map((operation, index) => {
+      const variableConfig = variableConfigs[index];
+      if (!variableConfig) {
+        return operation;
+      }
+      const result = sampleVariableRandomDistribution(operation.distribution, {
+        randomSource: _randomSource,
+      });
+
+      if (
+        options.rollbackSource === "line" &&
+        variableConfig.scope === "context"
+      ) {
+        _systemStore.ensureRandomReplayOccurrence({});
+        const path = [...actionPath, "operations", String(index)].join(".");
+        const randomOutcomeOrdinals =
+          options.randomOutcomeOrdinals ?? new Map();
+        const ordinal = randomOutcomeOrdinals.get(path) ?? 0;
+        randomOutcomeOrdinals.set(path, ordinal + 1);
+        _systemStore.recordRandomOutcome({
+          path,
+          ordinal,
+          type: result.type,
+          result,
+        });
+        refreshActiveRollbackCursor();
+      }
+
+      return {
+        variableId: operation.variableId,
+        op: "set",
+        value:
+          result.type === "integer"
+            ? result.value
+            : operation.distribution.values[result.outcomeIndex].value,
+      };
+    });
+
+    return { ...payload, operations: resolvedOperations };
+  };
+
   const buildFormActionEventContext = (eventContext, formContext) => {
     return {
       ...(eventContext ?? {}),
@@ -1989,11 +2129,10 @@ export default function createRouteEngine(options) {
       return handleConditionalAction(processedPayload, eventContext, options);
     }
 
-    const processedPayloadWithActionOptions = applyActionOptions(
-      actionType,
-      processedPayload,
-      options,
-    );
+    const processedPayloadWithActionOptions =
+      actionType === UPDATE_VARIABLE_ACTION_TYPE
+        ? resolveRandomVariableOperations(payload, processedPayload, options)
+        : applyActionOptions(actionType, processedPayload, options);
 
     if (FORM_ACTION_TYPES.has(actionType)) {
       return handleFormAction(

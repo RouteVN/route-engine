@@ -575,14 +575,38 @@ const init = async () => {
   });
 
   setBootstrapPhase("initialize Route Engine");
+  // A spec makes the engine's randomness deterministic with one of two
+  // readonly variables: vtRandomUint32 repeats one word, and
+  // vtRandomUint32Sequence is a comma-separated list of words that is drawn in
+  // order and starts over at its end. __vtRandomCalls counts the draws, so a
+  // spec can tell a replayed roll from a new one.
   const deterministicRandomWord =
     projectData.resources?.variables?.vtRandomUint32?.default;
-  const randomSource =
-    Number.isInteger(deterministicRandomWord) &&
-    deterministicRandomWord >= 0 &&
-    deterministicRandomWord <= 0xffff_ffff
-      ? { nextUint32: () => deterministicRandomWord }
-      : undefined;
+  const deterministicRandomSequence =
+    projectData.resources?.variables?.vtRandomUint32Sequence?.default;
+  const isRandomWord = (word) =>
+    Number.isInteger(word) && word >= 0 && word <= 0xffff_ffff;
+  let randomWords;
+  if (typeof deterministicRandomSequence === "string") {
+    randomWords = deterministicRandomSequence
+      .split(",")
+      .map((word) => Number(word.trim()));
+    if (!randomWords.every(isRandomWord)) {
+      throw new Error("vtRandomUint32Sequence must list uint32 words");
+    }
+  } else if (isRandomWord(deterministicRandomWord)) {
+    randomWords = [deterministicRandomWord];
+  }
+  window.__vtRandomCalls = 0;
+  const randomSource = randomWords
+    ? {
+        nextUint32: () => {
+          const word = randomWords[window.__vtRandomCalls % randomWords.length];
+          window.__vtRandomCalls += 1;
+          return word;
+        },
+      }
+    : undefined;
   engine = createRouteEngine({
     handlePendingEffects: effectsHandler,
     randomSource,

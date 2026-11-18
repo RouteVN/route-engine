@@ -121,6 +121,10 @@ jobs:
             item: robustness/layout-each-hidden-save-slots.yaml
           - id: layout-each-hidden-choice-item
             item: robustness/layout-each-hidden-choice-item.yaml
+          - id: variable-random-line-rollback
+            item: robustness/variable-random-line-rollback.yaml
+          - id: variable-random-choice-branch
+            item: robustness/variable-random-choice-branch.yaml
           - id: layout-guarded-choice
             item: robustness/layout-guarded-choice.yaml
           - id: layout-instance-continuity
