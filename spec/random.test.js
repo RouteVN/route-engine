@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   normalizeRandomSource,
   sampleRandomDistribution,
+  sampleVariableRandomDistribution,
   validateRandomResult,
+  validateVariableRandomDistribution,
 } from "../src/random.js";
 
 const createSource = (...values) => {
@@ -218,5 +220,83 @@ describe("random distributions", () => {
         "integer",
       ),
     ).toThrow("rolls is not supported");
+  });
+
+  it("samples variable distributions as an integer or a value index", () => {
+    const sampleVariable = (distribution, values) =>
+      sampleVariableRandomDistribution(distribution, {
+        randomSource: createSource(...values),
+      });
+
+    expect(sampleVariable({ type: "integer", min: -2, max: 2 }, [3])).toEqual({
+      type: "integer",
+      value: 1,
+    });
+
+    const distribution = {
+      type: "weighted",
+      values: [
+        { weight: 0, value: "never" },
+        { weight: 1, value: "first" },
+        { weight: 3, value: "second" },
+      ],
+    };
+    expect(sampleVariable(distribution, [0, 0])).toEqual({
+      type: "weighted",
+      outcomeIndex: 1,
+    });
+    expect(sampleVariable(distribution, [0x4000_0000, 0])).toEqual({
+      type: "weighted",
+      outcomeIndex: 2,
+    });
+    expect(Object.isFrozen(sampleVariable(distribution, [0, 0]))).toBe(true);
+  });
+
+  it("validates variable distributions without drawing", () => {
+    const valid = [
+      { type: "integer", min: 1, max: 1 },
+      { type: "weighted", values: [{ weight: 0.5, value: false }] },
+      { type: "weighted", values: [{ weight: 1, value: "" }] },
+    ];
+    valid.forEach((distribution) => {
+      expect(() =>
+        validateVariableRandomDistribution(distribution),
+      ).not.toThrow();
+    });
+
+    const invalid = [
+      [undefined, "must be an object"],
+      [{ type: "normal" }, 'type must be "integer" or "weighted"'],
+      [{ type: "integer", min: 1 }, "distribution.max is required"],
+      [{ type: "integer", min: 1, max: 2, step: 1 }, "step is not supported"],
+      [{ type: "weighted", outcomes: [] }, "outcomes is not supported"],
+      [{ type: "weighted", values: [] }, "must contain from 1 through 1000"],
+      [{ type: "weighted", values: [{ value: 1 }] }, "weight is required"],
+      [
+        { type: "weighted", values: [{ weight: -1, value: 1 }] },
+        "weight must be at least 0",
+      ],
+      [
+        { type: "weighted", values: [{ weight: 1 }] },
+        "value must be a string, a finite number or a boolean",
+      ],
+      [
+        { type: "weighted", values: [{ weight: 1, value: Infinity }] },
+        "value must be a string, a finite number or a boolean",
+      ],
+      [
+        { type: "weighted", values: [{ weight: 1, value: 1, actions: {} }] },
+        "actions is not supported",
+      ],
+      [
+        { type: "weighted", values: [{ weight: 0, value: 1 }] },
+        "total weight must be positive",
+      ],
+    ];
+    invalid.forEach(([distribution, message]) => {
+      expect(() => validateVariableRandomDistribution(distribution)).toThrow(
+        message,
+      );
+    });
   });
 });

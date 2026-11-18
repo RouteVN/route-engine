@@ -1090,6 +1090,65 @@ integer or weighted branch without rerolling. Chance routing uses two weighted
 outcomes. The full contract and authoring-tool interface are in
 [RandomAction.md](./RandomAction.md).
 
+### Random Variable Operations
+
+An `updateVariable` operation with `op: random` sets its variable to a
+randomly drawn value. Operations run in list order, so later operations of the
+same action see the drawn value, and one action can hold any number of rolls:
+
+```yaml
+actions:
+  updateVariable:
+    id: rollDice
+    operations:
+      - variableId: dice
+        op: random
+        distribution:
+          type: integer
+          min: 1
+          max: 6
+      - variableId: dice
+        op: increment
+        value: 2
+      - variableId: weather
+        op: random
+        distribution:
+          type: weighted
+          values:
+            - weight: 60
+              value: sunny
+            - weight: 30
+              value: rain
+            - weight: 10
+              value: storm
+```
+
+- `integer` draws a uniform integer from `min` through `max`, both inclusive,
+  with the same bounds rules as the `random` action. The variable must be a
+  number variable.
+- `weighted` stores the `value` of one entry of `values`, chosen in proportion
+  to the weights, with the same weight rules as weighted `random` outcomes.
+  Each value is a string, a finite number or a boolean and must match the
+  variable's type.
+
+The variable must be declared and writable. A random operation takes only
+`variableId`, `op` and `distribution`, all fixed authored values: an operation
+that an action template changes is refused. An invalid operation fails before
+anything is drawn.
+
+Unlike the `random` action, a random operation does not continue to the next
+line by itself.
+
+A roll that a line makes into a context variable is recorded in the same
+`randomOutcomes` ledger as `random` action results, under the path of its
+operation, for example `updateVariable.operations.0`. Rollback and save/load
+replay the recorded integer or the value at the recorded index without
+rerolling. A recorded roll that no longer matches its operation after a
+project update is dropped, and replaying the line then leaves that operation
+out. A roll made from an interaction is recorded as the value it set, like any
+other interaction variable update. Rolls into device and account variables are
+not recorded, because rollback does not restore those variables.
+
 ### Playback Mode Actions
 
 | Action           | Payload | Description               |
