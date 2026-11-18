@@ -299,4 +299,10 @@ describe("random distributions", () => {
       );
     });
   });
+
+  it("reports an unsupported outcome key before a missing weight", () => {
+    expect(() =>
+      sample({ type: "weighted", outcomes: [{ extra: 1 }] }, [0, 0]),
+    ).toThrow("random.distribution.outcomes[0].extra is not supported");
+  });
 });

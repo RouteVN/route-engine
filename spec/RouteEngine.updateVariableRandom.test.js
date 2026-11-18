@@ -972,4 +972,148 @@ describe("RouteEngine updateVariable random operation", () => {
       expect(calls).toBe(drawn);
     }
   });
+
+  it("checks every roll of an action before drawing any", () => {
+    const cases = [
+      [rollInteger("score", 1, 10), rollInteger("missing", 1, 10)],
+      [rollInteger("score", 1, 10), rollInteger("weather", 1, 10)],
+      [rollInteger("score", 1, 10), rollInteger("unscoped", 1, 10)],
+    ];
+
+    cases.forEach((operations) => {
+      const projectData = createProjectData();
+      projectData.resources.variables.unscoped = { type: "number", default: 0 };
+      const randomSource = createQueuedRandomSource(0, 0);
+      const engine = createEngine(projectData, randomSource);
+
+      expect(() =>
+        engine.handleActions(updateVariable(...operations)),
+      ).toThrow();
+      expect(randomSource.calls).toBe(0);
+      expect(selectVariables(engine).score).toBe(0);
+    });
+  });
+
+  it("refuses a weighted text value that holds template syntax", () => {
+    const randomSource = createQueuedRandomSource(0, 0);
+    const engine = createEngine(createProjectData(), randomSource);
+
+    expect(() =>
+      engine.handleActions(
+        updateVariable({
+          variableId: "weather",
+          op: "random",
+          distribution: {
+            type: "weighted",
+            values: [{ weight: 1, value: "${variables.bonus}" }],
+          },
+        }),
+      ),
+    ).toThrow("does not support templates");
+    expect(randomSource.calls).toBe(0);
+  });
+
+  it("leaves no recorded roll when a line's later operation fails", () => {
+    const randomSource = createQueuedRandomSource(6);
+    const engine = createEngine(
+      createProjectData({
+        extraLines: [
+          {
+            id: "line2",
+            actions: updateVariable(rollInteger("score", 1, 10), {
+              variableId: "bonus",
+              op: "set",
+              value: "invalid",
+            }),
+          },
+        ],
+      }),
+      randomSource,
+      { handleLineActions: true },
+    );
+
+    engine.handleAction("markLineCompleted", {});
+    expect(() => engine.handleAction("nextLine", {})).toThrow(
+      'requires value to be a number for variable "bonus"',
+    );
+
+    expect(selectVariables(engine).score).toBe(0);
+    expect(
+      selectTimeline(engine).some(
+        ({ randomOutcomes }) => randomOutcomes?.length > 0,
+      ),
+    ).toBe(false);
+  });
+
+  it("records two rolls into one variable and skips unrecorded scopes", () => {
+    const projectData = createProjectData({
+      lineActions: updateVariable(
+        rollInteger("deviceScore", 1, 10),
+        rollInteger("score", 1, 10),
+        rollInteger("accountScore", 1, 10),
+        rollInteger("score", 1, 10),
+      ),
+      extraLines: [{ id: "line2", actions: {} }],
+    });
+    projectData.resources.variables.accountScore = {
+      type: "number",
+      scope: "account",
+      default: 0,
+    };
+    const randomSource = createQueuedRandomSource(0, 1, 2, 3);
+    const engine = createEngine(projectData, randomSource, {
+      handleLineActions: true,
+    });
+
+    expect(selectVariables(engine).score).toBe(4);
+    expect(engine.selectSystemState().global.variables).toMatchObject({
+      deviceScore: 1,
+      accountScore: 3,
+    });
+    expect(
+      selectTimeline(engine)[0].randomOutcomes.map(({ path, result }) => [
+        path,
+        result.value,
+      ]),
+    ).toEqual([
+      ["updateVariable.operations.1", 2],
+      ["updateVariable.operations.3", 4],
+    ]);
+
+    engine.handleAction("markLineCompleted", {});
+    engine.handleAction("nextLine", {});
+    engine.handleAction("rollbackToLine", {
+      sectionId: "section1",
+      lineId: "line1",
+    });
+
+    expect(selectVariables(engine).score).toBe(4);
+    expect(engine.selectSystemState().global.variables).toMatchObject({
+      deviceScore: 1,
+      accountScore: 3,
+    });
+    expect(randomSource.calls).toBe(4);
+  });
+
+  it("draws a confirm dialog's roll only when the dialog is confirmed", () => {
+    const randomSource = createQueuedRandomSource(6);
+    const engine = createEngine(createProjectData(), randomSource);
+
+    engine.handleActions({
+      showConfirmDialog: {
+        resourceId: "confirmLayout",
+        confirmActions: updateVariable(rollInteger("score", 1, 10)),
+      },
+    });
+    expect(randomSource.calls).toBe(0);
+    expect(selectVariables(engine).score).toBe(0);
+
+    engine.handleActions(
+      engine.selectSystemState().global.confirmDialog.confirmActions,
+    );
+
+    expect(selectVariables(engine).score).toBe(7);
+    expect(randomSource.calls).toBe(1);
+    expect(engine.selectSystemState().global.confirmDialog).toBeFalsy();
+  });
 });

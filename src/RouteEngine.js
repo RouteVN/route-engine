@@ -7,6 +7,7 @@ import {
   isVariableValueCompatible,
   processActionTemplates,
   RUN_STORE_TRANSACTION,
+  validateVariableScope,
   validateComputedVariableConfigs,
   validateImageGalleryConfig,
   validateMusicRoomConfig,
@@ -1957,6 +1958,7 @@ export default function createRouteEngine(options) {
         `${label} must reference a writable variable: ${variableId}`,
       );
     }
+    validateVariableScope(variableConfig.scope, variableId);
     validateVariableRandomDistribution(distribution);
     if (distribution.type === "integer") {
       if (variableConfig.type !== "number") {
@@ -1996,10 +1998,10 @@ export default function createRouteEngine(options) {
       return payload;
     }
 
-    const actionPath = options.actionPath ?? [UPDATE_VARIABLE_ACTION_TYPE];
-    const resolvedOperations = operations.map((operation, index) => {
+    // Every random operation is checked before the first one is drawn.
+    const variableConfigs = operations.map((operation, index) => {
       if (operation?.op !== RANDOM_VARIABLE_OPERATION) {
-        return operation;
+        return undefined;
       }
       // The recorded roll is matched against the authored operation when it
       // is replayed, so the operation cannot come out of a template.
@@ -2011,7 +2013,15 @@ export default function createRouteEngine(options) {
           `updateVariable random operation at index ${index} does not support templates`,
         );
       }
-      const variableConfig = assertRandomVariableOperation(operation, index);
+      return assertRandomVariableOperation(operation, index);
+    });
+
+    const actionPath = options.actionPath ?? [UPDATE_VARIABLE_ACTION_TYPE];
+    const resolvedOperations = operations.map((operation, index) => {
+      const variableConfig = variableConfigs[index];
+      if (!variableConfig) {
+        return operation;
+      }
       const result = sampleVariableRandomDistribution(operation.distribution, {
         randomSource: _randomSource,
       });

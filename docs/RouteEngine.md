@@ -1133,8 +1133,13 @@ actions:
 
 The variable must be declared and writable. A random operation takes only
 `variableId`, `op` and `distribution`, all fixed authored values: an operation
-that an action template changes is refused. An invalid operation fails before
-anything is drawn.
+that an action template changes is refused, so a weighted text value cannot
+hold template syntax such as `${...}`. Every random operation of an action is
+checked before the first one is drawn.
+
+Templates in the other operations of the action are rendered before the
+action runs, so they read the variables from before the roll. An arithmetic
+operation that follows a roll works on the rolled value.
 
 Unlike the `random` action, a random operation does not continue to the next
 line by itself.

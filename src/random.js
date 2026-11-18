@@ -149,7 +149,7 @@ const sampleInteger = (
 
 // Validates the weights of a weighted distribution's entries and returns them
 // rescaled by the largest weight.
-const validateWeightedEntries = (entries, path, validateEntry) => {
+const validateWeightedEntries = (entries, path, allowedKeys, validateEntry) => {
   if (
     !Array.isArray(entries) ||
     entries.length < 1 ||
@@ -161,6 +161,7 @@ const validateWeightedEntries = (entries, path, validateEntry) => {
   const weights = entries.map((entry, index) => {
     const entryPath = `${path}[${index}]`;
     assertRecord(entry, entryPath);
+    assertAllowedKeys(entry, allowedKeys, entryPath);
     if (!Object.prototype.hasOwnProperty.call(entry, "weight")) {
       throw new Error(`${entryPath}.weight is required`);
     }
@@ -214,8 +215,8 @@ const sampleWeighted = (distribution, randomSource) => {
   const weights = validateWeightedEntries(
     distribution.outcomes,
     "random.distribution.outcomes",
+    new Set(["weight", "actions"]),
     (outcome, path) => {
-      assertAllowedKeys(outcome, new Set(["weight", "actions"]), path);
       assertRecord(outcome.actions, `${path}.actions`);
     },
   );
@@ -240,8 +241,8 @@ const validateWeightedValues = (distribution) => {
   return validateWeightedEntries(
     distribution.values,
     `${VARIABLE_DISTRIBUTION_PATH}.values`,
+    new Set(["weight", "value"]),
     (entry, path) => {
-      assertAllowedKeys(entry, new Set(["weight", "value"]), path);
       if (!isRandomVariableValue(entry.value)) {
         throw new Error(
           `${path}.value must be a string, a finite number or a boolean`,
