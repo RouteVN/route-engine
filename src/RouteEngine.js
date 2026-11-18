@@ -24,6 +24,7 @@ import {
 } from "./l10n.js";
 import { PLAYBACK_TIMER_EFFECT_NAMES } from "./playbackScheduler.js";
 import { normalizeRandomSource, sampleRandomDistribution } from "./random.js";
+import { selectRoutingCycle } from "./routingCycle.js";
 import {
   assertUnambiguousNavigationActions,
   isTerminalNavigationActionType,
@@ -102,27 +103,6 @@ const PLAY_MUSIC_ROOM_TRACK_ACTION_TYPE = "playMusicRoomTrack";
 const START_SCENE_REPLAY_ACTION_TYPE = "startSceneReplay";
 const BGM_RENDER_CHANNEL_ID = "channel:bgm";
 const MAX_SYNCHRONOUS_EFFECT_BATCHES = 1000;
-
-const isSameLinePointer = (left, right) =>
-  left?.sectionId === right?.sectionId && left?.lineId === right?.lineId;
-
-// The lines of the story's most recent turn around an immediate routing
-// cycle, starting with the line it stopped on. `visitedLinePointers` are the
-// lines it has been on, in order. The turn runs from the last time the story
-// was on the final line to its return there. A line that routes to itself is
-// a cycle of one line.
-const selectLastRoutingCycle = (visitedLinePointers) => {
-  const lastIndex = visitedLinePointers.length - 1;
-  if (lastIndex < 0) return [];
-
-  const stoppedPointer = visitedLinePointers[lastIndex];
-  for (let index = lastIndex - 1; index >= 0; index -= 1) {
-    if (isSameLinePointer(visitedLinePointers[index], stoppedPointer)) {
-      return visitedLinePointers.slice(index, lastIndex);
-    }
-  }
-  return [stoppedPointer];
-};
 const ROUTING_CYCLE_ERROR_CODE = "routing_cycle";
 const PLAYBACK_DIRTY_ACTION_TYPES = new Set([
   "startAutoMode",
@@ -407,18 +387,21 @@ export default function createRouteEngine(options) {
 
     _isProcessingPendingEffects = true;
     let effectBatchCount = 0;
-    // The lines this drain has been on, in order. A line is listed again each
-    // time the story comes back to it.
-    const visitedLinePointers = [];
+    // Every line the story has entered during this drain, in order. A line is
+    // listed again each time the story enters it.
+    const enteredLinePointers = [];
     try {
       while (_systemStore.selectPendingEffects().length > 0) {
         const enteredLinePointer =
           _systemStore.selectCurrentPointer()?.pointer ?? null;
+        // Entering a line queues its actions.
         if (
           enteredLinePointer &&
-          !isSameLinePointer(visitedLinePointers.at(-1), enteredLinePointer)
+          _systemStore
+            .selectPendingEffects()
+            .some((effect) => effect.name === "handleLineActions")
         ) {
-          visitedLinePointers.push({
+          enteredLinePointers.push({
             sectionId: enteredLinePointer.sectionId,
             lineId: enteredLinePointer.lineId,
           });
@@ -433,7 +416,7 @@ export default function createRouteEngine(options) {
             sectionId: enteredLinePointer?.sectionId,
             lineId: enteredLinePointer?.lineId,
           };
-          error.cycle = selectLastRoutingCycle(visitedLinePointers);
+          error.cycle = selectRoutingCycle(enteredLinePointers);
           // Keep the undelivered work, as for other post-commit failures, but
           // suspend playback until the host corrects or resets the story.
           setAutomaticAttemptErrorClassification(error, "postCommitUnsettled");
