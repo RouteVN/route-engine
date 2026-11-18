@@ -138,6 +138,11 @@ effect batches before yielding back to the host. Exceeding that limit throws
 an error naming the current section and line and invalidates playback timers.
 The error has `code: "routing_cycle"` and `pointer: { sectionId, lineId }`
 for that line; identify it by `code` rather than by message text.
+It also has `cycle`, an array of `{ sectionId, lineId }` for the lines of the
+story's most recent turn around the cycle: it starts with `pointer` and lists
+each following line in the order the story reached it, ending with the line
+that routed back. A line that routes to itself gives a `cycle` of that one
+line. The lines that led into the cycle are not included.
 This bounds immediate routing cycles, including conditional cycles. Each
 completed dispatch gets a fresh budget, so loops that pause for player input
 continue to work. After a limit error, the host can reinitialize, dispose, or

@@ -102,6 +102,27 @@ const PLAY_MUSIC_ROOM_TRACK_ACTION_TYPE = "playMusicRoomTrack";
 const START_SCENE_REPLAY_ACTION_TYPE = "startSceneReplay";
 const BGM_RENDER_CHANNEL_ID = "channel:bgm";
 const MAX_SYNCHRONOUS_EFFECT_BATCHES = 1000;
+
+const isSameLinePointer = (left, right) =>
+  left?.sectionId === right?.sectionId && left?.lineId === right?.lineId;
+
+// The lines of the story's most recent turn around an immediate routing
+// cycle, starting with the line it stopped on. `visitedLinePointers` are the
+// lines it has been on, in order. The turn runs from the last time the story
+// was on the final line to its return there. A line that routes to itself is
+// a cycle of one line.
+const selectLastRoutingCycle = (visitedLinePointers) => {
+  const lastIndex = visitedLinePointers.length - 1;
+  if (lastIndex < 0) return [];
+
+  const stoppedPointer = visitedLinePointers[lastIndex];
+  for (let index = lastIndex - 1; index >= 0; index -= 1) {
+    if (isSameLinePointer(visitedLinePointers[index], stoppedPointer)) {
+      return visitedLinePointers.slice(index, lastIndex);
+    }
+  }
+  return [stoppedPointer];
+};
 const ROUTING_CYCLE_ERROR_CODE = "routing_cycle";
 const PLAYBACK_DIRTY_ACTION_TYPES = new Set([
   "startAutoMode",
@@ -386,10 +407,22 @@ export default function createRouteEngine(options) {
 
     _isProcessingPendingEffects = true;
     let effectBatchCount = 0;
+    // The lines this drain has been on, in order. A line is listed again each
+    // time the story comes back to it.
+    const visitedLinePointers = [];
     try {
       while (_systemStore.selectPendingEffects().length > 0) {
         const enteredLinePointer =
           _systemStore.selectCurrentPointer()?.pointer ?? null;
+        if (
+          enteredLinePointer &&
+          !isSameLinePointer(visitedLinePointers.at(-1), enteredLinePointer)
+        ) {
+          visitedLinePointers.push({
+            sectionId: enteredLinePointer.sectionId,
+            lineId: enteredLinePointer.lineId,
+          });
+        }
         if (effectBatchCount >= MAX_SYNCHRONOUS_EFFECT_BATCHES) {
           const error = new Error(
             `RouteEngine exceeded ${MAX_SYNCHRONOUS_EFFECT_BATCHES} synchronous effect batches at section "${enteredLinePointer?.sectionId}", line "${enteredLinePointer?.lineId}". Check for an immediate routing cycle.`,
@@ -400,6 +433,7 @@ export default function createRouteEngine(options) {
             sectionId: enteredLinePointer?.sectionId,
             lineId: enteredLinePointer?.lineId,
           };
+          error.cycle = selectLastRoutingCycle(visitedLinePointers);
           // Keep the undelivered work, as for other post-commit failures, but
           // suspend playback until the host corrects or resets the story.
           setAutomaticAttemptErrorClassification(error, "postCommitUnsettled");
