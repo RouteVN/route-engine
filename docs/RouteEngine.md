@@ -790,11 +790,10 @@ actions inside each phase run from top to bottom.
    1. `updateVariable`
    2. `updateFormField`
    3. `updateLocalizationPackage`
-   4. integer `random`
 3. Decision
    1. `submitForm`
    2. `cancelForm`
-   3. weighted `random`
+   3. `random`
    4. `conditional`
 4. Presentation
    1. `screen`
@@ -891,9 +890,9 @@ Engine-only and test store actions have fixed positions in the same schedule:
 - Navigation, after `nextLine`: `nextLineFromSystem`.
 
 Templates are resolved immediately before their scheduled action, so later
-phases observe state produced by earlier phases. An integer `random` therefore
-always writes its declared variable before `conditional`, even if
-`conditional` appears first in YAML. Weighted `random` is a decision because it
+phases observe state produced by earlier phases. An `updateVariable` random
+operation therefore always writes its variable before `conditional`, even if
+`conditional` appears first in YAML. `random` is a decision because it
 executes a selected nested action batch.
 
 Nested batches use the same schedule. A navigation selected inside a nested
@@ -1031,41 +1030,8 @@ in the same action.
 
 ### Random Actions
 
-Use `random` to generate a uniformly distributed integer directly into a
-declared writable context number variable:
-
-```yaml
-actions:
-  random:
-    distribution:
-      type: integer
-      min: 1
-      max: 100
-    variableId: randomNumber
-  conditional:
-    branches:
-      - when:
-          gte:
-            - var: variables.randomNumber
-            - 75
-        actions:
-          jumpToLine:
-            lineId: lockOpened
-      - actions:
-          jumpToLine:
-            lineId: lockFailed
-```
-
-Both bounds are inclusive. Every integer from `min` through `max` has equal
-probability. Integer `random` is in the State phase and `conditional` is in the
-Decision phase, so the generated number is stored first regardless of their
-YAML property order.
-
-Distribution configuration is fixed authored data: numeric fields accept only
-literal numbers and do not resolve variables or action templates.
-
-Weighted selection is branch-only: each outcome contains its own action batch,
-with no authored value or result variable:
+Use `random` to run one of several action batches by chance. Each outcome
+contains its own actions and a weight:
 
 ```yaml
 actions:
@@ -1083,11 +1049,16 @@ actions:
               lineId: rareReward
 ```
 
+Selection is proportional to the weights, which do not need to sum to `1` or
+`100`. Distribution configuration is fixed authored data: weights accept only
+literal numbers and do not resolve variables or action templates. The action
+has no result variable. To draw a value into a variable, use an
+`updateVariable` random operation, described below.
+
 Like `conditional`, `random` automatically continues once unless the outer
-batch or selected weighted actions navigate. Line-authored outcomes are
-recorded with rollback history so save/load and rollback replay the stored
-integer or weighted branch without rerolling. Chance routing uses two weighted
-outcomes. The full contract and authoring-tool interface are in
+batch or the selected actions navigate. Line-authored outcomes are recorded
+with rollback history so save/load and rollback replay the selected outcome
+without rerolling. The full contract and authoring-tool interface are in
 [RandomAction.md](./RandomAction.md).
 
 ### Random Variable Operations
@@ -1123,11 +1094,12 @@ actions:
               value: storm
 ```
 
-- `integer` draws a uniform integer from `min` through `max`, both inclusive,
-  with the same bounds rules as the `random` action. The variable must be a
-  number variable.
+- `integer` draws a uniform integer from `min` through `max`, both inclusive.
+  Both are safe integers with `min` no greater than `max`, and the range holds
+  at most `4294967296` (`2^32`) integers. The variable must be a number
+  variable.
 - `weighted` stores the `value` of one entry of `values`, chosen in proportion
-  to the weights, with the same weight rules as weighted `random` outcomes.
+  to the weights, with the same weight rules as `random` outcomes.
   Each value is a string, a finite number or a boolean and must match the
   variable's type.
 

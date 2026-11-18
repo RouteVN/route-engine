@@ -2762,7 +2762,7 @@ describe("projectData schema", () => {
     expect(validateSystemActions.errors).not.toBeNull();
   });
 
-  it("accepts integer variable output and recursive weighted actions", () => {
+  it("accepts recursive weighted actions and refuses the removed integer form", () => {
     expect(
       validateSystemActions({
         random: {
@@ -2774,8 +2774,7 @@ describe("projectData schema", () => {
           variableId: "lastRoll",
         },
       }),
-    ).toBe(true);
-    expect(validateSystemActions.errors).toBeNull();
+    ).toBe(false);
 
     expect(
       validateSystemActions({
@@ -3055,8 +3054,13 @@ describe("projectData schema", () => {
     const projectData = createMinimalProjectData();
     projectData.story.scenes.scene1.sections.section1.lines[0].actions = {
       random: {
-        distribution: { type: "integer", min: 1, max: 6 },
-        variableId: "lastRoll",
+        distribution: {
+          type: "weighted",
+          outcomes: [
+            { weight: 1, actions: {} },
+            { weight: 3, actions: { nextLine: {} } },
+          ],
+        },
       },
     };
 

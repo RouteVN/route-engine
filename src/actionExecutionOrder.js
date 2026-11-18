@@ -13,12 +13,11 @@ export const ACTION_EXECUTION_PHASES = Object.freeze([
     "updateProjectData",
     "updateLocalizationPackage",
     "markLineCompleted",
-    "random:integer",
   ]),
   freezePhase("decision", [
     "submitForm",
     "cancelForm",
-    "random:weighted",
+    "random",
     "conditional",
   ]),
   freezePhase("presentation", [
@@ -132,16 +131,6 @@ export const TERMINAL_NAVIGATION_ACTION_TYPES = new Set(
 );
 const UNKNOWN_ACTION_RANK = ACTION_EXECUTION_RANKS.get("saveSlot") - 0.5;
 
-const getActionExecutionKey = (actionType, payload) => {
-  if (actionType !== "random") {
-    return actionType;
-  }
-
-  return payload?.distribution?.type === "weighted"
-    ? "random:weighted"
-    : "random:integer";
-};
-
 const compareCodeUnits = (left, right) => {
   if (left < right) return -1;
   if (left > right) return 1;
@@ -150,8 +139,8 @@ const compareCodeUnits = (left, right) => {
 
 export const orderActionEntries = (actions) =>
   Object.entries(actions).sort((left, right) => {
-    const leftKey = getActionExecutionKey(...left);
-    const rightKey = getActionExecutionKey(...right);
+    const leftKey = left[0];
+    const rightKey = right[0];
     const leftKnownRank = ACTION_EXECUTION_RANKS.get(leftKey);
     const rightKnownRank = ACTION_EXECUTION_RANKS.get(rightKey);
     const leftRank = leftKnownRank ?? UNKNOWN_ACTION_RANK;

@@ -171,23 +171,13 @@ properties:
     additionalProperties: false
 
   random:
-    description: Generate an inclusive uniform integer into a declared number variable or run the selected weighted outcome actions, then immediately continue once unless the batch navigates
-    oneOf:
-      - type: object
-        properties:
-          distribution:
-            $ref: "#/definitions/randomIntegerDistribution"
-          variableId:
-            type: string
-            minLength: 1
-        required: [distribution, variableId]
-        additionalProperties: false
-      - type: object
-        properties:
-          distribution:
-            $ref: "#/definitions/randomWeightedDistribution"
-        required: [distribution]
-        additionalProperties: false
+    type: object
+    description: Run the actions of one weighted outcome, then immediately continue once unless the batch navigates
+    properties:
+      distribution:
+        $ref: "#/definitions/randomWeightedDistribution"
+    required: [distribution]
+    additionalProperties: false
 
   nextLine:
     type: object

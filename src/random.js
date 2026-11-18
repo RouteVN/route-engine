@@ -132,11 +132,7 @@ const validateIntegerDistribution = (distribution, path) => {
   return { min, cardinality };
 };
 
-const sampleInteger = (
-  distribution,
-  randomSource,
-  path = "random.distribution",
-) => {
+const sampleInteger = (distribution, randomSource, path) => {
   const { min, cardinality } = validateIntegerDistribution(distribution, path);
   return cloneAndFreeze({
     type: "integer",
@@ -291,17 +287,13 @@ export const sampleVariableRandomDistribution = (
   throw new Error(VARIABLE_DISTRIBUTION_TYPE_ERROR);
 };
 
+// Draws the outcome of a random action, whose only distribution is weighted.
 export const sampleRandomDistribution = (distribution, { randomSource }) => {
   assertRecord(distribution, "random.distribution");
-  const samplers = {
-    integer: sampleInteger,
-    weighted: sampleWeighted,
-  };
-  const sampler = samplers[distribution.type];
-  if (!sampler) {
-    throw new Error('random.distribution.type must be "integer" or "weighted"');
+  if (distribution.type !== "weighted") {
+    throw new Error('random.distribution.type must be "weighted"');
   }
-  return sampler(distribution, randomSource);
+  return sampleWeighted(distribution, randomSource);
 };
 
 export const validateRandomResult = (result, expectedType) => {

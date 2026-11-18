@@ -21,8 +21,12 @@ const createSource = (...values) => {
   });
 };
 
+// A random action draws a weighted outcome. An integer is drawn only by an
+// updateVariable random operation.
 const sample = (distribution, values) =>
-  sampleRandomDistribution(distribution, {
+  (distribution?.type === "integer"
+    ? sampleVariableRandomDistribution
+    : sampleRandomDistribution)(distribution, {
     randomSource: createSource(...values),
   });
 
@@ -152,8 +156,8 @@ describe("random distributions", () => {
       { type: "integer", min: 1, max: 6, shape: "uniform" },
       "shape is not supported",
     ],
-    [{ type: "dice", sides: 6 }, 'must be "integer" or "weighted"'],
-    [{ type: "chance", probability: 0.5 }, 'must be "integer" or "weighted"'],
+    [{ type: "dice", sides: 6 }, 'type must be "weighted"'],
+    [{ type: "chance", probability: 0.5 }, 'type must be "weighted"'],
     [
       {
         type: "weighted",
@@ -184,7 +188,7 @@ describe("random distributions", () => {
 
   it("validates every injected uint32 value", () => {
     expect(() =>
-      sampleRandomDistribution(
+      sampleVariableRandomDistribution(
         { type: "integer", min: 0, max: 1 },
         {
           randomSource: normalizeRandomSource({
@@ -304,5 +308,14 @@ describe("random distributions", () => {
     expect(() =>
       sample({ type: "weighted", outcomes: [{ extra: 1 }] }, [0, 0]),
     ).toThrow("random.distribution.outcomes[0].extra is not supported");
+  });
+
+  it("refuses an integer distribution for a random action", () => {
+    expect(() =>
+      sampleRandomDistribution(
+        { type: "integer", min: 1, max: 6 },
+        { randomSource: createSource(0) },
+      ),
+    ).toThrow('random.distribution.type must be "weighted"');
   });
 });

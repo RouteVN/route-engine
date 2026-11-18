@@ -1,12 +1,12 @@
 ---
 title: Choice Random Integer Branch
-description: A choice click deterministically generates an integer, selects a weighted action branch, and renders the matching destination.
+description: A choice click deterministically rolls an integer into a variable, selects a weighted action branch, and renders the matching destination.
 specs:
   - the initial line shows one isolated random-integer button
-  - clicking the button dispatches a uniform integer action through the real input path
+  - clicking the button dispatches an updateVariable random operation through the real input path
   - the deterministic VT random source selects 17 from the inclusive 1 through 20 range
-  - the conditional is authored before random to exercise canonical scheduling
-  - the integer action still stores 17 before conditional reads randomNumber
+  - the conditional is authored before updateVariable to exercise canonical scheduling
+  - the roll still stores 17 before conditional reads randomNumber
   - a nested weighted random selects its first outcome actions
   - the selected weighted outcome renders the success destination
 skipInitialScreenshot: true
@@ -108,12 +108,15 @@ resources:
                     - actions:
                         jumpToLine:
                           lineId: failure
-                random:
-                  distribution:
-                    type: integer
-                    min: 1
-                    max: 20
-                  variableId: randomNumber
+                updateVariable:
+                  id: rollNumber
+                  operations:
+                    - variableId: randomNumber
+                      op: random
+                      distribution:
+                        type: integer
+                        min: 1
+                        max: 20
         - id: generate-label
           type: text
           x: 800
