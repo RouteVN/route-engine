@@ -1,0 +1,444 @@
+---
+title: Variable Random Line Rollback
+description: >-
+  A line rolls a number and a weighted text value with updateVariable random
+  operations. Back and Load show the recorded roll again without drawing, and
+  entering the line again after rolling back past it draws a new roll.
+specs:
+  - the roll line stores 3 plus 10 in dice and the last weighted value in weather
+  - advancing and pressing Back shows the same roll with no new draw
+  - rolling back past the line restores the defaults, and entering it again draws a new roll
+  - loading the save made after the first roll shows the first roll again with no new draw
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+    detail:
+      layoutRootId: dialogue-container
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: start
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.dice-value
+    value: DICE 0
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.weather-value
+    value: WEATHER none
+  - action: assert
+    type: js
+    global: __vtRandomCalls
+    value: 0
+  - action: screenshot
+  - action: click
+    x: 815
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+    detail:
+      layoutRootId: dialogue-container
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: roll
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.dice-value
+    value: DICE 13
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.weather-value
+    value: WEATHER storm
+  - action: assert
+    type: js
+    global: __vtRandomCalls
+    value: 3
+  - action: screenshot
+  - action: click
+    x: 115
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: click
+    x: 815
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+    detail:
+      layoutRootId: dialogue-container
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: after
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.dice-value
+    value: DICE 13
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.weather-value
+    value: WEATHER storm
+  - action: assert
+    type: js
+    global: __vtRandomCalls
+    value: 3
+  - action: click
+    x: 295
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+    detail:
+      layoutRootId: dialogue-container
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: roll
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.dice-value
+    value: DICE 13
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.weather-value
+    value: WEATHER storm
+  - action: assert
+    type: js
+    global: __vtRandomCalls
+    value: 3
+  - action: screenshot
+  - action: click
+    x: 295
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+    detail:
+      layoutRootId: dialogue-container
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: start
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.dice-value
+    value: DICE 0
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.weather-value
+    value: WEATHER none
+  - action: assert
+    type: js
+    global: __vtRandomCalls
+    value: 3
+  - action: click
+    x: 815
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+    detail:
+      layoutRootId: dialogue-container
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: roll
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.dice-value
+    value: DICE 16
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.weather-value
+    value: WEATHER sunny
+  - action: assert
+    type: js
+    global: __vtRandomCalls
+    value: 6
+  - action: screenshot
+  - action: click
+    x: 475
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+    detail:
+      layoutRootId: dialogue-container
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: roll
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.dice-value
+    value: DICE 13
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.weather-value
+    value: WEATHER storm
+  - action: assert
+    type: js
+    global: __vtRandomCalls
+    value: 6
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  variables:
+    vtRandomUint32Sequence:
+      type: string
+      scope: context
+      default: "2,4294967295,4294967295,5,0,0"
+      readonly: true
+    dice:
+      type: number
+      scope: context
+      default: 0
+    weather:
+      type: string
+      scope: context
+      default: none
+  controls:
+    main:
+      elements:
+        - id: background
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: title
+          type: text
+          x: 45
+          "y": 40
+          content: A line roll survives Back and Load
+          textStyleId: title
+        - id: save
+          type: rect
+          x: 40
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                saveSlot:
+                  slotId: checkpoint
+        - id: save-label
+          type: text
+          x: 115
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: SAVE
+          textStyleId: button
+        - id: back
+          type: rect
+          x: 220
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+        - id: back-label
+          type: text
+          x: 295
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: BACK
+          textStyleId: button
+        - id: load
+          type: rect
+          x: 400
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                loadSlot:
+                  slotId: checkpoint
+        - id: load-label
+          type: text
+          x: 475
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: LOAD
+          textStyleId: button
+        - id: next
+          type: rect
+          x: 740
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: next-label
+          type: text
+          x: 815
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: NEXT
+          textStyleId: button
+  layouts:
+    dialogue:
+      elements:
+        - id: dialogue-panel
+          type: rect
+          x: 40
+          "y": 110
+          width: 880
+          height: 280
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 65
+          "y": 140
+          width: 825
+          content: ${dialogue.content[0].text}
+          textStyleId: body
+        - id: dice-value
+          type: text
+          x: 65
+          "y": 230
+          content: DICE ${variables.dice}
+          textStyleId: value
+        - id: weather-value
+          type: text
+          x: 65
+          "y": 300
+          content: WEATHER ${variables.weather}
+          textStyleId: value
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 30
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 27
+      lineHeight: 1.4
+    value:
+      fontId: default
+      colorId: text
+      fontSize: 44
+      lineHeight: 1.2
+    button:
+      fontId: default
+      colorId: text
+      fontSize: 20
+      lineHeight: 1.2
+story:
+  initialSceneId: scene
+  scenes:
+    scene:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: start
+              actions:
+                control:
+                  resourceId: main
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: Press NEXT to roll.
+            - id: roll
+              actions:
+                updateVariable:
+                  id: rollDice
+                  operations:
+                    - variableId: dice
+                      op: random
+                      distribution:
+                        type: integer
+                        min: 1
+                        max: 6
+                    - variableId: dice
+                      op: increment
+                      value: 10
+                    - variableId: weather
+                      op: random
+                      distribution:
+                        type: weighted
+                        values:
+                          - weight: 60
+                            value: sunny
+                          - weight: 30
+                            value: rain
+                          - weight: 10
+                            value: storm
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: The dice were rolled on this line.
+            - id: after
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: The result stays on later lines.

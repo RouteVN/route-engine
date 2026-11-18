@@ -615,4 +615,361 @@ describe("RouteEngine updateVariable random operation", () => {
     expect(selectVariables(engine).weather).toBe("storm");
     expect(randomSource.calls).toBe(2);
   });
+
+  it("maps every word of a range to its own integer", () => {
+    const rolled = [0, 1, 2, 3, 4, 5].map((word) => {
+      const engine = createEngine(
+        createProjectData(),
+        createQueuedRandomSource(word),
+      );
+      engine.handleActions(updateVariable(rollInteger("score", 1, 6)));
+      return selectVariables(engine).score;
+    });
+
+    expect(rolled).toEqual([1, 2, 3, 4, 5, 6]);
+  });
+
+  it("selects weighted values in proportion to their weights", () => {
+    const counts = { sunny: 0, snow: 0, rain: 0 };
+    for (let step = 0; step < 16; step += 1) {
+      const engine = createEngine(
+        createProjectData(),
+        createQueuedRandomSource(step * 0x1000_0000, 0),
+      );
+      engine.handleActions(updateVariable(rollWeather));
+      counts[selectVariables(engine).weather] += 1;
+    }
+
+    expect(counts).toEqual({ sunny: 12, snow: 0, rain: 4 });
+  });
+
+  it("lets a conditional of the same batch read the roll", () => {
+    const actions = {
+      conditional: {
+        branches: [
+          {
+            when: { gte: [{ var: "variables.score" }, 15] },
+            actions: {
+              updateVariable: {
+                id: "high",
+                operations: [
+                  { variableId: "weather", op: "set", value: "high" },
+                ],
+              },
+            },
+          },
+          {
+            actions: {
+              updateVariable: {
+                id: "low",
+                operations: [
+                  { variableId: "weather", op: "set", value: "low" },
+                ],
+              },
+            },
+          },
+        ],
+      },
+      ...updateVariable(rollInteger("score", 1, 20)),
+    };
+    const randomSource = createQueuedRandomSource(16, 3);
+    const engine = createEngine(
+      createProjectData({
+        lineActions: actions,
+        extraLines: [
+          { id: "line2", actions: {} },
+          { id: "line3", actions: {} },
+        ],
+      }),
+      randomSource,
+      { handleLineActions: true },
+    );
+
+    // The conditional continues to line2 by itself.
+    expect(selectVariables(engine)).toMatchObject({
+      score: 17,
+      weather: "high",
+    });
+    expect(engine.selectSystemState().contexts[0].pointers.read.lineId).toBe(
+      "line2",
+    );
+
+    engine.handleAction("markLineCompleted", {});
+    engine.handleAction("nextLine", {});
+    engine.handleAction("rollbackToLine", {
+      sectionId: "section1",
+      lineId: "line2",
+    });
+
+    expect(selectVariables(engine)).toMatchObject({
+      score: 17,
+      weather: "high",
+    });
+    expect(randomSource.calls).toBe(1);
+  });
+
+  it("records a roll inside a weighted random outcome", () => {
+    const randomSource = createQueuedRandomSource(0, 0, 6);
+    const engine = createEngine(
+      createProjectData({
+        lineActions: {
+          random: {
+            distribution: {
+              type: "weighted",
+              outcomes: [
+                {
+                  weight: 1,
+                  actions: updateVariable(rollInteger("score", 1, 10)),
+                },
+                { weight: 1, actions: {} },
+              ],
+            },
+          },
+        },
+        extraLines: [
+          { id: "line2", actions: {} },
+          { id: "line3", actions: {} },
+        ],
+      }),
+      randomSource,
+      { handleLineActions: true },
+    );
+
+    expect(selectVariables(engine).score).toBe(7);
+    expect(selectTimeline(engine)[0].randomOutcomes).toEqual([
+      {
+        path: "random",
+        ordinal: 0,
+        type: "weighted",
+        result: { type: "weighted", outcomeIndex: 0 },
+      },
+      {
+        path: "random.distribution.outcomes.0.actions.updateVariable.operations.0",
+        ordinal: 0,
+        type: "integer",
+        result: { type: "integer", value: 7 },
+      },
+    ]);
+
+    engine.handleAction("markLineCompleted", {});
+    engine.handleAction("nextLine", {});
+    engine.handleAction("rollbackToLine", {
+      sectionId: "section1",
+      lineId: "line2",
+    });
+
+    expect(selectVariables(engine).score).toBe(7);
+    expect(randomSource.calls).toBe(3);
+  });
+
+  it("records entering the same line again as its own roll", () => {
+    const randomSource = createQueuedRandomSource(1, 8);
+    const engine = createEngine(
+      createProjectData({
+        lineActions: updateVariable(rollInteger("score", 1, 10)),
+      }),
+      randomSource,
+      { handleLineActions: true },
+    );
+
+    engine.handleAction("jumpToLine", { lineId: "line1" });
+
+    const occurrences = selectTimeline(engine).filter(
+      ({ randomOutcomeVersion }) => randomOutcomeVersion === 1,
+    );
+    expect(
+      occurrences.map(({ randomOutcomes }) => randomOutcomes[0].result.value),
+    ).toEqual([2, 9]);
+    expect(selectVariables(engine).score).toBe(9);
+  });
+
+  it("renders templates of the other operations of the action", () => {
+    const engine = createEngine(
+      createProjectData(),
+      createQueuedRandomSource(6),
+    );
+
+    engine.handleActions(
+      updateVariable(rollInteger("score", 1, 10), {
+        variableId: "bonus",
+        op: "set",
+        value: "${variables.score}",
+      }),
+    );
+
+    // The template is rendered before the action runs, so it reads the score
+    // from before the roll.
+    expect(selectVariables(engine)).toMatchObject({ score: 7, bonus: 0 });
+  });
+
+  it("refuses an operation that a template turns into a roll", () => {
+    const projectData = createProjectData();
+    projectData.resources.variables.operationName = {
+      type: "string",
+      scope: "context",
+      default: "random",
+    };
+    const randomSource = createQueuedRandomSource(0);
+    const engine = createEngine(projectData, randomSource);
+
+    expect(() =>
+      engine.handleActions(
+        updateVariable({
+          ...rollInteger("score", 1, 10),
+          op: "${variables.operationName}",
+        }),
+      ),
+    ).toThrow("does not support templates");
+    expect(randomSource.calls).toBe(0);
+  });
+
+  it("drops a recorded roll when an older save is loaded into a changed project", () => {
+    const original = createEngine(
+      createProjectData({
+        lineActions: updateVariable(rollInteger("score", 1, 10)),
+        extraLines: [{ id: "line2", actions: {} }],
+      }),
+      createQueuedRandomSource(6),
+      { handleLineActions: true },
+    );
+    original.handleAction("saveSlot", { slotId: 1, savedAt: 100 });
+    const saveSlots = original.selectSystemState().global.saveSlots;
+
+    const randomSource = createQueuedRandomSource();
+    const engine = createEngine(
+      createProjectData({
+        lineActions: updateVariable(rollInteger("score", 1, 5)),
+        extraLines: [{ id: "line2", actions: {} }],
+      }),
+      randomSource,
+      { global: { saveSlots: structuredClone(saveSlots) } },
+    );
+
+    expect(() => engine.handleAction("loadSlot", { slotId: 1 })).not.toThrow();
+    expect(selectTimeline(engine)[0].randomOutcomes).toEqual([]);
+    expect(randomSource.calls).toBe(0);
+  });
+
+  it("never rerolls a save that has no recorded rolls", () => {
+    const original = createEngine(
+      createProjectData({
+        lineActions: updateVariable(rollInteger("score", 1, 10), {
+          variableId: "bonus",
+          op: "increment",
+          value: 5,
+        }),
+        extraLines: [{ id: "line2", actions: {} }],
+      }),
+      createQueuedRandomSource(6),
+      { handleLineActions: true },
+    );
+    original.handleAction("saveSlot", { slotId: 1, savedAt: 100 });
+    const saveSlots = structuredClone(
+      original.selectSystemState().global.saveSlots,
+    );
+    saveSlots["1"].state.contexts[0].rollback.timeline.forEach((checkpoint) => {
+      delete checkpoint.randomOutcomeVersion;
+      delete checkpoint.randomOutcomes;
+    });
+
+    const randomSource = createQueuedRandomSource();
+    const engine = createEngine(
+      createProjectData({
+        lineActions: updateVariable(rollInteger("score", 1, 10), {
+          variableId: "bonus",
+          op: "increment",
+          value: 5,
+        }),
+        extraLines: [{ id: "line2", actions: {} }],
+      }),
+      randomSource,
+      { global: { saveSlots } },
+    );
+
+    engine.handleAction("loadSlot", { slotId: 1 });
+    engine.handleAction("markLineCompleted", {});
+    engine.handleAction("nextLine", {});
+    engine.handleAction("rollbackToLine", {
+      sectionId: "section1",
+      lineId: "line1",
+    });
+
+    // The roll is left out and the other operation still runs.
+    expect(selectVariables(engine)).toMatchObject({ score: 0, bonus: 7 });
+    expect(randomSource.calls).toBe(0);
+  });
+
+  it("replays generated rolls identically across save, load and rollback", () => {
+    // A small linear congruential generator makes the cases reproducible.
+    let seed = 0x1234_5678;
+    const nextWord = () => {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      return seed;
+    };
+
+    for (let round = 0; round < 150; round += 1) {
+      const min = (nextWord() % 2001) - 1000;
+      const max = min + (nextWord() % 1000);
+      const weights = [1, 2, 3, 4].map(() => nextWord() % 5);
+      weights[nextWord() % 4] += 1;
+      const rollText = {
+        variableId: "weather",
+        op: "random",
+        distribution: {
+          type: "weighted",
+          values: weights.map((weight, index) => ({
+            weight,
+            value: `value${index}`,
+          })),
+        },
+      };
+      let calls = 0;
+      const randomSource = {
+        nextUint32() {
+          calls += 1;
+          return nextWord();
+        },
+      };
+      const engine = createEngine(
+        createProjectData({
+          lineActions: updateVariable(
+            rollInteger("score", min, max),
+            rollText,
+            rollInteger("bonus", min, max),
+          ),
+          extraLines: [{ id: "line2", actions: {} }],
+        }),
+        randomSource,
+        { handleLineActions: true },
+      );
+
+      const rolled = { ...selectVariables(engine) };
+      const drawn = calls;
+      expect(rolled.score).toBeGreaterThanOrEqual(min);
+      expect(rolled.score).toBeLessThanOrEqual(max);
+      expect(rolled.bonus).toBeGreaterThanOrEqual(min);
+      expect(rolled.bonus).toBeLessThanOrEqual(max);
+      const valueIndex = Number(rolled.weather.slice("value".length));
+      expect(weights[valueIndex]).toBeGreaterThan(0);
+
+      engine.handleAction("saveSlot", { slotId: 1, savedAt: 100 });
+      engine.handleAction("markLineCompleted", {});
+      engine.handleAction("nextLine", {});
+      engine.handleAction("rollbackToLine", {
+        sectionId: "section1",
+        lineId: "line1",
+      });
+      expect(selectVariables(engine)).toEqual(rolled);
+
+      engine.handleActions({
+        updateVariable: {
+          id: "mutate",
+          operations: [{ variableId: "score", op: "set", value: 5000 }],
+        },
+      });
+      engine.handleAction("loadSlot", { slotId: 1 });
+      expect(selectVariables(engine)).toEqual(rolled);
+      expect(calls).toBe(drawn);
+    }
+  });
 });
