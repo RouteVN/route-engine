@@ -31,6 +31,7 @@ import {
   sampleVariableRandomDistribution,
   validateVariableRandomDistribution,
 } from "./random.js";
+import { selectRoutingCycle } from "./routingCycle.js";
 import {
   assertUnambiguousNavigationActions,
   isTerminalNavigationActionType,
@@ -395,10 +396,25 @@ export default function createRouteEngine(options) {
 
     _isProcessingPendingEffects = true;
     let effectBatchCount = 0;
+    // Every line the story has entered during this drain, in order. A line is
+    // listed again each time the story enters it.
+    const enteredLinePointers = [];
     try {
       while (_systemStore.selectPendingEffects().length > 0) {
         const enteredLinePointer =
           _systemStore.selectCurrentPointer()?.pointer ?? null;
+        // Entering a line queues its actions.
+        if (
+          enteredLinePointer &&
+          _systemStore
+            .selectPendingEffects()
+            .some((effect) => effect.name === "handleLineActions")
+        ) {
+          enteredLinePointers.push({
+            sectionId: enteredLinePointer.sectionId,
+            lineId: enteredLinePointer.lineId,
+          });
+        }
         if (effectBatchCount >= MAX_SYNCHRONOUS_EFFECT_BATCHES) {
           const error = new Error(
             `RouteEngine exceeded ${MAX_SYNCHRONOUS_EFFECT_BATCHES} synchronous effect batches at section "${enteredLinePointer?.sectionId}", line "${enteredLinePointer?.lineId}". Check for an immediate routing cycle.`,
@@ -409,6 +425,7 @@ export default function createRouteEngine(options) {
             sectionId: enteredLinePointer?.sectionId,
             lineId: enteredLinePointer?.lineId,
           };
+          error.cycle = selectRoutingCycle(enteredLinePointers);
           // Keep the undelivered work, as for other post-commit failures, but
           // suspend playback until the host corrects or resets the story.
           setAutomaticAttemptErrorClassification(error, "postCommitUnsettled");

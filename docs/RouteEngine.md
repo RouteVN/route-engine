@@ -138,6 +138,21 @@ effect batches before yielding back to the host. Exceeding that limit throws
 an error naming the current section and line and invalidates playback timers.
 The error has `code: "routing_cycle"` and `pointer: { sectionId, lineId }`
 for that line; identify it by `code` rather than by message text.
+It also has `cycle`, an array of `{ sectionId, lineId }` for the lines of the
+cycle. It starts with the line the story stopped on and lists each other line
+once, in the order the story first reached it after that line:
+
+- The cycle is the block of lines the story kept repeating, so lines that
+  only led into it are not included. A line that routes to itself gives a
+  `cycle` of that one line.
+- It lists the lines the story entered, whichever action moved it there:
+  `sectionTransition`, `jumpToLine`, a `conditional` branch, or a
+  conditional's continuation to the next line.
+- When the route varied between turns, so that no block repeats, `cycle` is
+  the story's last trip from the line it stopped on back to that line.
+- When the story never entered a line twice, it ran out of budget on a long
+  chain of lines rather than in a cycle, and `cycle` is empty.
+
 This bounds immediate routing cycles, including conditional cycles. Each
 completed dispatch gets a fresh budget, so loops that pause for player input
 continue to work. After a limit error, the host can reinitialize, dispose, or

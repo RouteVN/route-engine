@@ -256,6 +256,7 @@ describe("bounded synchronous routing", () => {
           ),
           code: "routing_cycle",
           pointer: { sectionId: "main", lineId: "loop" },
+          cycle: [{ sectionId: "main", lineId: "loop" }],
         }),
       );
       expect(guarded.ticker.size).toBe(0);
@@ -302,6 +303,10 @@ describe("bounded synchronous routing", () => {
             sectionId: expect.stringMatching(/^(main|other)$/),
             lineId: "loop",
           },
+          cycle: expect.arrayContaining([
+            { sectionId: "main", lineId: "loop" },
+            { sectionId: "other", lineId: "loop" },
+          ]),
         }),
       );
       expect(guarded.ticker.size).toBe(0);
@@ -316,6 +321,285 @@ describe("bounded synchronous routing", () => {
       guarded.engine.dispose();
     },
   );
+
+  const catchRoutingCycle = (run) => {
+    try {
+      run();
+    } catch (error) {
+      return error;
+    }
+    throw new Error("Expected a routing cycle error");
+  };
+
+  // The cycle starts with the line the engine stopped on, which may be any
+  // line of the loop, and then follows the loop's order.
+  const expectCycleInOrder = (error, loopLines) => {
+    expect(error.code).toBe("routing_cycle");
+    const start = loopLines.findIndex(
+      (line) =>
+        line.sectionId === error.pointer.sectionId &&
+        line.lineId === error.pointer.lineId,
+    );
+    expect(start).not.toBe(-1);
+    expect(error.cycle).toEqual([
+      ...loopLines.slice(start),
+      ...loopLines.slice(0, start),
+    ]);
+  };
+
+  it("names both lines of a two-section cycle", () => {
+    const project = createProject([
+      { id: "first", actions: { sectionTransition: { sectionId: "other" } } },
+    ]);
+    project.story.scenes.scene.sections.other = {
+      lines: [
+        { id: "second", actions: { sectionTransition: { sectionId: "main" } } },
+      ],
+    };
+    const guarded = createGuardedEngine(project);
+
+    expectCycleInOrder(
+      catchRoutingCycle(() => guarded.initialize()),
+      [
+        { sectionId: "main", lineId: "first" },
+        { sectionId: "other", lineId: "second" },
+      ],
+    );
+    guarded.engine.dispose();
+  });
+
+  it("names the lines of a cycle, without the lines that led into it", () => {
+    const project = createProject([
+      { id: "entry", actions: { jumpToLine: { lineId: "a" } } },
+      { id: "a", actions: { sectionTransition: { sectionId: "other" } } },
+      { id: "c", actions: { jumpToLine: { lineId: "a" } } },
+    ]);
+    project.story.scenes.scene.sections.other = {
+      lines: [
+        {
+          id: "b",
+          actions: {
+            conditional: {
+              branches: [
+                {
+                  when: true,
+                  actions: {
+                    jumpToLine: { sectionId: "main", lineId: "c" },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      ],
+    };
+    const guarded = createGuardedEngine(project);
+
+    expectCycleInOrder(
+      catchRoutingCycle(() => guarded.initialize()),
+      [
+        { sectionId: "main", lineId: "a" },
+        { sectionId: "other", lineId: "b" },
+        { sectionId: "main", lineId: "c" },
+      ],
+    );
+    guarded.engine.dispose();
+  });
+
+  it("names a line a conditional continues past on its way around a cycle", () => {
+    const guarded = createGuardedEngine(
+      createProject([
+        {
+          id: "check",
+          actions: {
+            conditional: { branches: [{ when: true, actions: {} }] },
+          },
+        },
+        { id: "back", actions: { jumpToLine: { lineId: "check" } } },
+      ]),
+    );
+
+    expectCycleInOrder(
+      catchRoutingCycle(() => guarded.initialize()),
+      [
+        { sectionId: "main", lineId: "check" },
+        { sectionId: "main", lineId: "back" },
+      ],
+    );
+    guarded.engine.dispose();
+  });
+
+  it("lists a line once when the story passes it twice in a turn", () => {
+    const setFlag = (value) => ({
+      id: `flag${value}`,
+      operations: [{ variableId: "flag", op: "set", value }],
+    });
+    const project = createIntegrationProject({
+      resources: {
+        variables: { flag: { type: "number", scope: "context", default: 0 } },
+      },
+      sections: {
+        main: {
+          lines: [
+            // Goes to "b" and "c" in turn.
+            {
+              id: "a",
+              actions: {
+                conditional: {
+                  branches: [
+                    {
+                      when: { eq: [{ var: "variables.flag" }, 0] },
+                      actions: {
+                        updateVariable: setFlag(1),
+                        jumpToLine: { lineId: "b" },
+                      },
+                    },
+                    {
+                      actions: {
+                        updateVariable: setFlag(0),
+                        jumpToLine: { lineId: "c" },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+            { id: "b", actions: { jumpToLine: { lineId: "a" } } },
+            { id: "c", actions: { jumpToLine: { lineId: "a" } } },
+          ],
+        },
+      },
+    });
+    const guarded = createGuardedEngine(project);
+
+    const error = catchRoutingCycle(() => guarded.initialize());
+
+    expect(error.cycle).toHaveLength(3);
+    expect(error.cycle[0]).toEqual(error.pointer);
+    expect(error.cycle).toEqual(
+      expect.arrayContaining([
+        { sectionId: "main", lineId: "a" },
+        { sectionId: "main", lineId: "b" },
+        { sectionId: "main", lineId: "c" },
+      ]),
+    );
+    guarded.engine.dispose();
+  });
+
+  it("names the lines of a cycle that crosses scenes", () => {
+    const project = createProject([
+      { id: "first", actions: { sectionTransition: { sectionId: "far" } } },
+    ]);
+    project.story.scenes.elsewhere = {
+      initialSectionId: "far",
+      sections: {
+        far: {
+          lines: [
+            {
+              id: "second",
+              actions: { sectionTransition: { sectionId: "main" } },
+            },
+          ],
+        },
+      },
+    };
+    const guarded = createGuardedEngine(project);
+
+    expectCycleInOrder(
+      catchRoutingCycle(() => guarded.initialize()),
+      [
+        { sectionId: "main", lineId: "first" },
+        { sectionId: "far", lineId: "second" },
+      ],
+    );
+    guarded.engine.dispose();
+  });
+
+  it("names the lines of a cycle the player starts from a waiting line", () => {
+    const guarded = createGuardedEngine(
+      createProject([
+        { id: "start", actions: {} },
+        { id: "a", actions: { jumpToLine: { lineId: "b" } } },
+        { id: "b", actions: { jumpToLine: { lineId: "a" } } },
+      ]),
+    );
+    guarded.initialize();
+
+    expectCycleInOrder(
+      catchRoutingCycle(() =>
+        guarded.engine.handleAction("jumpToLine", { lineId: "a" }),
+      ),
+      [
+        { sectionId: "main", lineId: "a" },
+        { sectionId: "main", lineId: "b" },
+      ],
+    );
+    guarded.engine.dispose();
+  });
+
+  it("names only the lines of the latest cycle after recovering from another", () => {
+    const project = createProject([
+      { id: "start", actions: {} },
+      { id: "a", actions: { jumpToLine: { lineId: "b" } } },
+      { id: "b", actions: { jumpToLine: { lineId: "a" } } },
+      { id: "c", actions: { jumpToLine: { lineId: "c" } } },
+    ]);
+    const guarded = createGuardedEngine(project);
+    guarded.initialize();
+    catchRoutingCycle(() =>
+      guarded.engine.handleAction("jumpToLine", { lineId: "a" }),
+    );
+    guarded.resetWatchdog();
+    guarded.engine.handleAction("sectionTransition", {
+      sectionId: "safe",
+      resetStory: true,
+    });
+    guarded.resetWatchdog();
+
+    const error = catchRoutingCycle(() =>
+      guarded.engine.handleAction("jumpToLine", {
+        sectionId: "main",
+        lineId: "c",
+      }),
+    );
+
+    expect(error.cycle).toEqual([{ sectionId: "main", lineId: "c" }]);
+    guarded.engine.dispose();
+  });
+
+  it("names no cycle when a chain of lines outruns the budget without repeating", () => {
+    const lines = Array.from({ length: 1200 }, (_, index) => ({
+      id: String(index),
+      actions:
+        index < 1199 ? { jumpToLine: { lineId: String(index + 1) } } : {},
+    }));
+    const guarded = createGuardedEngine(createProject(lines));
+
+    const error = catchRoutingCycle(() => guarded.initialize());
+
+    expect(error.code).toBe("routing_cycle");
+    expect(error.pointer.sectionId).toBe("main");
+    expect(error.cycle).toEqual([]);
+    guarded.engine.dispose();
+  });
+
+  it("gives a cycle the host can keep and change", () => {
+    const guarded = createGuardedEngine(
+      createProject([
+        { id: "loop", actions: { jumpToLine: { lineId: "loop" } } },
+      ]),
+    );
+    const error = catchRoutingCycle(() => guarded.initialize());
+
+    error.cycle[0].lineId = "changed";
+    error.cycle.push({ sectionId: "main", lineId: "extra" });
+
+    expect(error.pointer).toEqual({ sectionId: "main", lineId: "loop" });
+    expect(
+      guarded.engine.selectSystemState().contexts[0].pointers.read.lineId,
+    ).toBe("loop");
+    guarded.engine.dispose();
+  });
 
   it("permits long finite routing chains and starts a fresh budget after settling", () => {
     const lines = Array.from({ length: 100 }, (_, index) => ({
