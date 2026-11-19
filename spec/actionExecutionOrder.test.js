@@ -65,16 +65,22 @@ describe("canonical action execution order", () => {
     ).toEqual(orderActionEntries(actions));
   });
 
-  it("places random in the decision phase before conditional", () => {
+  it("places random in the decision phase, after the form actions and before conditional", () => {
     const orderedTypes = orderActionEntries({
       conditional: {},
       background: {},
       random: { distribution: { type: "weighted" } },
+      cancelForm: {},
+      markLineCompleted: {},
+      submitForm: {},
       updateVariable: {},
     }).map(([actionType]) => actionType);
 
     expect(orderedTypes).toEqual([
       "updateVariable",
+      "markLineCompleted",
+      "submitForm",
+      "cancelForm",
       "random",
       "conditional",
       "background",

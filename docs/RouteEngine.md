@@ -1129,7 +1129,9 @@ action runs, so they read the variables from before the roll. An arithmetic
 operation that follows a roll works on the rolled value.
 
 Unlike the `random` action, a random operation does not continue to the next
-line by itself.
+line by itself. A line that should roll and move on adds a `conditional` to
+the same actions, which continues once after the roll. One with a single
+empty default branch, `branches: [{ actions: {} }]`, does only that.
 
 A roll that a line makes into a context variable is recorded in the same
 `randomOutcomes` ledger as `random` action results, under the path of its

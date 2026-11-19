@@ -89,8 +89,30 @@ action-template behavior.
 Direct API and renderer payloads receive the same runtime checks. Invalid
 payloads fail before a random word is requested. A payload with the removed
 `integer` distribution or a `variableId` is invalid. A project that still
-holds one is not migrated: the engine refuses the action when its line runs,
-and names the `updateVariable` random operation as the replacement.
+holds the integer form is not migrated: the engine refuses the action when its
+line runs, and the error names the `updateVariable` random operation as the
+replacement.
+
+The replacement differs from the removed action in one way: the operation does
+not continue to the next line, and its line is an ordinary Back stop. A line
+or button that relied on the removed action continuing keeps that behavior
+with an empty default `conditional` beside the roll:
+
+```yaml
+actions:
+  updateVariable:
+    id: rollNumber
+    operations:
+      - variableId: randomNumber
+        op: random
+        distribution:
+          type: integer
+          min: 1
+          max: 100
+  conditional:
+    branches:
+      - actions: {}
+```
 
 ## Execution and Continuation
 
@@ -142,9 +164,10 @@ When omitted, the engine uses `crypto.getRandomValues` where available, with a
 `Math.random` compatibility fallback.
 
 Weighted selection combines two words into a 53-bit unit interval `[0, 1)`.
-The `updateVariable` random operation uses the same source: its weighted
-values are selected the same way, and its integers are mapped from one word
-with rejection sampling.
+The `updateVariable` random operation uses the same source. Its weighted
+values are selected the same way. Its integers are mapped from a 32-bit word
+with rejection sampling, so no value is favored: a range of one value draws no
+word, and a roll fails transactionally after `128` rejected words.
 
 ## Transactions
 
@@ -194,10 +217,13 @@ before 1.55.0 recorded for a `random` action.
 
 Replaying a line whose record was dropped runs the line without that random
 action. A save from before 1.55.0 that holds an integer result therefore loads
-with its variables as they were saved, but rolling back to the line of the
-roll replays it without the roll: the variable keeps the value it had before
-that line, and conditionals that read it decide again. The record is not moved
-to an `updateVariable` random operation that replaced the action.
+with its variables as they were saved. Rollback rebuilds the variables by
+replaying the recorded lines, so any rollback that replays the line of the
+roll, including one Back step from a later line, runs it without the roll:
+the variable has the value it had before that line, and later lines and
+conditionals that read it are replayed with that value. No new value is drawn.
+The record is not moved to an `updateVariable` random operation that replaced
+the action.
 
 Mutations made by the selected actions of an interaction-source random action
 are captured through the existing chronological rollback mutation mechanism.

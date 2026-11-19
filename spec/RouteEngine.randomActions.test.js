@@ -15,19 +15,6 @@ const createProjectData = ({ lineActions = {}, extraLines = [] } = {}) => ({
       score: { type: "number", scope: "context", default: 0 },
       bonus: { type: "number", scope: "context", default: 2 },
       selected: { type: "string", scope: "context", default: "" },
-      result: { type: "object", scope: "context", default: {} },
-      readonlyScore: {
-        type: "number",
-        scope: "context",
-        default: 0,
-        readonly: true,
-      },
-      computedScore: {
-        type: "number",
-        scope: "context",
-        computed: { expr: 1 },
-      },
-      deviceScore: { type: "number", scope: "device", default: 0 },
     },
     transforms: {},
     sectionTransitions: {},
@@ -112,6 +99,19 @@ const scoreOutcomes = (first, second) => ({
 });
 
 const MAX_WORD = 0xffff_ffff;
+
+const integerRoll = {
+  updateVariable: {
+    id: "roll",
+    operations: [
+      {
+        variableId: "score",
+        op: "random",
+        distribution: { type: "integer", min: 1, max: 10 },
+      },
+    ],
+  },
+};
 
 describe("RouteEngine random actions", () => {
   it("runs the selected outcome before conditional regardless of authored key order", () => {
@@ -318,6 +318,128 @@ describe("RouteEngine random actions", () => {
     expect(engine.selectSystemState().contexts[0].pointers.read.lineId).toBe(
       "line2",
     );
+  });
+
+  it("continues from an updateVariable roll only when a conditional sits beside it", () => {
+    // The roll alone stays on its line.
+    const rollOnly = createEngine(
+      createProjectData({
+        lineActions: integerRoll,
+        extraLines: [{ id: "line2", actions: {} }],
+      }),
+      createQueuedRandomSource(6),
+      { handleLineActions: true },
+    );
+    let state = rollOnly.selectSystemState();
+    expect(state.contexts[0].variables.score).toBe(7);
+    expect(state.contexts[0].pointers.read.lineId).toBe("line1");
+
+    // With an empty default branch beside it, the line continues once and is
+    // skipped by Back, as a line with the removed integer action was.
+    const randomSource = createQueuedRandomSource(6);
+    const engine = createEngine(
+      createProjectData({
+        lineActions: {
+          ...integerRoll,
+          conditional: { branches: [{ actions: {} }] },
+        },
+        extraLines: [{ id: "line2", actions: {} }],
+      }),
+      randomSource,
+      { handleLineActions: true },
+    );
+    state = engine.selectSystemState();
+    expect(state.contexts[0].variables.score).toBe(7);
+    expect(state.contexts[0].pointers.read.lineId).toBe("line2");
+    expect(state.contexts[0].rollback.timeline[0].returnable).toBe(false);
+    expect(selectCanRollback({ state })).toBe(false);
+    expect(randomSource.calls).toBe(1);
+  });
+
+  it("replays a random action nested in an outcome or a branch from its own record", () => {
+    const nestedCases = [
+      {
+        path: "random.distribution.outcomes.1.actions.random",
+        words: [MAX_WORD, MAX_WORD, MAX_WORD, MAX_WORD],
+        lineActions: {
+          random: {
+            distribution: {
+              type: "weighted",
+              outcomes: [
+                {
+                  weight: 1,
+                  actions: setVariable("common", "selected", "common"),
+                },
+                {
+                  weight: 1,
+                  actions: {
+                    ...setVariable("rare", "selected", "rare"),
+                    random: scoreOutcomes(7, 3),
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+      {
+        path: "conditional.branches.0.actions.random",
+        words: [MAX_WORD, MAX_WORD],
+        lineActions: {
+          conditional: {
+            branches: [
+              {
+                actions: {
+                  ...setVariable("rare", "selected", "rare"),
+                  random: scoreOutcomes(7, 3),
+                },
+              },
+            ],
+          },
+        },
+      },
+    ];
+
+    nestedCases.forEach(({ path, words, lineActions }) => {
+      const randomSource = createQueuedRandomSource(...words);
+      const engine = createEngine(
+        createProjectData({
+          lineActions,
+          extraLines: [
+            { id: "line2", actions: {} },
+            { id: "line3", actions: {} },
+          ],
+        }),
+        randomSource,
+        { handleLineActions: true },
+      );
+
+      let state = engine.selectSystemState();
+      expect(state.contexts[0].variables.score).toBe(3);
+      expect(state.contexts[0].rollback.timeline[0].randomOutcomes).toEqual(
+        expect.arrayContaining([
+          {
+            path,
+            ordinal: 0,
+            type: "weighted",
+            result: { type: "weighted", outcomeIndex: 1 },
+          },
+        ]),
+      );
+
+      engine.handleActions(setVariable("clearScore", "score", 0));
+      engine.handleActions(setVariable("clearSelected", "selected", ""));
+      engine.handleAction("rollbackToLine", {
+        sectionId: "section1",
+        lineId: "line1",
+      });
+
+      state = engine.selectSystemState();
+      // The second outcome is replayed, not the first and not a new draw.
+      expect(state.contexts[0].variables.selected).toBe("rare");
+      expect(state.contexts[0].variables.score).toBe(3);
+      expect(randomSource.calls).toBe(words.length);
+    });
   });
 
   it("records and replays the selected weighted branch without rerolling", () => {
@@ -784,24 +906,29 @@ describe("RouteEngine random actions", () => {
 
   it("drops an integer result that an older engine recorded and replays the line without it", () => {
     // Projects from before the removal: one still has the integer action, one
-    // was changed to the weighted form.
+    // was changed to the weighted form and one to an updateVariable roll.
     const legacyActions = {
       random: {
         distribution: { type: "integer", min: 1, max: 10 },
         variableId: "score",
       },
     };
-    const lineActionCases = [legacyActions, { random: scoreOutcomes(7, 3) }];
-
-    lineActionCases.forEach((lineActions) => {
+    const lineActionCases = [
+      legacyActions,
+      { random: scoreOutcomes(7, 3) },
+      integerRoll,
+    ];
+    const extraLines = [
+      { id: "line2", actions: {} },
+      { id: "line3", actions: {} },
+    ];
+    const savedProjectData = createProjectData({
+      lineActions: { random: scoreOutcomes(7, 3) },
+      extraLines,
+    });
+    const createOldSaveSlots = () => {
       const original = createEngine(
-        createProjectData({
-          lineActions: { random: scoreOutcomes(7, 3) },
-          extraLines: [
-            { id: "line2", actions: {} },
-            { id: "line3", actions: {} },
-          ],
-        }),
+        savedProjectData,
         createQueuedRandomSource(0, 0),
         { handleLineActions: true },
       );
@@ -817,34 +944,56 @@ describe("RouteEngine random actions", () => {
           result: { type: "integer", value: 7 },
         },
       ];
+      return saveSlots;
+    };
+    const selectSavedOutcomes = (engine) =>
+      engine.selectSystemState().global.saveSlots["1"].state.contexts[0]
+        .rollback.timeline[0].randomOutcomes;
 
+    lineActionCases.forEach((lineActions) => {
+      const projectData = createProjectData({ lineActions, extraLines });
+
+      // Loading the save.
       const randomSource = createQueuedRandomSource();
-      const engine = createEngine(
-        createProjectData({
-          lineActions,
-          extraLines: [
-            { id: "line2", actions: {} },
-            { id: "line3", actions: {} },
-          ],
-        }),
-        randomSource,
-        { global: { saveSlots } },
-      );
-
+      const engine = createEngine(projectData, randomSource, {
+        global: { saveSlots: createOldSaveSlots() },
+      });
       engine.handleAction("loadSlot", { slotId: 1 });
       let state = engine.selectSystemState();
       // The saved variables are restored as they were.
+      expect(state.contexts[0].pointers.read.lineId).toBe("line2");
       expect(state.contexts[0].variables.score).toBe(7);
       expect(state.contexts[0].rollback.timeline[0].randomOutcomes).toEqual([]);
+
+      // Going back one line from a later line replays the roll's line too.
+      engine.handleAction("markLineCompleted", {});
+      engine.handleAction("nextLine", {});
+      expect(engine.selectSystemState().contexts[0].pointers.read.lineId).toBe(
+        "line3",
+      );
+      engine.handleAction("rollbackByOffset", {});
+      state = engine.selectSystemState();
+      expect(state.contexts[0].pointers.read.lineId).toBe("line2");
+      // The replay has no roll to apply, and never draws a new one.
+      expect(state.contexts[0].variables.score).toBe(0);
 
       engine.handleAction("rollbackToLine", {
         sectionId: "section1",
         lineId: "line1",
       });
       state = engine.selectSystemState();
-      // Replaying the line has no roll to apply, and never draws a new one.
       expect(state.contexts[0].variables.score).toBe(0);
       expect(randomSource.calls).toBe(0);
+
+      // Updating the project of a session that holds the save.
+      const updatedEngine = createEngine(
+        savedProjectData,
+        createQueuedRandomSource(),
+        { global: { saveSlots: createOldSaveSlots() } },
+      );
+      expect(selectSavedOutcomes(updatedEngine)).toHaveLength(1);
+      updatedEngine.handleAction("updateProjectData", { projectData });
+      expect(selectSavedOutcomes(updatedEngine)).toEqual([]);
     });
   });
 });

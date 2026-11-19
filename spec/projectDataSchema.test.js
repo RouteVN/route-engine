@@ -2860,6 +2860,30 @@ describe("projectData schema", () => {
       {
         variableId: "dice",
         op: "random",
+        distribution: { type: "integer", min: 1 },
+      },
+      {
+        variableId: "dice",
+        op: "random",
+        distribution: {
+          type: "integer",
+          min: 0,
+          max: Number.MAX_SAFE_INTEGER + 1,
+        },
+      },
+      {
+        variableId: "dice",
+        op: "random",
+        distribution: { type: "integer", min: 1, max: 6, sides: 6 },
+      },
+      {
+        variableId: "dice",
+        op: "random",
+        distribution: { type: "integer", min: 1, max: 6, shape: "uniform" },
+      },
+      {
+        variableId: "dice",
+        op: "random",
         distribution: { type: "weighted", values: [] },
       },
       {
@@ -2900,44 +2924,15 @@ describe("projectData schema", () => {
   });
 
   it("rejects malformed random distribution shapes", () => {
-    expect(
-      validateSystemActions({
-        random: {
-          distribution: { type: "integer", min: 1 },
-          variableId: "lastRoll",
-        },
-      }),
-    ).toBe(false);
+    expect(validateSystemActions({ random: {} })).toBe(false);
+    // Only the distribution type is wrong.
     expect(
       validateSystemActions({
         random: {
           distribution: {
             type: "integer",
-            min: 0,
-            max: Number.MAX_SAFE_INTEGER + 1,
+            outcomes: [{ weight: 1, actions: {} }],
           },
-          variableId: "lastRoll",
-        },
-      }),
-    ).toBe(false);
-    expect(
-      validateSystemActions({
-        random: {
-          distribution: { type: "integer", min: 1, max: 6, sides: 6 },
-          variableId: "lastRoll",
-        },
-      }),
-    ).toBe(false);
-    expect(
-      validateSystemActions({
-        random: {
-          distribution: {
-            type: "integer",
-            min: 1,
-            max: 6,
-            shape: "uniform",
-          },
-          variableId: "lastRoll",
         },
       }),
     ).toBe(false);
@@ -2961,18 +2956,6 @@ describe("projectData schema", () => {
             type: "weighted",
             outcomes: [{ weight: 1 }],
           },
-        },
-      }),
-    ).toBe(false);
-    expect(
-      validateSystemActions({
-        random: {
-          distribution: {
-            type: "integer",
-            min: "${variables.minimum}",
-            max: 20,
-          },
-          variableId: "lastRoll",
         },
       }),
     ).toBe(false);
