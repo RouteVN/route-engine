@@ -596,4 +596,47 @@ describe("RouteEngine forms", () => {
     expect(systemState.global.variables.playerEmail).toBe("ada@example.com");
     expect(systemState.global.formDrafts).toEqual({});
   });
+
+  it("runs a roll in the submit actions after the fields are stored", () => {
+    const engine = createEngine({
+      projectData: createProjectData({
+        submitActions: {
+          updateVariable: {
+            id: "rollName",
+            operations: [
+              {
+                variableId: "playerName",
+                op: "random",
+                distribution: {
+                  type: "weighted",
+                  values: [
+                    { weight: 0, value: "Never" },
+                    { weight: 1, value: "Rolled" },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      }),
+    });
+    const findFormElement = (id) =>
+      findElement(engine.selectRenderState().elements, formElementId(id));
+
+    engine.handleActions(findFormElement("name-input").change.payload.actions, {
+      _event: { value: "Ada" },
+    });
+    engine.handleActions(
+      findFormElement("email-input").change.payload.actions,
+      { _event: { value: "ada@example.com" } },
+    );
+    engine.handleActions(
+      findFormElement("submit-button").click.payload.actions,
+    );
+
+    const systemState = engine.selectSystemState();
+    expect(systemState.global.formDrafts).toEqual({});
+    expect(systemState.global.variables.playerEmail).toBe("ada@example.com");
+    expect(systemState.contexts[0].variables.playerName).toBe("Rolled");
+  });
 });

@@ -2808,6 +2808,98 @@ describe("projectData schema", () => {
     expect(validateSystemActions.errors).toBeNull();
   });
 
+  it("accepts updateVariable random operations", () => {
+    expect(
+      validateSystemActions({
+        updateVariable: {
+          id: "roll",
+          operations: [
+            {
+              variableId: "dice",
+              op: "random",
+              distribution: { type: "integer", min: 1, max: 6 },
+            },
+            { variableId: "dice", op: "increment", value: 2 },
+            {
+              variableId: "weather",
+              op: "random",
+              distribution: {
+                type: "weighted",
+                values: [
+                  { weight: 60, value: "sunny" },
+                  { weight: 0, value: 3 },
+                  { weight: 40, value: true },
+                ],
+              },
+            },
+          ],
+        },
+      }),
+    ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
+  });
+
+  it("rejects malformed updateVariable random operations", () => {
+    const integer = { type: "integer", min: 1, max: 6 };
+    const operations = [
+      { variableId: "dice", op: "random" },
+      { variableId: "dice", op: "random", distribution: integer, value: 1 },
+      { variableId: "dice", op: "random", distribution: integer, roundTo: 2 },
+      { variableId: "", op: "random", distribution: integer },
+      { op: "random", distribution: integer },
+      { variableId: "dice", op: "set", value: 1, distribution: integer },
+      {
+        variableId: "dice",
+        op: "random",
+        distribution: { type: "integer", min: "${variables.low}", max: 6 },
+      },
+      {
+        variableId: "dice",
+        op: "random",
+        distribution: { type: "integer", min: 1.5, max: 6 },
+      },
+      {
+        variableId: "dice",
+        op: "random",
+        distribution: { type: "weighted", values: [] },
+      },
+      {
+        variableId: "dice",
+        op: "random",
+        distribution: { type: "weighted", values: [{ weight: 0, value: 1 }] },
+      },
+      {
+        variableId: "dice",
+        op: "random",
+        distribution: { type: "weighted", values: [{ weight: 1 }] },
+      },
+      {
+        variableId: "dice",
+        op: "random",
+        distribution: {
+          type: "weighted",
+          values: [{ weight: 1, value: { nested: true } }],
+        },
+      },
+      {
+        variableId: "dice",
+        op: "random",
+        distribution: {
+          type: "weighted",
+          outcomes: [{ weight: 1, actions: {} }],
+        },
+      },
+    ];
+
+    operations.forEach((operation) => {
+      expect(
+        validateSystemActions({
+          updateVariable: { id: "roll", operations: [operation] },
+        }),
+      ).toBe(false);
+    });
+  });
+
   it("rejects malformed random distribution shapes", () => {
     expect(
       validateSystemActions({

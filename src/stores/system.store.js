@@ -57,6 +57,7 @@ const DEFAULT_NEXT_LINE_CONFIG = {
 const CURRENT_SAVE_FORMAT_VERSION = 1;
 const DEFAULT_SAVE_SLOT_PAGE_SIZE = 6;
 const RANDOM_OUTCOME_VERSION = 1;
+const RANDOM_VARIABLE_OPERATION = "random";
 const CHOICE_INTERACTION_SOURCE = "choice";
 const FORM_INTERACTION_SOURCE = "form";
 
@@ -592,7 +593,7 @@ const sanitizePersistedRollbackExecutedActions = (
     : undefined;
 };
 
-const selectCanonicalRandomAction = (projectData, checkpoint, path) => {
+const selectCanonicalLineActionValue = (projectData, checkpoint, path) => {
   const { section } = findSectionInProjectData(
     projectData,
     checkpoint?.sectionId,
@@ -620,8 +621,37 @@ const selectCanonicalRandomAction = (projectData, checkpoint, path) => {
     }
     currentValue = currentValue[segment];
   }
-  return segments.at(-1) === "random" && isRecord(currentValue?.distribution)
-    ? currentValue
+  return { segments, value: currentValue };
+};
+
+const selectCanonicalRandomAction = (projectData, checkpoint, path) => {
+  const canonical = selectCanonicalLineActionValue(
+    projectData,
+    checkpoint,
+    path,
+  );
+  return canonical?.segments.at(-1) === "random" &&
+    isRecord(canonical.value?.distribution)
+    ? canonical.value
+    : undefined;
+};
+
+// The path of a recorded updateVariable roll ends in
+// "updateVariable.operations.<index>".
+const selectCanonicalRandomVariableOperation = (
+  projectData,
+  checkpoint,
+  path,
+) => {
+  const canonical = selectCanonicalLineActionValue(
+    projectData,
+    checkpoint,
+    path,
+  );
+  return canonical?.segments.at(-2) === "operations" &&
+    canonical.segments.at(-3) === "updateVariable" &&
+    canonical.value?.op === RANDOM_VARIABLE_OPERATION
+    ? canonical.value
     : undefined;
 };
 
@@ -641,8 +671,54 @@ const isSupportedIntegerRandomDistribution = (distribution) => {
   );
 };
 
+// The value a recorded roll gives its updateVariable random operation, wrapped
+// so that a matching falsy value is told apart from a roll that no longer
+// matches the operation or its variable.
+const selectRecordedRandomVariableValue = (operation, result, variables) => {
+  const { variableId, distribution } = operation ?? {};
+  const variableConfig = getOwnProperty(variables, variableId);
+  if (
+    !isRecord(distribution) ||
+    distribution.type !== result.type ||
+    !variableConfig ||
+    variableConfig.scope !== "context" ||
+    variableConfig.readonly === true ||
+    isComputedVariableConfig(variableConfig)
+  ) {
+    return undefined;
+  }
+  if (result.type === "integer") {
+    return variableConfig.type === "number" &&
+      isSupportedIntegerRandomDistribution(distribution) &&
+      result.value >= distribution.min &&
+      result.value <= distribution.max
+      ? { value: result.value }
+      : undefined;
+  }
+  const entry = distribution.values?.[result.outcomeIndex];
+  return isRecord(entry) &&
+    typeof entry.value !== "object" &&
+    isVariableValueCompatible(variableConfig, entry.value)
+    ? { value: entry.value }
+    : undefined;
+};
+
 const reconcilePersistedRandomOutcomes = (outcomes, checkpoint, projectData) =>
   outcomes.filter(({ path, type, result }) => {
+    const canonicalOperation = selectCanonicalRandomVariableOperation(
+      projectData,
+      checkpoint,
+      path,
+    );
+    if (canonicalOperation) {
+      return (
+        selectRecordedRandomVariableValue(
+          canonicalOperation,
+          result,
+          projectData?.resources?.variables,
+        ) !== undefined
+      );
+    }
     const canonicalAction = selectCanonicalRandomAction(
       projectData,
       checkpoint,
@@ -7046,6 +7122,66 @@ const replayRollbackRandomAction = (
   ]);
 };
 
+// Replays a line's updateVariable action. A random operation sets the value
+// that was recorded when the line ran. One with no recorded roll changes
+// nothing: it was not reached, or it wrote a variable that rollback does not
+// restore.
+const replayRollbackUpdateVariableAction = (
+  state,
+  payload,
+  replayContext,
+  actionPath = [],
+) => {
+  const operations = payload?.operations;
+  if (
+    !Array.isArray(operations) ||
+    !operations.some((operation) => operation?.op === RANDOM_VARIABLE_OPERATION)
+  ) {
+    applyRollbackCheckpointUpdateVariable(state, payload);
+    return;
+  }
+
+  const checkpoint = replayContext?.checkpoint;
+  const hasOutcomes =
+    checkpoint?.randomOutcomeVersion === RANDOM_OUTCOME_VERSION;
+  const resolvedOperations = operations.flatMap((operation, index) => {
+    if (operation?.op !== RANDOM_VARIABLE_OPERATION) {
+      return [operation];
+    }
+    if (!hasOutcomes) {
+      return [];
+    }
+    const path = [...actionPath, "operations", String(index)].join(".");
+    const randomOutcomeOrdinals = replayContext.randomOutcomeOrdinals;
+    const ordinal = randomOutcomeOrdinals.get(path) ?? 0;
+    randomOutcomeOrdinals.set(path, ordinal + 1);
+    const outcome = checkpoint.randomOutcomes?.find(
+      (candidate) => candidate.path === path && candidate.ordinal === ordinal,
+    );
+    if (!outcome) {
+      return [];
+    }
+    const recorded = selectRecordedRandomVariableValue(
+      operation,
+      validateRandomResult(cloneStateValue(outcome.result), outcome.type),
+      state.projectData.resources?.variables,
+    );
+    if (!recorded) {
+      throw new Error(
+        `recorded random outcome does not match canonical action at ${path}`,
+      );
+    }
+    return [
+      { variableId: operation.variableId, op: "set", value: recorded.value },
+    ];
+  });
+
+  applyRollbackCheckpointUpdateVariable(state, {
+    ...payload,
+    operations: resolvedOperations,
+  });
+};
+
 const ROLLBACK_ACTION_DEFINITIONS = {
   conditional: {
     replayLine: replayRollbackConditionalAction,
@@ -7055,7 +7191,7 @@ const ROLLBACK_ACTION_DEFINITIONS = {
   },
   updateVariable: {
     recordSources: [ROLLBACK_ACTION_SOURCE_INTERACTION],
-    replayLine: applyRollbackCheckpointUpdateVariable,
+    replayLine: replayRollbackUpdateVariableAction,
     replayRecorded: applyRollbackCheckpointUpdateVariable,
     persistInSaveSlot: true,
   },
@@ -7133,7 +7269,7 @@ const replayRollbackLineAction = (
     { [actionType]: payload },
     { ...buildRollbackConditionContext(state), ...bindings },
   )[actionType];
-  definition.replayLine(state, processedPayload);
+  definition.replayLine(state, processedPayload, replayContext, actionPath);
 };
 
 const replayRollbackActionEntries = (

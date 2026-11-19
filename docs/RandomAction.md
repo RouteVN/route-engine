@@ -22,6 +22,11 @@ its actions.
 The action does not display a result, wait for input, or animate. A choice,
 layout button, or other renderer event may dispatch it.
 
+A random value can also be drawn by an `updateVariable` operation with
+`op: random`, which runs in list order with the action's other operations and
+does not continue to the next line. See "Random Variable Operations" in
+[RouteEngine.md](./RouteEngine.md).
+
 ## Authored Interface
 
 ### Uniform integer

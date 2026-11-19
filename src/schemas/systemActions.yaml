@@ -124,6 +124,39 @@ definitions:
     required: [type, outcomes]
     additionalProperties: false
 
+  randomWeightedValue:
+    type: object
+    properties:
+      weight:
+        type: number
+        minimum: 0
+      value:
+        description: Value stored in the variable when this entry is selected
+        type: [string, number, boolean]
+    required: [weight, value]
+    additionalProperties: false
+
+  randomWeightedValuesDistribution:
+    type: object
+    properties:
+      type:
+        const: weighted
+      values:
+        type: array
+        minItems: 1
+        maxItems: 1000
+        items:
+          $ref: "#/definitions/randomWeightedValue"
+        contains:
+          type: object
+          properties:
+            weight:
+              type: number
+              exclusiveMinimum: 0
+          required: [weight]
+    required: [type, values]
+    additionalProperties: false
+
 properties:
   conditional:
     type: object
@@ -544,30 +577,47 @@ properties:
         type: array
         description: Variable operations to perform
         items:
-          type: object
-          properties:
-            variableId:
-              type: string
-              description: ID of the variable to update
-            op:
-              type: string
-              description: Operation to perform on the variable
-              enum: [set, increment, decrement, multiply, divide, toggle]
-            value:
-              description: Value to use in the operation
-              oneOf:
-                - type: string
-                - type: number
-                - type: boolean
-                - type: object
-            roundTo:
-              type: integer
-              minimum: 0
-              maximum: 12
-              default: 2
-              description: Decimal places for divide results
-          required: [variableId, op]
-          additionalProperties: false
+          oneOf:
+            - type: object
+              properties:
+                variableId:
+                  type: string
+                  description: ID of the variable to update
+                op:
+                  type: string
+                  description: Operation to perform on the variable
+                  enum: [set, increment, decrement, multiply, divide, toggle]
+                value:
+                  description: Value to use in the operation
+                  oneOf:
+                    - type: string
+                    - type: number
+                    - type: boolean
+                    - type: object
+                roundTo:
+                  type: integer
+                  minimum: 0
+                  maximum: 12
+                  default: 2
+                  description: Decimal places for divide results
+              required: [variableId, op]
+              additionalProperties: false
+            - type: object
+              description: Set the variable to a randomly drawn value. The fields are fixed values and do not resolve templates
+              properties:
+                variableId:
+                  type: string
+                  minLength: 1
+                  description: ID of the variable to update
+                op:
+                  const: random
+                distribution:
+                  description: An inclusive uniform integer for a number variable, or one of several weighted values
+                  oneOf:
+                    - $ref: "#/definitions/randomIntegerDistribution"
+                    - $ref: "#/definitions/randomWeightedValuesDistribution"
+              required: [variableId, op, distribution]
+              additionalProperties: false
         minItems: 1
     required: [id, operations]
     additionalProperties: false
