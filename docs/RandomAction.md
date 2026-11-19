@@ -4,7 +4,7 @@
 
 This document defines the authored and runtime contract for the `random` system
 action. The action was introduced in Route Engine 1.38.0 with an `integer`
-and a `weighted` distribution. Route Engine 1.54.0 removed the `integer`
+and a `weighted` distribution. Route Engine 1.55.0 removed the `integer`
 distribution: a random value is drawn into a variable by an `updateVariable`
 operation with `op: random`, described under "Random Variable Operations" in
 [RouteEngine.md](./RouteEngine.md).
@@ -190,10 +190,10 @@ Malformed or duplicate records never trigger a fallback draw. During
 `updateProjectData` and save loading, records whose canonical path,
 distribution type, or branch index no longer matches are dropped as orphaned
 history rather than rebound. This includes an integer result that an engine
-before 1.54.0 recorded for a `random` action.
+before 1.55.0 recorded for a `random` action.
 
 Replaying a line whose record was dropped runs the line without that random
-action. A save from before 1.54.0 that holds an integer result therefore loads
+action. A save from before 1.55.0 that holds an integer result therefore loads
 with its variables as they were saved, but rolling back to the line of the
 roll replays it without the roll: the variable keeps the value it had before
 that line, and conditionals that read it decide again. The record is not moved
