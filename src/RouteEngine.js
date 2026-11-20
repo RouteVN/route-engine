@@ -1862,38 +1862,19 @@ export default function createRouteEngine(options) {
     if (!isRecord(payload)) {
       throw new Error("random action payload must be an object");
     }
+    if (payload.distribution?.type === "integer") {
+      throw new Error(
+        'the integer random action was removed: use an updateVariable operation with op "random"',
+      );
+    }
     const unexpectedKey = Object.keys(payload).find(
-      (key) => key !== "distribution" && key !== "variableId",
+      (key) => key !== "distribution",
     );
     if (unexpectedKey !== undefined) {
       throw new Error(`random action.${unexpectedKey} is not supported`);
     }
     if (!isRecord(payload.distribution)) {
       throw new Error("random action requires distribution object");
-    }
-    if (payload.distribution.type === "weighted") {
-      if (Object.prototype.hasOwnProperty.call(payload, "variableId")) {
-        throw new Error("weighted random action does not support variableId");
-      }
-    } else if (payload.distribution.type === "integer") {
-      if (typeof payload.variableId !== "string" || !payload.variableId) {
-        throw new Error("integer random action requires variableId");
-      }
-      const variableConfig = getOwnProperty(
-        _canonicalProjectData?.resources?.variables,
-        payload.variableId,
-      );
-      if (
-        !variableConfig ||
-        variableConfig.type !== "number" ||
-        variableConfig.scope !== "context" ||
-        variableConfig.readonly === true ||
-        isComputedVariableConfig(variableConfig)
-      ) {
-        throw new Error(
-          `integer random action variableId must reference a writable context number variable: ${payload.variableId}`,
-        );
-      }
     }
   };
 
@@ -1922,30 +1903,20 @@ export default function createRouteEngine(options) {
       refreshActiveRollbackCursor();
     }
 
-    let nestedResult;
-    if (result.type === "integer") {
-      dispatchStoreAction("updateVariable", {
-        id: "randomResult",
-        operations: [
-          { variableId: payload.variableId, op: "set", value: result.value },
+    const nestedResult = processActionEntries(
+      payload.distribution.outcomes[result.outcomeIndex].actions,
+      eventContext,
+      {
+        ...options,
+        actionPath: [
+          ...(options.actionPath ?? [RANDOM_ACTION_TYPE]),
+          "distribution",
+          "outcomes",
+          String(result.outcomeIndex),
+          "actions",
         ],
-      });
-    } else {
-      nestedResult = processActionEntries(
-        payload.distribution.outcomes[result.outcomeIndex].actions,
-        eventContext,
-        {
-          ...options,
-          actionPath: [
-            ...(options.actionPath ?? [RANDOM_ACTION_TYPE]),
-            "distribution",
-            "outcomes",
-            String(result.outcomeIndex),
-            "actions",
-          ],
-        },
-      );
-    }
+      },
+    );
     const autoContinue = createConditionalAutoContinue(options);
     return isConditionalAutoContinue(nestedResult)
       ? mergeConditionalAutoContinue(autoContinue, nestedResult)

@@ -724,31 +724,15 @@ const reconcilePersistedRandomOutcomes = (outcomes, checkpoint, projectData) =>
       checkpoint,
       path,
     );
-    if (canonicalAction?.distribution?.type !== type) {
-      return false;
-    }
-    if (type === "weighted") {
-      return isRecord(
+    // A random action has only weighted outcomes. An integer result recorded
+    // for one by an older engine no longer matches and is dropped.
+    return (
+      type === "weighted" &&
+      canonicalAction?.distribution?.type === "weighted" &&
+      isRecord(
         canonicalAction.distribution.outcomes?.[result.outcomeIndex]?.actions,
-      );
-    }
-    if (type === "integer") {
-      const variableConfig = getOwnProperty(
-        projectData?.resources?.variables,
-        canonicalAction.variableId,
-      );
-      return (
-        typeof canonicalAction.variableId === "string" &&
-        variableConfig?.type === "number" &&
-        variableConfig.scope === "context" &&
-        variableConfig.readonly !== true &&
-        !isComputedVariableConfig(variableConfig) &&
-        isSupportedIntegerRandomDistribution(canonicalAction.distribution) &&
-        result.value >= canonicalAction.distribution.min &&
-        result.value <= canonicalAction.distribution.max
-      );
-    }
-    return false;
+      )
+    );
   });
 
 const sanitizePersistedRandomOutcomes = (checkpoint, projectData) => {
@@ -7087,24 +7071,6 @@ const replayRollbackRandomAction = (
     cloneStateValue(outcome.result),
     outcome.type,
   );
-  if (result.type === "integer") {
-    if (
-      !isSupportedIntegerRandomDistribution(payload.distribution) ||
-      result.value < payload.distribution.min ||
-      result.value > payload.distribution.max
-    ) {
-      throw new Error(
-        `recorded random outcome does not match canonical action at ${path}`,
-      );
-    }
-    applyRollbackCheckpointUpdateVariable(state, {
-      id: "randomResult",
-      operations: [
-        { variableId: payload.variableId, op: "set", value: result.value },
-      ],
-    });
-    return;
-  }
 
   const nestedActions =
     payload.distribution.outcomes?.[result.outcomeIndex]?.actions;

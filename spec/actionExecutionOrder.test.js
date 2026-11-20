@@ -34,13 +34,10 @@ describe("canonical action execution order", () => {
     ]);
     const scheduledActionTypes = ACTION_EXECUTION_PHASES.flatMap(
       ({ actions }) => actions,
-    ).map((actionKey) => actionKey.split(":")[0]);
+    );
 
     expect(new Set(scheduledActionTypes)).toEqual(supportedActionTypes);
-    expect(
-      scheduledActionTypes.filter((actionType) => actionType === "random"),
-    ).toHaveLength(2);
-    expect(scheduledActionTypes).toHaveLength(supportedActionTypes.size + 1);
+    expect(scheduledActionTypes).toHaveLength(supportedActionTypes.size);
   });
 
   it("orders known actions by semantics instead of object insertion", () => {
@@ -48,7 +45,7 @@ describe("canonical action execution order", () => {
       nextLine: {},
       background: {},
       conditional: {},
-      random: { distribution: { type: "integer" } },
+      random: { distribution: { type: "weighted" } },
       updateVariable: {},
       cleanAll: {},
     };
@@ -68,16 +65,22 @@ describe("canonical action execution order", () => {
     ).toEqual(orderActionEntries(actions));
   });
 
-  it("places weighted random in the decision phase before conditional", () => {
+  it("places random in the decision phase, after the form actions and before conditional", () => {
     const orderedTypes = orderActionEntries({
       conditional: {},
       background: {},
       random: { distribution: { type: "weighted" } },
+      cancelForm: {},
+      markLineCompleted: {},
+      submitForm: {},
       updateVariable: {},
     }).map(([actionType]) => actionType);
 
     expect(orderedTypes).toEqual([
       "updateVariable",
+      "markLineCompleted",
+      "submitForm",
+      "cancelForm",
       "random",
       "conditional",
       "background",

@@ -3,76 +3,25 @@
 ## Status
 
 This document defines the authored and runtime contract for the `random` system
-action implemented in Route Engine 1.38.0.
+action. The action was introduced in Route Engine 1.38.0 with an `integer`
+and a `weighted` distribution. Route Engine 1.55.0 removed the `integer`
+distribution: a random value is drawn into a variable by an `updateVariable`
+operation with `op: random`, described under "Random Variable Operations" in
+[RouteEngine.md](./RouteEngine.md).
 
 ## Purpose
 
-`random` is a synchronous, non-presentational action with exactly two
-distribution types:
+`random` is a synchronous, non-presentational action that selects and executes
+one authored action branch by chance.
 
-- `integer` generates a uniformly distributed integer and stores it directly
-  in a declared variable.
-- `weighted` selects and executes one authored action branch.
-
-There is no temporary result binding and no shared `random.actions` batch.
-Integer results are read through their declared variable by later sibling
-actions. Weighted selection needs no result value because every outcome owns
-its actions.
+There is no result variable, no temporary result binding and no shared
+`random.actions` batch. Selection needs no result value because every outcome
+owns its actions.
 
 The action does not display a result, wait for input, or animate. A choice,
 layout button, or other renderer event may dispatch it.
 
-A random value can also be drawn by an `updateVariable` operation with
-`op: random`, which runs in list order with the action's other operations and
-does not continue to the next line. See "Random Variable Operations" in
-[RouteEngine.md](./RouteEngine.md).
-
 ## Authored Interface
-
-### Uniform integer
-
-```yaml
-actions:
-  random:
-    distribution:
-      type: integer
-      min: 1
-      max: 100
-    variableId: randomNumber
-
-  conditional:
-    branches:
-      - when:
-          gte:
-            - var: variables.randomNumber
-            - 75
-        actions:
-          jumpToLine:
-            lineId: highResult
-      - actions:
-          jumpToLine:
-            lineId: lowResult
-```
-
-`variableId` is required and must reference a declared, writable,
-context-scoped number variable. The generated integer is stored before the next
-sibling action executes.
-
-Integer configuration:
-
-- `min` and `max` are required safe integers.
-- Both bounds are inclusive.
-- `min` must be less than or equal to `max`.
-- The inclusive range may contain at most `4294967296` (`2^32`) integers.
-- Every integer in the range has equal probability.
-- A one-value range is valid and always stores that value.
-- There is no authored shape or mode field; uniform selection is the only
-  integer behavior.
-
-For example, `{ min: -2, max: 2 }` can produce `-2`, `-1`, `0`, `1`, or `2`,
-each with the same probability.
-
-### Weighted actions
 
 ```yaml
 actions:
@@ -103,10 +52,10 @@ actions:
   `1` or `100`.
 - Exactly one selected outcome's actions execute. Unselected actions are not
   templated or executed.
-- Weighted selection has no `variableId`, gameplay value, or top-level action
-  batch. Its selected array index exists only in internal rollback state.
+- The action has no `variableId`, gameplay value, or top-level action batch.
+  Its selected array index exists only in internal rollback state.
 
-A percentage-like route uses two weighted branches:
+A percentage-like route uses two outcomes:
 
 ```yaml
 distribution:
@@ -129,40 +78,58 @@ accepted as unreachable outcomes.
 
 ## Schema and Runtime Validation
 
-The Draft-07 action schema defines `random` as a closed `oneOf`:
-
-- Integer requires `distribution` and `variableId` and forbids other fields.
-- Weighted requires only `distribution`; each outcome recursively references
-  the normal system-action root through `actions`.
+The Draft-07 action schema defines `random` as a closed object that requires
+only `distribution`. The distribution is `weighted`, and each outcome
+recursively references the normal system-action root through `actions`.
 
 All distribution fields are fixed authored JSON/YAML values. They do not
-resolve variables or action templates. Integer bounds are schema-limited to the
-JavaScript safe-integer range. The runtime additionally validates bound order
-and inclusive range width, which Draft-07 cannot express by comparing sibling
-properties. Weighted outcome actions retain ordinary lazy action-template
-behavior.
+resolve variables or action templates. Outcome actions retain ordinary lazy
+action-template behavior.
 
 Direct API and renderer payloads receive the same runtime checks. Invalid
-payloads and invalid integer target variables fail before a random word is
-requested.
+payloads fail before a random word is requested. A payload with the removed
+`integer` distribution or a `variableId` is invalid. A project that still
+holds the integer form is not migrated: the engine refuses the action when its
+line runs, and the error names the `updateVariable` random operation as the
+replacement.
+
+The replacement differs from the removed action in one way: the operation does
+not continue to the next line, and its line is an ordinary Back stop. A line
+or button that relied on the removed action continuing keeps that behavior
+with an empty default `conditional` beside the roll:
+
+```yaml
+actions:
+  updateVariable:
+    id: rollNumber
+    operations:
+      - variableId: randomNumber
+        op: random
+        distribution:
+          type: integer
+          min: 1
+          max: 100
+  conditional:
+    branches:
+      - actions: {}
+```
 
 ## Execution and Continuation
 
 Execution is ordered and synchronous:
 
-1. Validate the payload and integer target variable, when present.
+1. Validate the payload.
 2. Validate and sample the distribution.
 3. For a line-source action, record the internal result on its exact rollback
    occurrence.
-4. Integer stores its value; weighted processes the selected outcome's actions.
+4. Process the selected outcome's actions.
 5. Request one conditional-style automatic continuation after the outer action
    batch settles.
 
-Integer `random` runs in the State phase and `conditional` runs in the Decision
-phase. Integer writes are therefore visible to a sibling conditional regardless
-of their YAML property order. Weighted `random` runs in the Decision phase
-immediately before `conditional`. Every selected outcome action object is a
-nested batch and uses the same canonical schedule.
+`random` runs in the Decision phase immediately before `conditional`. The
+selected outcome action object is a nested batch and uses the same canonical
+schedule. An `updateVariable` random operation runs in the State phase, so a
+sibling `random` or `conditional` sees the value it drew.
 
 Continuation follows the same rules as `conditional`:
 
@@ -179,7 +146,7 @@ source. Player-facing Back skips it rather than pausing on an empty random line.
 An interaction-triggered random action does not make its already-presented line
 transient.
 
-## Uniformity and Random Source
+## Random Source
 
 The engine construction option is:
 
@@ -196,17 +163,16 @@ deterministic implementation; story data cannot select a generator or seed.
 When omitted, the engine uses `crypto.getRandomValues` where available, with a
 `Math.random` compatibility fallback.
 
-Integer sampling maps an unsigned 32-bit word into the inclusive range using
-rejection sampling. It never uses a biased `word % rangeSize` result when the
-range size does not divide `2^32`. A sample may reject at most `128` words
-before failing transactionally. The full `2^32` cardinality is supported.
-
 Weighted selection combines two words into a 53-bit unit interval `[0, 1)`.
+The `updateVariable` random operation uses the same source. Its weighted
+values are selected the same way. Its integers are mapped from a 32-bit word
+with rejection sampling, so no value is favored: a range of one value draws no
+word, and a roll fails transactionally after `128` rejected words.
 
 ## Transactions
 
-Sampling, the integer variable write, selected weighted actions, and final
-state validation participate in the surrounding action-batch transaction.
+Sampling, the selected actions, and final state validation participate in the
+surrounding action-batch transaction.
 
 - Invalid input fails before drawing whenever validation can determine it.
 - If a later sibling or selected outcome action fails, no state mutation,
@@ -224,14 +190,15 @@ rollback occurrence. Each record contains:
 
 - an internal structural action path and execution ordinal
 - the distribution type
-- `{ type: "integer", value }` for integer results, or
-  `{ type: "weighted", outcomeIndex }` for weighted selections
+- `{ type: "weighted", outcomeIndex }` for a `random` action
+
+The ledger also holds the rolls of `updateVariable` random operations, which
+record `{ type: "integer", value }` or `{ type: "weighted", outcomeIndex }`
+under the path of their operation.
 
 Save data never supplies executable actions. Replay resolves the current
-canonical project action, validates the stored result, and then:
-
-- writes the recorded integer to the canonical `variableId`, or
-- executes the canonical weighted outcome actions at the recorded index.
+canonical project action, validates the stored result, and then executes the
+canonical outcome actions at the recorded index.
 
 Replay never consults `randomSource`. Nested random actions receive distinct
 structural paths. Multiple entries into the same line receive distinct replay
@@ -244,22 +211,31 @@ unsupported version is incompatible data and is rejected transactionally.
 
 Malformed or duplicate records never trigger a fallback draw. During
 `updateProjectData` and save loading, records whose canonical path,
-distribution type, weighted branch index, writable integer target, or integer
-range no longer matches are dropped as orphaned history rather than rebound.
+distribution type, or branch index no longer matches are dropped as orphaned
+history rather than rebound. This includes an integer result that an engine
+before 1.55.0 recorded for a `random` action.
 
-Interaction-source integer writes are captured through the existing
-chronological rollback mutation mechanism. Weighted descendant mutations
-follow the same policy. The internal random result itself is not persisted as
-an interaction event.
+Replaying a line whose record was dropped runs the line without that random
+action. A save from before 1.55.0 that holds an integer result therefore loads
+with its variables as they were saved. Rollback rebuilds the variables by
+replaying the recorded lines, so any rollback that replays the line of the
+roll, including one Back step from a later line, runs it without the roll:
+the variable has the value it had before that line, and later lines and
+conditionals that read it are replayed with that value. No new value is drawn.
+The record is not moved to an `updateVariable` random operation that replaced
+the action.
+
+Mutations made by the selected actions of an interaction-source random action
+are captured through the existing chronological rollback mutation mechanism.
+The internal random result itself is not persisted as an interaction event.
 
 ## Interaction and Presentation
 
 `random` renders nothing by itself. A visible result uses existing systems:
 
-1. A choice or button dispatches integer generation with a declared result
-   variable.
-2. A following conditional or later line reads that variable.
-3. Existing dialogue/layout actions present the value or selected route.
+1. A choice or button dispatches the action.
+2. The selected outcome's actions route the story or change variables.
+3. Existing dialogue/layout actions present the selected route.
 
 While a form is active, renderer events cannot dispatch arbitrary top-level
 random actions. Random may run inside authorized submit/cancel action trees.
@@ -268,21 +244,6 @@ random actions. Random may run inside authorized submit/cancel action trees.
 
 ```text
 Random
-  Distribution [ Uniform integer v ]
-  Minimum      [ 1 ]
-  Maximum      [ 100 ]
-  Result       [ randomNumber v ]
-```
-
-The Result selector lists writable context number variables. The editor can
-offer “Create variable” beside it, but serialization uses only `variableId`.
-
-Weighted switches to branch rows:
-
-```text
-Random
-  Distribution [ Weighted v ]
-
   Outcome 1    Weight [ 70 ]
                [ nested action builder ]
   Outcome 2    Weight [ 30 ]
@@ -291,21 +252,23 @@ Random
   [ Add outcome ]
 ```
 
-There is no weighted value field or shared “after generating” action batch.
+There is no value field, result variable or shared "after generating" action
+batch.
 
 ## Required Coverage
 
 The feature is covered at four levels:
 
-- sampler tests for inclusive and negative bounds, one-value and full-`2^32`
-  ranges, safe-integer offsets, rejection sampling, source validation, weighted
-  zeroes/totals/rescaling/resolution, and persisted result validation
-- schema tests accepting integer-variable and recursive weighted forms while
-  rejecting templates, unsafe bounds, removed fields, all-zero weights,
-  mismatched persisted types, and partial ledgers
-- system tests for direct variable writes, sibling ordering, invalid targets
-  before sampling, continuation, transactions, occurrence identity, save/load,
-  project range migration, weighted templates, and deterministic replay
+- sampler tests for weighted zeroes/totals/rescaling/resolution, source
+  validation, and persisted result validation
+- schema tests accepting recursive weighted forms while rejecting templates,
+  removed fields, the removed integer form, all-zero weights, mismatched
+  persisted types, and partial ledgers
+- system tests for ordering before `conditional`, invalid payloads before
+  sampling, the removed integer form, continuation, transactions, occurrence
+  identity, save/load, project updates, integer results recorded by an older
+  engine, weighted templates, and deterministic replay
 - a focused browser/VT choice path that injects deterministic randomness,
-  stores an integer, branches through the authored action pipeline, selects a
-  weighted outcome, and renders the destination
+  rolls an integer with an `updateVariable` random operation, branches through
+  the authored action pipeline, selects a weighted outcome, and renders the
+  destination
