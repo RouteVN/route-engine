@@ -1,0 +1,44 @@
+title: The music volume setting scales faded-in BGM
+description: >
+  With the player's music volume at 50, BGM faded in on a channel at 75 is
+  heard at 37.5, and raising the setting to 100 brings it to 75.
+durationMs: 2500
+runtime: { musicVolume: 50 }
+tones:
+  theme.wav: { frequency: 400, amplitude: 0.5 }
+projectData:
+  screen: { width: 64, height: 36 }
+  resources:
+    sounds:
+      theme: { fileId: theme.wav }
+    audioEffects:
+      fadeIn:
+        type: update
+        tween:
+          volume:
+            keyframes:
+              - { startValue: 0, value: 100, duration: 1000, easing: linear }
+  story:
+    initialSceneId: scene
+    scenes:
+      scene:
+        initialSectionId: section
+        sections:
+          section:
+            lines:
+              - id: music
+                actions:
+                  bgm:
+                    volume: 75
+                    audioEffects: { resourceId: fadeIn }
+                    sounds:
+                      - id: theme
+                        resourceId: theme
+                        beginEffect: { resourceId: fadeIn }
+steps:
+  - { at: 1800, actions: { setMusicVolume: { value: 100 } } }
+expect:
+  # Setting 50 x channel 75.
+  - { source: theme.wav, at: 1500, volume: 37.5 }
+  - { source: theme.wav, from: 0, to: 1800, maxVolume: 37.5 }
+  - { source: theme.wav, at: 2200, volume: 75 }

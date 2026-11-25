@@ -1,0 +1,54 @@
+title: A BGM crossfade settles on the new channel volume
+description: >
+  A transition that fades the outgoing track to 0 and the incoming one from 0
+  to 100 crossfades between two sources on a channel at volume 60.
+durationMs: 2500
+tones:
+  old.wav: { frequency: 400, amplitude: 0.5 }
+  new.wav: { frequency: 600, amplitude: 0.5 }
+projectData:
+  screen: { width: 64, height: 36 }
+  resources:
+    sounds:
+      old: { fileId: old.wav }
+      new: { fileId: new.wav }
+    audioEffects:
+      crossfade:
+        type: transition
+        prev:
+          volume:
+            keyframes:
+              - { value: 0, duration: 1000, easing: linear }
+        next:
+          volume:
+            initialValue: 0
+            keyframes:
+              - { value: 100, duration: 1000, easing: linear }
+  story:
+    initialSceneId: scene
+    scenes:
+      scene:
+        initialSectionId: section
+        sections:
+          section:
+            lines:
+              - id: old
+                actions:
+                  bgm: { volume: 60, sounds: [{ id: main, resourceId: old }] }
+              - id: new
+                actions:
+                  bgm:
+                    volume: 60
+                    audioEffects: { resourceId: crossfade }
+                    sounds: [{ id: main, resourceId: new }]
+steps:
+  - { at: 500, actions: { nextLine: {} }, lineId: new }
+expect:
+  - { source: old.wav, at: 200, volume: 60 }
+  - { source: new.wav, at: 200, volume: 0 }
+  # Halfway through the crossfade.
+  - { source: old.wav, at: 950, volume: 30 }
+  - { source: new.wav, at: 950, volume: 30 }
+  - { source: old.wav, at: 1800, volume: 0 }
+  - { source: new.wav, at: 1800, volume: 60, pan: 0 }
+  - { source: new.wav, from: 0, to: 2500, maxVolume: 60 }

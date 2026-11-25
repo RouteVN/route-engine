@@ -1,0 +1,79 @@
+# Audio Output Tests
+
+Audio output tests check what a player hears. Each spec plays a story through
+the real Route Engine, its effects handler, and the Route Graphics audio
+graph in headless Chromium. They run on Route Graphics' deterministic offline
+audio clock, so a run is exact and needs no speakers. The rendered PCM is
+then measured: the volume, pan, and playback rate of every sound at the
+times the spec names.
+
+Unit tests check the render state that Route Engine hands to Route Graphics.
+They cannot tell whether Route Graphics plays that state the way the engine
+assumes, or whether the result matches what the story authored. These tests
+close that gap.
+
+```sh
+bun run test:audio                       # every spec in avt/specs
+bun run test:audio bgm-duck-persists     # selected specs by file name
+```
+
+CI runs every spec on each pull request.
+
+## Writing a Spec
+
+A spec in `avt/specs/<name>.yaml` declares:
+
+- `durationMs`: how much audio to render.
+- `tones`: one sine tone per sound file ID, with a whole-hertz `frequency`
+  and an `amplitude`. Give sounds that play at once different frequencies,
+  at least 200 Hz apart, so each one is measured separately. A tone outlasts
+  the spec unless it sets `seconds`.
+- `projectData`: an ordinary project. Sound and voice resources point at the
+  tones by `fileId`.
+- `runtime`: optional runtime values. Music and sound volume default to 100,
+  so the authored mix is heard unscaled.
+- `steps`: engine actions to dispatch at `at` milliseconds, for example
+  `nextLine`. A `lineId` checks the line the step reached.
+- `expect`: what is heard.
+  - `{ source, at, window, volume, pan, rate }` measures one window, by
+    default 100 ms from `at`. `volume` is 0-100 of the source at full gain.
+    During a linear fade, the window measures its center.
+  - `{ source, from, to, maxVolume }` checks that the sound is never louder
+    than `maxVolume` anywhere in that range. This catches a sound that jumps
+    to full volume before it settles.
+  - `tolerance` overrides the defaults of 0.75 volume points, 0.02 pan, and
+    0.005 playback rate.
+
+Derive every expected value from the authored numbers, and say how in a
+comment, for example `# channel 75 x sound 40`. Never copy a value from a
+run. A spec whose expectations come from the output only records what the
+engine does, and a reference captured from a wrong mix keeps the bug.
+
+Show that a new spec catches the bug it covers. Run it against the code from
+before the fix, and check that it fails:
+
+```sh
+RE_AVT_ENGINE_ROOT=../route-engine-before bun run test:audio <name>
+```
+
+## Route Graphics Version
+
+The tests use the `route-graphics` bundle from `node_modules`. To check
+another version, such as the one an application ships with, point
+`RE_AVT_ROUTE_GRAPHICS` at its `dist/RouteGraphics.js`:
+
+```sh
+RE_AVT_ROUTE_GRAPHICS=../app/node_modules/route-graphics/dist/RouteGraphics.js \
+  bun run test:audio
+```
+
+## Measurement
+
+`avt/analyzeAudio.js` measures one tone at a time. Route Graphics plays a mono
+sound through a gain node and a stereo panner. For gain `g` and pan `p`, the
+two channels carry `amplitude * g * cos(x * PI / 2)` and
+`amplitude * g * sin(x * PI / 2)`, where `x = (p + 1) / 2`. Volume and pan
+therefore follow directly from the measured left and right amplitudes. The
+playback rate is the tone's measured frequency over its authored frequency.
+`spec/audioOutputAnalysis.test.js` checks these measurements on synthetic
+signals.

@@ -1,0 +1,56 @@
+title: A BGM duck persists until the next BGM action
+description: >
+  An update that ends at volume 30 lowers music at channel volume 80 to 30% of
+  it, keeps it there on a line without a BGM action, and the next BGM action
+  restores the authored volume.
+durationMs: 3000
+tones:
+  theme.wav: { frequency: 400, amplitude: 0.5 }
+projectData:
+  screen: { width: 64, height: 36 }
+  resources:
+    sounds:
+      theme: { fileId: theme.wav }
+    audioEffects:
+      duck:
+        type: update
+        tween:
+          volume:
+            keyframes:
+              - { value: 30, duration: 500, easing: linear }
+  story:
+    initialSceneId: scene
+    scenes:
+      scene:
+        initialSectionId: section
+        sections:
+          section:
+            lines:
+              - id: music
+                actions:
+                  bgm:
+                    { volume: 80, sounds: [{ id: theme, resourceId: theme }] }
+              - id: ducked
+                actions:
+                  bgm:
+                    volume: 80
+                    audioEffects: { resourceId: duck }
+                    sounds: [{ id: theme, resourceId: theme }]
+              - id: no-bgm
+                actions: {}
+              - id: restored
+                actions:
+                  bgm:
+                    { volume: 80, sounds: [{ id: theme, resourceId: theme }] }
+steps:
+  - { at: 500, actions: { nextLine: {} }, lineId: ducked }
+  - { at: 1500, actions: { nextLine: {} }, lineId: no-bgm }
+  - { at: 2500, actions: { nextLine: {} }, lineId: restored }
+expect:
+  - { source: theme.wav, at: 200, volume: 80, pan: 0 }
+  # Halfway from 80 to 30% of 80 (24).
+  - { source: theme.wav, at: 700, volume: 52 }
+  - { source: theme.wav, at: 1200, volume: 24 }
+  - { source: theme.wav, at: 2000, volume: 24 }
+  - { source: theme.wav, from: 1000, to: 2500, maxVolume: 24 }
+  - { source: theme.wav, at: 2700, volume: 80 }

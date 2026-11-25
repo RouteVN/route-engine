@@ -1,0 +1,57 @@
+title: Legacy single-sound BGM keeps its authored volume through effects
+description: >
+  The legacy bgm form fades in to its authored volume of 60, and a duck that
+  ends at 30 lowers it to 30% of 60.
+durationMs: 3000
+tones:
+  theme.wav: { frequency: 400, amplitude: 0.5 }
+projectData:
+  screen: { width: 64, height: 36 }
+  resources:
+    sounds:
+      theme: { fileId: theme.wav }
+    audioEffects:
+      fadeIn:
+        type: update
+        tween:
+          volume:
+            keyframes:
+              - { startValue: 0, value: 100, duration: 1000, easing: linear }
+      duck:
+        type: update
+        tween:
+          volume:
+            keyframes:
+              - { value: 30, duration: 300, easing: linear }
+  story:
+    initialSceneId: scene
+    scenes:
+      scene:
+        initialSectionId: section
+        sections:
+          section:
+            lines:
+              - id: music
+                actions:
+                  bgm:
+                    {
+                      resourceId: theme,
+                      volume: 60,
+                      audioEffects: { resourceId: fadeIn },
+                    }
+              - id: ducked
+                actions:
+                  bgm:
+                    {
+                      resourceId: theme,
+                      volume: 60,
+                      audioEffects: { resourceId: duck },
+                    }
+steps:
+  - { at: 2000, actions: { nextLine: {} }, lineId: ducked }
+expect:
+  - { source: theme.wav, at: 450, volume: 30 }
+  - { source: theme.wav, at: 1500, volume: 60 }
+  - { source: theme.wav, from: 0, to: 2000, maxVolume: 60 }
+  # 30% of 60.
+  - { source: theme.wav, at: 2600, volume: 18 }

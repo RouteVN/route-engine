@@ -1,0 +1,56 @@
+title: Sound begin effects fade in to each sound's own volume
+description: >
+  A begin effect that fades from 0 to 100 brings an SFX sound and a voice
+  sound in to the volume each was authored at, not to full volume.
+durationMs: 2000
+tones:
+  click.wav: { frequency: 400, amplitude: 0.5 }
+  greeting.wav: { frequency: 600, amplitude: 0.5 }
+projectData:
+  screen: { width: 64, height: 36 }
+  resources:
+    sounds:
+      click: { fileId: click.wav }
+    voices:
+      scene:
+        greeting: { fileId: greeting.wav, volume: 60 }
+    audioEffects:
+      fadeIn:
+        type: update
+        tween:
+          volume:
+            keyframes:
+              - { startValue: 0, value: 100, duration: 1000, easing: linear }
+  story:
+    initialSceneId: scene
+    scenes:
+      scene:
+        initialSectionId: section
+        sections:
+          section:
+            lines:
+              - id: sounds
+                actions:
+                  sfx:
+                    channels:
+                      - id: ui
+                        volume: 50
+                        sounds:
+                          - id: click
+                            resourceId: click
+                            volume: 40
+                            beginEffect: { resourceId: fadeIn }
+                  voice:
+                    sounds:
+                      - id: greeting
+                        resourceId: greeting
+                        beginEffect: { resourceId: fadeIn }
+expect:
+  # SFX channel 50 x sound 40, halfway and settled.
+  - { source: click.wav, at: 450, volume: 10 }
+  - { source: click.wav, at: 1500, volume: 20, pan: 0 }
+  - { source: click.wav, from: 0, to: 2000, maxVolume: 20 }
+  # Voice resource volume 60, halfway and settled.
+  - { source: greeting.wav, at: 450, volume: 30 }
+  - { source: greeting.wav, at: 1500, volume: 60, pan: 0 }
+  - { source: greeting.wav, from: 0, to: 2000, maxVolume: 60 }
