@@ -20,6 +20,8 @@ ships when a later pull request bumps for its own change.
 - Breaking change (`!` after the type, or a `BREAKING CHANGE` footer): minor,
   as #392 did (1.54.0 → 1.55.0). Do not bump the major version unless the
   maintainer asks for it.
+- Any other change to the package, such as a refactor or a runtime
+  dependency update: patch
 
 The npm package contains `dist/` and `README.md`. Bump for changes to `src/`,
 the build, or runtime `dependencies`. Do not bump for changes that only touch
