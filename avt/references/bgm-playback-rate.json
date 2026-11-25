@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "wavSha256": "a4d0728d479df0c44a8da61cb9dc0d9f5aad936889f081e086ac5cc963e938bd",
+  "metadata": {
+    "sampleRate": 48000,
+    "numberOfChannels": 2,
+    "frameCount": 120000,
+    "durationMs": 2500,
+    "byteLength": 480044,
+    "signal": {
+      "peak": 0.2828369140625,
+      "rms": 0.19995213506080028,
+      "nonZeroSamples": 239992
+    }
+  },
+  "lines": [
+    {
+      "atMs": 0,
+      "lineId": "music"
+    },
+    {
+      "atMs": 1200,
+      "lineId": "slower"
+    }
+  ],
+  "measurements": [
+    {
+      "check": "theme.wav at 900ms",
+      "volume": 79.9804,
+      "left": 56.5547,
+      "right": 56.5547,
+      "pan": 0,
+      "rate": 1.25
+    },
+    {
+      "check": "theme.wav at 2000ms",
+      "volume": 79.9808,
+      "left": 56.5549,
+      "right": 56.5549,
+      "pan": 0,
+      "rate": 0.625
+    }
+  ],
+  "events": [
+    {
+      "atMs": 0,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-1",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 0,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-2",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 1200,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-3",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 1200,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-4",
+        "aborted": false
+      }
+    }
+  ]
+}

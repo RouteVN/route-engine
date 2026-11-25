@@ -1,8 +1,10 @@
 // Browser side of the audio output tests. It plays a spec's story through the
 // real Route Engine, effects handler, and Route Graphics audio graph on
-// Route Graphics' deterministic offline audio clock, then measures the
-// rendered PCM. scripts/audioOutputTest.mjs serves this page and compares
-// the measurements with the spec's expectations.
+// Route Graphics' deterministic offline audio clock, encodes the rendered
+// audio as a canonical PCM16 WAV, and measures that WAV.
+// scripts/audioOutputTest.mjs serves this page, checks the measurements
+// against the spec's expectations, and compares the WAV and its transcript
+// with the references.
 
 import createRouteEngine, { createEffectsHandler } from "/RouteEngine.js";
 import createRouteGraphics, {
@@ -21,45 +23,46 @@ import {
   measureMaxVolume,
   measureTone,
 } from "/analyzeAudio.js";
+import { decodePcm16Wav, encodePcm16Wav, summarizeSignal } from "/wav.js";
 
 const SAMPLE_RATE = 48000;
 const DEFAULT_WINDOW_MS = 100;
 
-const writeText = (view, offset, value) => {
-  for (let index = 0; index < value.length; index++) {
-    view.setUint8(offset + index, value.charCodeAt(index));
-  }
-};
-
-// A mono PCM16 sine tone of whole seconds, so it holds whole cycles and
-// loops seamlessly. By default it outlasts the spec, like a real song, so
-// end effects only play where a spec makes the sound end.
+// A mono sine tone of whole seconds, so it holds whole cycles and loops
+// seamlessly. By default it outlasts the spec, like a real song, so end
+// effects only play where a spec makes the sound end.
 const createToneWav = ({ frequency, amplitude, seconds }) => {
   if (!Number.isInteger(frequency) || !Number.isInteger(seconds)) {
     throw new Error("Tones need whole-hertz frequencies and whole seconds.");
   }
-  const frameCount = SAMPLE_RATE * seconds;
-  const dataSize = frameCount * 2;
-  const buffer = new ArrayBuffer(44 + dataSize);
-  const view = new DataView(buffer);
-  writeText(view, 0, "RIFF");
-  view.setUint32(4, 36 + dataSize, true);
-  writeText(view, 8, "WAVE");
-  writeText(view, 12, "fmt ");
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, 1, true);
-  view.setUint32(24, SAMPLE_RATE, true);
-  view.setUint32(28, SAMPLE_RATE * 2, true);
-  view.setUint16(32, 2, true);
-  view.setUint16(34, 16, true);
-  writeText(view, 36, "data");
-  view.setUint32(40, dataSize, true);
-  for (let frame = 0; frame < frameCount; frame++) {
-    const sample = Math.sin((2 * Math.PI * frequency * frame) / SAMPLE_RATE);
-    view.setInt16(44 + frame * 2, Math.round(sample * amplitude * 32767), true);
+  const samples = new Float32Array(SAMPLE_RATE * seconds);
+  for (let frame = 0; frame < samples.length; frame++) {
+    samples[frame] =
+      amplitude * Math.sin((2 * Math.PI * frequency * frame) / SAMPLE_RATE);
   }
-  return buffer;
+  return encodePcm16Wav([samples], SAMPLE_RATE).buffer;
+};
+
+// A render ID is render-<engine instance>-<generation>-<sequence>, and the
+// instance part is random. The transcript keeps the deterministic rest.
+const RENDER_ID = /^render-.+-(\d+-\d+)$/;
+const normalizePayload = (payload) =>
+  payload === undefined
+    ? undefined
+    : JSON.parse(
+        JSON.stringify(payload, (_, value) =>
+          typeof value === "string"
+            ? value.replace(RENDER_ID, "render-$1")
+            : value,
+        ),
+      );
+
+const encodeBase64 = (bytes) => {
+  let binary = "";
+  for (let index = 0; index < bytes.length; index += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+  }
+  return btoa(binary);
 };
 
 const getPointer = (engine) =>
@@ -118,6 +121,7 @@ const run = async (spec) => {
   let engine;
   const errors = [];
   const lines = [];
+  const events = [];
   try {
     app = createRouteGraphics();
     const effectsHandler = createEffectsHandler({
@@ -142,6 +146,11 @@ const run = async (spec) => {
         audio: [soundPlugin],
       },
       eventHandler: (name, payload) => {
+        events.push({
+          atMs: Math.round(runtime.nowMs() * 1000) / 1000,
+          name,
+          payload: normalizePayload(payload),
+        });
         Promise.resolve(routeGraphicsEvents(name, payload)).catch((error) => {
           errors.push(`Route Graphics event "${name}": ${error.message}`);
         });
@@ -184,14 +193,28 @@ const run = async (spec) => {
     }
 
     const rendered = await runtime.render();
-    const channels = [rendered.getChannelData(0), rendered.getChannelData(1)];
+    const wav = encodePcm16Wav(
+      [rendered.getChannelData(0), rendered.getChannelData(1)],
+      rendered.sampleRate,
+    );
+    const { channels } = decodePcm16Wav(wav);
     return {
       ok: true,
       errors,
       lines,
+      events,
       measurements: spec.expect.map((expectation) =>
         measure(channels, tones, expectation),
       ),
+      metadata: {
+        sampleRate: rendered.sampleRate,
+        numberOfChannels: rendered.numberOfChannels,
+        frameCount: rendered.length,
+        durationMs: (rendered.length / rendered.sampleRate) * 1000,
+        byteLength: wav.byteLength,
+        signal: summarizeSignal(wav),
+      },
+      wavBase64: encodeBase64(wav),
     };
   } finally {
     app?.destroy();

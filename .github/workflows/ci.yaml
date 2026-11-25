@@ -45,6 +45,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The reference WAVs are stored in Git LFS.
+          lfs: true
       - uses: actions/setup-node@v4
         with:
           node-version: "24.x"
@@ -54,6 +57,13 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bunx playwright install --with-deps chromium
       - run: bun run test:audio
+      - name: Upload audio output report
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: audio-output-${{ github.run_number }}
+          path: avt/output/
+          if-no-files-found: ignore
   visual-test:
     name: VT (${{ matrix.id }})
     needs: test

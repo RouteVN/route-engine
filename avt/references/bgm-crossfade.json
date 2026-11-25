@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "wavSha256": "31742b2a87448db2d1eba6980efe5ad3d71a0c9ef73b6f3e9cbb988379a11ba1",
+  "metadata": {
+    "sampleRate": 48000,
+    "numberOfChannels": 2,
+    "frameCount": 120000,
+    "durationMs": 2500,
+    "byteLength": 480044,
+    "signal": {
+      "peak": 0.212127685546875,
+      "rms": 0.13963750168353742,
+      "nonZeroSamples": 236796
+    }
+  },
+  "lines": [
+    {
+      "atMs": 0,
+      "lineId": "old"
+    },
+    {
+      "atMs": 500,
+      "lineId": "new"
+    }
+  ],
+  "measurements": [
+    {
+      "check": "old.wav at 200ms",
+      "volume": 59.999,
+      "left": 42.4257,
+      "right": 42.4257,
+      "pan": 0
+    },
+    {
+      "check": "new.wav at 200ms",
+      "volume": 0,
+      "left": 0,
+      "right": 0,
+      "pan": 0
+    },
+    {
+      "check": "old.wav at 950ms",
+      "volume": 30.0802,
+      "left": 21.2699,
+      "right": 21.2699,
+      "pan": 0
+    },
+    {
+      "check": "new.wav at 950ms",
+      "volume": 29.9192,
+      "left": 21.156,
+      "right": 21.156,
+      "pan": 0
+    },
+    {
+      "check": "old.wav at 1800ms",
+      "volume": 0,
+      "left": 0,
+      "right": 0,
+      "pan": 0
+    },
+    {
+      "check": "new.wav at 1800ms",
+      "volume": 59.9993,
+      "left": 42.4259,
+      "right": 42.4259,
+      "pan": 0
+    },
+    {
+      "check": "new.wav 0-2500ms",
+      "maxVolume": {
+        "volume": 59.9994,
+        "atMs": 2440
+      }
+    }
+  ],
+  "events": [
+    {
+      "atMs": 0,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-1",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 0,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-2",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 501.333,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-3",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 501.333,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-4",
+        "aborted": false
+      }
+    }
+  ]
+}

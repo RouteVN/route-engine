@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "wavSha256": "32cdbd971c95a9a0c57c7c12b7b8687218dd8e04dc4e60230b4d9b2ec2794a04",
+  "metadata": {
+    "sampleRate": 48000,
+    "numberOfChannels": 2,
+    "frameCount": 28800,
+    "durationMs": 600,
+    "byteLength": 115244,
+    "signal": {
+      "peak": 0.365386962890625,
+      "rms": 0.19892127890841407,
+      "nonZeroSamples": 57120
+    }
+  },
+  "lines": [
+    {
+      "atMs": 0,
+      "lineId": "sounds"
+    }
+  ],
+  "measurements": [
+    {
+      "check": "click.wav at 200ms",
+      "volume": 52.2617,
+      "left": 19.9998,
+      "right": 48.2835,
+      "pan": 0.5
+    },
+    {
+      "check": "rain.wav at 200ms",
+      "volume": 59.9989,
+      "left": 55.4318,
+      "right": 22.9603,
+      "pan": -0.5
+    }
+  ],
+  "events": [
+    {
+      "atMs": 0,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-1",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 0,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-2",
+        "aborted": false
+      }
+    }
+  ]
+}

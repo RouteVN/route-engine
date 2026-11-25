@@ -1,0 +1,215 @@
+{
+  "version": 1,
+  "wavSha256": "b40f012dacc19a49b7aa3526fa0238409e977b7b1a226f2a63b355368832bf91",
+  "metadata": {
+    "sampleRate": 48000,
+    "numberOfChannels": 2,
+    "frameCount": 153600,
+    "durationMs": 3200,
+    "byteLength": 614444,
+    "signal": {
+      "peak": 0.14141845703125,
+      "rms": 0.07429186734862837,
+      "nonZeroSamples": 301280
+    }
+  },
+  "lines": [
+    {
+      "atMs": 0,
+      "lineId": "music"
+    },
+    {
+      "atMs": 500,
+      "lineId": "ducked"
+    },
+    {
+      "atMs": 1200,
+      "lineId": "ducked"
+    },
+    {
+      "atMs": 2200,
+      "lineId": "ducked"
+    }
+  ],
+  "measurements": [
+    {
+      "check": "theme.wav at 200ms",
+      "volume": 39.9999,
+      "left": 28.2842,
+      "right": 28.2842,
+      "pan": 0
+    },
+    {
+      "check": "theme.wav at 1000ms",
+      "volume": 11.9997,
+      "left": 8.4851,
+      "right": 8.4851,
+      "pan": 0
+    },
+    {
+      "check": "theme.wav at 1600ms",
+      "volume": 0,
+      "left": 0,
+      "right": 0,
+      "pan": 0
+    },
+    {
+      "check": "song.wav at 1600ms",
+      "volume": 39.9994,
+      "left": 28.2838,
+      "right": 28.2838,
+      "pan": 0
+    },
+    {
+      "check": "song.wav at 2700ms",
+      "volume": 0,
+      "left": 0,
+      "right": 0,
+      "pan": 0
+    },
+    {
+      "check": "theme.wav at 2700ms",
+      "volume": 11.9997,
+      "left": 8.4851,
+      "right": 8.4851,
+      "pan": 0
+    },
+    {
+      "check": "theme.wav 2200-3200ms",
+      "maxVolume": {
+        "volume": 11.9997,
+        "atMs": 2670
+      }
+    }
+  ],
+  "events": [
+    {
+      "atMs": 0,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-1",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 0,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-2",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 501.333,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-3",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 501.333,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-4",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 1200,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-5",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 1200,
+      "name": "soundReady",
+      "payload": {
+        "_event": {
+          "id": "music-room:player",
+          "commandId": 2,
+          "positionMs": 0,
+          "durationMs": 5000
+        }
+      }
+    },
+    {
+      "atMs": 1200,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-6",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 1450.667,
+      "name": "soundProgress",
+      "payload": {
+        "_event": {
+          "id": "music-room:player",
+          "commandId": 2,
+          "positionMs": 251,
+          "durationMs": 5000
+        }
+      }
+    },
+    {
+      "atMs": 1450.667,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-7",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 1701.333,
+      "name": "soundProgress",
+      "payload": {
+        "_event": {
+          "id": "music-room:player",
+          "commandId": 2,
+          "positionMs": 501,
+          "durationMs": 5000
+        }
+      }
+    },
+    {
+      "atMs": 1701.333,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-8",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 1952,
+      "name": "soundProgress",
+      "payload": {
+        "_event": {
+          "id": "music-room:player",
+          "commandId": 2,
+          "positionMs": 752,
+          "durationMs": 5000
+        }
+      }
+    },
+    {
+      "atMs": 1952,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-9",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 2200,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-10",
+        "aborted": false
+      }
+    }
+  ]
+}

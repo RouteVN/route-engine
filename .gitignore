@@ -13,3 +13,4 @@ vt/static/renderer.js
 .playwright-cli/
 .rettangoli
 .temp/
+avt/output/

@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "wavSha256": "e0009369bc29dc012b5adfb8a8a8265ed5b4ffaab99efc44e5e4f9f34d4c812f",
+  "metadata": {
+    "sampleRate": 48000,
+    "numberOfChannels": 2,
+    "frameCount": 96000,
+    "durationMs": 2000,
+    "byteLength": 384044,
+    "signal": {
+      "peak": 0.27447509765625,
+      "rms": 0.12909783152231671,
+      "nonZeroSamples": 190376
+    }
+  },
+  "lines": [
+    {
+      "atMs": 0,
+      "lineId": "sounds"
+    }
+  ],
+  "measurements": [
+    {
+      "check": "click.wav at 450ms",
+      "volume": 9.9998,
+      "left": 7.0709,
+      "right": 7.0709,
+      "pan": 0
+    },
+    {
+      "check": "click.wav at 1500ms",
+      "volume": 20.0002,
+      "left": 14.1423,
+      "right": 14.1423,
+      "pan": 0
+    },
+    {
+      "check": "click.wav 0-2000ms",
+      "maxVolume": {
+        "volume": 20.0041,
+        "atMs": 1895
+      }
+    },
+    {
+      "check": "greeting.wav at 450ms",
+      "volume": 29.9989,
+      "left": 21.2124,
+      "right": 21.2124,
+      "pan": 0
+    },
+    {
+      "check": "greeting.wav at 1500ms",
+      "volume": 59.9992,
+      "left": 42.4258,
+      "right": 42.4258,
+      "pan": 0
+    },
+    {
+      "check": "greeting.wav 0-2000ms",
+      "maxVolume": {
+        "volume": 60.0004,
+        "atMs": 1320
+      }
+    }
+  ],
+  "events": [
+    {
+      "atMs": 0,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-1",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 0,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-2",
+        "aborted": false
+      }
+    }
+  ]
+}

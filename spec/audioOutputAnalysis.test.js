@@ -4,6 +4,7 @@ import {
   measureMaxVolume,
   measureTone,
 } from "../avt/analyzeAudio.js";
+import { decodePcm16Wav, encodePcm16Wav, summarizeSignal } from "../avt/wav.js";
 
 // The audio output tests are only as good as these measurements, so they are
 // checked here against synthetic signals with known volume, pan, and pitch.
@@ -139,5 +140,86 @@ describe("audio output analysis", () => {
         windowMs: 100,
       }),
     ).toThrow("outside the rendered audio");
+  });
+});
+
+describe("audio output references", () => {
+  const readText = (wav, offset, length) =>
+    String.fromCharCode(...wav.subarray(offset, offset + length));
+
+  it("writes a canonical 16-bit PCM WAV header", () => {
+    const wav = encodePcm16Wav(
+      [new Float32Array(10), new Float32Array(10)],
+      SAMPLE_RATE,
+    );
+    const view = new DataView(wav.buffer);
+
+    expect(wav.byteLength).toBe(44 + 10 * 2 * 2);
+    expect(readText(wav, 0, 4)).toBe("RIFF");
+    expect(view.getUint32(4, true)).toBe(wav.byteLength - 8);
+    expect(readText(wav, 8, 8)).toBe("WAVEfmt ");
+    expect(view.getUint16(20, true)).toBe(1);
+    expect(view.getUint16(22, true)).toBe(2);
+    expect(view.getUint32(24, true)).toBe(SAMPLE_RATE);
+    expect(view.getUint32(28, true)).toBe(SAMPLE_RATE * 4);
+    expect(view.getUint16(32, true)).toBe(4);
+    expect(view.getUint16(34, true)).toBe(16);
+    expect(readText(wav, 36, 4)).toBe("data");
+    expect(view.getUint32(40, true)).toBe(10 * 2 * 2);
+  });
+
+  it("interleaves channels and clamps samples to full scale", () => {
+    const wav = encodePcm16Wav(
+      [Float32Array.of(1, -1, 2), Float32Array.of(0.5, -2, 0)],
+      SAMPLE_RATE,
+    );
+    const view = new DataView(wav.buffer);
+    const samples = Array.from({ length: 6 }, (_, index) =>
+      view.getInt16(44 + index * 2, true),
+    );
+
+    expect(samples).toEqual([32767, 16384, -32768, -32768, 32767, 0]);
+  });
+
+  it("reads back the samples it wrote within 16-bit precision", () => {
+    const [left, right] = render(100, [
+      { frequency: 400, volume: 75, pan: -0.25 },
+    ]);
+    const { channels, sampleRate } = decodePcm16Wav(
+      encodePcm16Wav([left, right], SAMPLE_RATE),
+    );
+
+    expect(sampleRate).toBe(SAMPLE_RATE);
+    expect(channels[0].length).toBe(left.length);
+    for (let index = 0; index < left.length; index++) {
+      expect(Math.abs(channels[0][index] - left[index])).toBeLessThan(1e-4);
+      expect(Math.abs(channels[1][index] - right[index])).toBeLessThan(1e-4);
+    }
+  });
+
+  it("measures the same volume and pan from the encoded audio", () => {
+    const channels = render(200, [{ frequency: 400, volume: 37.5, pan: 0.5 }]);
+    const decoded = decodePcm16Wav(encodePcm16Wav(channels, SAMPLE_RATE));
+    const measured = measureTone(decoded.channels, SAMPLE_RATE, {
+      frequency: 400,
+      amplitude: AMPLITUDE,
+      startMs: 50,
+      windowMs: 100,
+    });
+
+    expect(measured.volume).toBeCloseTo(37.5, 2);
+    expect(measured.pan).toBeCloseTo(0.5, 3);
+  });
+
+  it("summarizes the peak, RMS, and audible samples", () => {
+    const wav = encodePcm16Wav(
+      [Float32Array.of(0.5, -0.5, 0, 0), Float32Array.of(0, 0, 0, 0.25)],
+      SAMPLE_RATE,
+    );
+    const signal = summarizeSignal(wav);
+
+    expect(signal.peak).toBeCloseTo(0.5, 4);
+    expect(signal.nonZeroSamples).toBe(3);
+    expect(signal.rms).toBeCloseTo(Math.sqrt((0.25 + 0.25 + 0.0625) / 8), 4);
   });
 });
