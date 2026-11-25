@@ -373,6 +373,10 @@ export const applyAudioEffectEndpoints = ({ bgm, resources = {} }) => {
   if (!bgm) return bgm;
 
   const resolvedBgm = structuredClone(bgm);
+  // Without a selection the BGM keeps the mix it carries. An authored action
+  // carries none, and presentation state applied again, as the line change
+  // selectors do, keeps the mix its effect left.
+  if (!bgm.audioEffects) return resolvedBgm;
   delete resolvedBgm.audioEffectMix;
 
   const resourceId = bgm.audioEffects?.resourceId;

@@ -656,6 +656,52 @@ describe("a persisted effect mix survives save, load, rollback, and skipping", (
   });
 });
 
+describe("line change selectors keep a persisted effect mix", () => {
+  // The scene editor marks the lines that change the BGM from these selectors.
+  // A line without a BGM action keeps the mix an earlier effect left, so it
+  // reports no BGM change.
+  const lines = [
+    bgm(80),
+    bgm(80, {}, { audioEffects: { resourceId: "duck" } }),
+    {},
+    {},
+  ];
+
+  it("reports a BGM change only on lines with a BGM action", () => {
+    const engine = createEngine(lines);
+    const { lines: entries } = engine.selectSectionLineChanges({
+      sectionId: "section",
+      includePresentationState: true,
+    });
+
+    expect(entries.map((entry) => entry.changes.bgm?.changeType)).toEqual([
+      "add",
+      "update",
+      undefined,
+      undefined,
+    ]);
+    for (const [index, entry] of entries.entries()) {
+      if (index > 0) nextLine(engine);
+      expect(entry.presentationState.bgm).toEqual(
+        engine.selectPresentationState().bgm,
+      );
+    }
+  });
+
+  it("reports no BGM change on a line after the effect", () => {
+    const engine = createEngine(lines);
+    nextLine(engine);
+    expect(engine.selectPresentationChanges().bgm).toMatchObject({
+      changeType: "update",
+    });
+
+    nextLine(engine);
+    expect(engine.selectPresentationChanges().bgm).toBeUndefined();
+    nextLine(engine);
+    expect(engine.selectPresentationChanges().bgm).toBeUndefined();
+  });
+});
+
 describe("legacy single-sound BGM", () => {
   // The legacy form has no channel layer; its volume is the sound volume.
   it("fades in to the authored volume", () => {

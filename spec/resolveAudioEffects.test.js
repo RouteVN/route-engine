@@ -982,12 +982,19 @@ describe("resolveAudioEffect", () => {
           }),
         }),
       ).not.toHaveProperty("audioEffectMix");
-      expect(
-        applyAudioEffectEndpoints({
-          bgm: { ...stale, audioEffects: undefined },
-          resources: {},
-        }),
-      ).not.toHaveProperty("audioEffectMix");
+    });
+
+    it("keeps the mix of a BGM without a selection", () => {
+      // Presentation state applied again carries the mix its effect left.
+      const ducked = {
+        ...creatorBgm,
+        audioEffects: undefined,
+        audioEffectMix: { volume: 30 },
+      };
+
+      expect(applyAudioEffectEndpoints({ bgm: ducked, resources: {} })).toEqual(
+        ducked,
+      );
     });
 
     it("records the effect mix for legacy single-sound BGM", () => {
