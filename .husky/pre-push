@@ -1,2 +1,11 @@
 #!/usr/bin/env sh
+set -e
+
 bun run lint
+
+# husky replaces the pre-push hook that Git LFS installs, so upload the LFS
+# objects being pushed here. Otherwise GitHub rejects a push that adds LFS
+# files, such as VT or audio references.
+if command -v git-lfs >/dev/null 2>&1; then
+  git lfs pre-push "$@"
+fi
