@@ -75,7 +75,10 @@ const check = (expectation, measured) => {
   const failures = [];
   const compare = (property, actual, expected, limit = "equal") => {
     if (expected === undefined) return;
-    const allowed = tolerance[property === "maxVolume" ? "volume" : property];
+    const allowed =
+      tolerance[
+        ["maxVolume", "left", "right"].includes(property) ? "volume" : property
+      ];
     const passes =
       actual !== undefined &&
       (limit === "max"
@@ -102,6 +105,8 @@ const check = (expectation, measured) => {
     return failures;
   }
   compare("volume", measured.volume, expectation.volume);
+  compare("left", measured.left, expectation.left);
+  compare("right", measured.right, expectation.right);
   // Pan is undefined for a silent tone, which only matters if it is checked.
   compare("pan", measured.pan, expectation.pan);
   compare("rate", measured.rate, expectation.rate);

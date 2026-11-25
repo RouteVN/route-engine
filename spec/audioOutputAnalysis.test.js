@@ -51,6 +51,20 @@ describe("audio output analysis", () => {
     expect(measured.pan).toBeCloseTo(pan, 3);
   });
 
+  it("measures each channel's amplitude", () => {
+    const channels = render(200, [{ frequency: 400, volume: 40, pan: 0.5 }]);
+    const measured = measureTone(channels, SAMPLE_RATE, {
+      frequency: 400,
+      amplitude: AMPLITUDE,
+      startMs: 50,
+      windowMs: 100,
+    });
+
+    // Pan 0.5 sends cos(67.5°) of the gain left and sin(67.5°) right.
+    expect(measured.left).toBeCloseTo(40 * Math.cos((3 * Math.PI) / 8), 2);
+    expect(measured.right).toBeCloseTo(40 * Math.sin((3 * Math.PI) / 8), 2);
+  });
+
   it("measures each of several tones that play at once", () => {
     const channels = render(200, [
       { frequency: 400, volume: 60, pan: -0.25 },

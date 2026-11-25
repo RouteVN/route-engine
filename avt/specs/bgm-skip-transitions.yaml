@@ -1,0 +1,54 @@
+title: Skipping transitions applies the final BGM mix at once
+description: >
+  With transitions skipped, a fade-in starts at the channel volume of 80 and
+  a duck drops straight to 30% of it, with no ramp in between.
+durationMs: 1500
+runtime: { skipTransitionsAndAnimations: true }
+tones:
+  theme.wav: { frequency: 400, amplitude: 0.5 }
+projectData:
+  screen: { width: 64, height: 36 }
+  resources:
+    sounds:
+      theme: { fileId: theme.wav }
+    audioEffects:
+      fadeIn:
+        type: update
+        tween:
+          volume:
+            keyframes:
+              - { startValue: 0, value: 100, duration: 1000, easing: linear }
+      duck:
+        type: update
+        tween:
+          volume:
+            keyframes:
+              - { value: 30, duration: 500, easing: linear }
+  story:
+    initialSceneId: scene
+    scenes:
+      scene:
+        initialSectionId: section
+        sections:
+          section:
+            lines:
+              - id: music
+                actions:
+                  bgm:
+                    volume: 80
+                    audioEffects: { resourceId: fadeIn }
+                    sounds: [{ id: main, resourceId: theme }]
+              - id: ducked
+                actions:
+                  bgm:
+                    volume: 80
+                    audioEffects: { resourceId: duck }
+                    sounds: [{ id: main, resourceId: theme }]
+steps:
+  - { at: 600, actions: { nextLine: {} }, lineId: ducked }
+expect:
+  - { source: theme.wav, at: 10, window: 40, volume: 80 }
+  - { source: theme.wav, at: 300, volume: 80 }
+  # 30% of 80, from the first window after the line changes.
+  - { source: theme.wav, at: 610, window: 40, volume: 24 }
+  - { source: theme.wav, from: 610, to: 1500, maxVolume: 24 }

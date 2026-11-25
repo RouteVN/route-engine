@@ -1,0 +1,54 @@
+title: Loading a save restores a BGM duck
+description: >
+  A save made while music is ducked to 30% of its channel volume of 80
+  brings the music back at that level when it is loaded from later music.
+durationMs: 3000
+tones:
+  theme.wav: { frequency: 400, amplitude: 0.5 }
+  other.wav: { frequency: 600, amplitude: 0.5 }
+projectData:
+  screen: { width: 64, height: 36 }
+  resources:
+    sounds:
+      theme: { fileId: theme.wav }
+      other: { fileId: other.wav }
+    audioEffects:
+      duck:
+        type: update
+        tween:
+          volume:
+            keyframes:
+              - { value: 30, duration: 300, easing: linear }
+  story:
+    initialSceneId: scene
+    scenes:
+      scene:
+        initialSectionId: section
+        sections:
+          section:
+            lines:
+              - id: music
+                actions:
+                  bgm: { volume: 80, sounds: [{ id: main, resourceId: theme }] }
+              - id: ducked
+                actions:
+                  bgm:
+                    volume: 80
+                    audioEffects: { resourceId: duck }
+                    sounds: [{ id: main, resourceId: theme }]
+              - id: other
+                actions:
+                  bgm: { volume: 50, sounds: [{ id: main, resourceId: other }] }
+steps:
+  - { at: 500, actions: { nextLine: {} }, lineId: ducked }
+  - { at: 1100, actions: { saveSlot: { slotId: ducked, savedAt: 1 } } }
+  - { at: 1300, actions: { nextLine: {} }, lineId: other }
+  - { at: 2000, actions: { loadSlot: { slotId: ducked } }, lineId: ducked }
+expect:
+  # 30% of 80.
+  - { source: theme.wav, at: 1000, volume: 24 }
+  - { source: other.wav, at: 1600, volume: 50 }
+  - { source: theme.wav, at: 1600, volume: 0 }
+  - { source: theme.wav, at: 2500, volume: 24 }
+  - { source: other.wav, at: 2500, volume: 0 }
+  - { source: theme.wav, from: 2000, to: 3000, maxVolume: 24 }

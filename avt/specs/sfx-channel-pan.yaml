@@ -1,0 +1,46 @@
+title: SFX channel and sound pans are heard separately
+description: >
+  An SFX channel's pan applies to the channel and a sound's pan to the sound,
+  so a centered sound in a channel panned right and a sound panned left in a
+  centered channel are each heard where they were authored.
+durationMs: 600
+tones:
+  click.wav: { frequency: 400, amplitude: 0.5 }
+  rain.wav: { frequency: 600, amplitude: 0.5 }
+projectData:
+  screen: { width: 64, height: 36 }
+  resources:
+    sounds:
+      click: { fileId: click.wav }
+      rain: { fileId: rain.wav }
+  story:
+    initialSceneId: scene
+    scenes:
+      scene:
+        initialSectionId: section
+        sections:
+          section:
+            lines:
+              - id: sounds
+                actions:
+                  sfx:
+                    channels:
+                      - id: ui
+                        volume: 80
+                        pan: 0.5
+                        sounds: [{ id: click, resourceId: click, volume: 50 }]
+                      - id: environment
+                        sounds:
+                          - {
+                              id: rain,
+                              resourceId: rain,
+                              volume: 60,
+                              pan: -0.5,
+                            }
+expect:
+  # Gain 80 x 50% = 0.4. The centered sound sends 0.4 x cos(45°) = 0.2828 to
+  # each side. A Web Audio stereo panner at pan 0.5 keeps left x cos(45°) and
+  # adds left x sin(45°) to right: left 0.2, right 0.2828 + 0.2 = 0.4828.
+  - { source: click.wav, at: 200, left: 20, right: 48.28 }
+  # A mono sound panned -0.5 in a centered channel: volume 60, pan -0.5.
+  - { source: rain.wav, at: 200, volume: 60, pan: -0.5 }

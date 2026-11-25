@@ -54,7 +54,10 @@ export const measureToneAmplitude = (
   return (2 * Math.hypot(real, imaginary)) / weightSum;
 };
 
-// Volume (0-100 of the source at full gain) and pan of one tone.
+// Volume (0-100 of the source at full gain) and pan of one tone, plus each
+// channel's amplitude (0-100 of the source amplitude) for graphs that the
+// mono panning law does not describe, such as a panned channel of stereo
+// sounds.
 export const measureTone = (
   [left, right],
   sampleRate,
@@ -66,6 +69,8 @@ export const measureTone = (
   const magnitude = Math.hypot(leftAmplitude, rightAmplitude);
   return {
     volume: (100 * magnitude) / amplitude,
+    left: (100 * leftAmplitude) / amplitude,
+    right: (100 * rightAmplitude) / amplitude,
     pan:
       magnitude === 0
         ? undefined

@@ -38,16 +38,24 @@ A spec in `avt/specs/<name>.yaml` declares:
   - `{ source, at, window, volume, pan, rate }` measures one window, by
     default 100 ms from `at`. `volume` is 0-100 of the source at full gain.
     During a linear fade, the window measures its center.
+  - `left` and `right` check each channel's amplitude, 0-100 of the
+    source amplitude, where the volume and pan formula below does not hold.
+    For example, a Web Audio stereo panner on a channel of already panned
+    sounds folds one side into the other.
   - `{ source, from, to, maxVolume }` checks that the sound is never louder
     than `maxVolume` anywhere in that range. This catches a sound that jumps
     to full volume before it settles.
   - `tolerance` overrides the defaults of 0.75 volume points, 0.02 pan, and
-    0.005 playback rate.
+    0.005 playback rate. `left` and `right` use the volume tolerance.
 
 Derive every expected value from the authored numbers, and say how in a
 comment, for example `# channel 75 x sound 40`. Never copy a value from a
 run. A spec whose expectations come from the output only records what the
 engine does, and a reference captured from a wrong mix keeps the bug.
+
+Video audio plays through the `<video>` element's own volume rather than
+Web Audio, so it cannot be rendered offline. The
+`robustness/video-volume-settings` VT covers it.
 
 Show that a new spec catches the bug it covers. Run it against the code from
 before the fix, and check that it fails:

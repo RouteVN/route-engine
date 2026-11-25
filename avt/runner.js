@@ -87,13 +87,14 @@ const measure = (channels, tones, expectation) => {
     startMs: expectation.at,
     windowMs: expectation.window ?? DEFAULT_WINDOW_MS,
   };
-  const { volume, pan } = measureTone(channels, SAMPLE_RATE, {
-    frequency,
-    amplitude: tone.amplitude,
-    ...window,
-  });
-  result.volume = volume;
-  result.pan = pan;
+  Object.assign(
+    result,
+    measureTone(channels, SAMPLE_RATE, {
+      frequency,
+      amplitude: tone.amplitude,
+      ...window,
+    }),
+  );
   if (expectation.rate !== undefined) {
     const measuredFrequency = measureFrequency(channels, SAMPLE_RATE, window);
     result.rate =
