@@ -98,14 +98,11 @@ steps:
     type: js
     global: __vtCheckpoint.nativeInputs.focusedId
     value: "@layout/overlayStack-0--shared-input"
+  # The removed main layout takes its input out of the page.
   - action: assert
     type: js
     global: __vtCheckpoint.nativeInputs.inputs
     value:
-      - id: "@layout/layout-sharedPanel--shared-input"
-        value: ""
-        focused: false
-        displayed: false
       - id: "@layout/overlayStack-0--shared-input"
         value: Ada
         focused: true
