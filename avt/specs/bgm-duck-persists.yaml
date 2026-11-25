@@ -52,5 +52,11 @@ expect:
   - { source: theme.wav, at: 700, volume: 52 }
   - { source: theme.wav, at: 1200, volume: 24 }
   - { source: theme.wav, at: 2000, volume: 24 }
-  - { source: theme.wav, from: 1000, to: 2500, maxVolume: 24 }
+  # Never above 80 before the duck ends, never above 24 while it persists,
+  # and never above 80 once the next BGM action restores it. The duck ends
+  # just after 1000, so the ducked range starts 20 ms later; it ends half a
+  # window before the restore at 2500.
+  - { source: theme.wav, from: 0, to: 1000, maxVolume: 80 }
+  - { source: theme.wav, from: 1020, to: 2490, maxVolume: 24 }
+  - { source: theme.wav, from: 2500, to: 3000, maxVolume: 80 }
   - { source: theme.wav, at: 2700, volume: 80 }

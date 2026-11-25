@@ -51,4 +51,6 @@ expect:
   - { source: theme.wav, at: 300, volume: 80 }
   # 30% of 80, from the first window after the line changes.
   - { source: theme.wav, at: 610, window: 40, volume: 24 }
-  - { source: theme.wav, from: 610, to: 1500, maxVolume: 24 }
+  # Never above 80 before the duck, and never above 24 after it.
+  - { source: theme.wav, from: 0, to: 600, maxVolume: 80 }
+  - { source: theme.wav, from: 615, to: 1500, maxVolume: 24 }

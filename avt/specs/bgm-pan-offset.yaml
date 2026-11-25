@@ -43,3 +43,5 @@ expect:
     }
   - { source: theme.wav, at: 230, window: 40, pan: -0.25 }
   - { source: theme.wav, at: 1000, volume: 80, pan: 0.25 }
+  # Panning moves the volume between the sides, never above 80.
+  - { source: theme.wav, from: 0, to: 1500, maxVolume: 80 }

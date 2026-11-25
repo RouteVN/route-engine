@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "wavSha256": "b40f012dacc19a49b7aa3526fa0238409e977b7b1a226f2a63b355368832bf91",
+  "wavSha256": "5371e14876a891ce2ae40703bd275cc5d5e625ff54fac3b01d9be0a671f4e489",
   "metadata": {
     "sampleRate": 48000,
     "numberOfChannels": 2,
@@ -9,8 +9,8 @@
     "byteLength": 614444,
     "signal": {
       "peak": 0.14141845703125,
-      "rms": 0.07429186734862837,
-      "nonZeroSamples": 301280
+      "rms": 0.07444624025547954,
+      "nonZeroSamples": 301272
     }
   },
   "lines": [
@@ -23,11 +23,11 @@
       "lineId": "ducked"
     },
     {
-      "atMs": 1200,
+      "atMs": 1208,
       "lineId": "ducked"
     },
     {
-      "atMs": 2200,
+      "atMs": 2216,
       "lineId": "ducked"
     }
   ],
@@ -75,10 +75,24 @@
       "pan": 0
     },
     {
-      "check": "theme.wav 2200-3200ms",
+      "check": "theme.wav 0-800ms",
       "maxVolume": {
-        "volume": 11.9997,
-        "atMs": 2670
+        "volume": 39.9997,
+        "atMs": 455
+      }
+    },
+    {
+      "check": "theme.wav 820-3200ms",
+      "maxVolume": {
+        "volume": 12.1936,
+        "atMs": 1205
+      }
+    },
+    {
+      "check": "song.wav 0-3200ms",
+      "maxVolume": {
+        "volume": 39.9995,
+        "atMs": 1325
       }
     }
   ],
@@ -116,7 +130,7 @@
       }
     },
     {
-      "atMs": 1200,
+      "atMs": 1208,
       "name": "renderComplete",
       "payload": {
         "id": "render-1-5",
@@ -124,7 +138,7 @@
       }
     },
     {
-      "atMs": 1200,
+      "atMs": 1208,
       "name": "soundReady",
       "payload": {
         "_event": {
@@ -136,7 +150,7 @@
       }
     },
     {
-      "atMs": 1200,
+      "atMs": 1208,
       "name": "renderComplete",
       "payload": {
         "id": "render-1-6",
@@ -144,7 +158,7 @@
       }
     },
     {
-      "atMs": 1450.667,
+      "atMs": 1458.667,
       "name": "soundProgress",
       "payload": {
         "_event": {
@@ -156,7 +170,7 @@
       }
     },
     {
-      "atMs": 1450.667,
+      "atMs": 1458.667,
       "name": "renderComplete",
       "payload": {
         "id": "render-1-7",
@@ -164,7 +178,7 @@
       }
     },
     {
-      "atMs": 1701.333,
+      "atMs": 1709.333,
       "name": "soundProgress",
       "payload": {
         "_event": {
@@ -176,7 +190,7 @@
       }
     },
     {
-      "atMs": 1701.333,
+      "atMs": 1709.333,
       "name": "renderComplete",
       "payload": {
         "id": "render-1-8",
@@ -184,7 +198,7 @@
       }
     },
     {
-      "atMs": 1952,
+      "atMs": 1960,
       "name": "soundProgress",
       "payload": {
         "_event": {
@@ -196,7 +210,7 @@
       }
     },
     {
-      "atMs": 1952,
+      "atMs": 1960,
       "name": "renderComplete",
       "payload": {
         "id": "render-1-9",
@@ -204,10 +218,30 @@
       }
     },
     {
-      "atMs": 2200,
+      "atMs": 2208,
+      "name": "soundProgress",
+      "payload": {
+        "_event": {
+          "id": "music-room:player",
+          "commandId": 2,
+          "positionMs": 1000,
+          "durationMs": 5000
+        }
+      }
+    },
+    {
+      "atMs": 2208,
       "name": "renderComplete",
       "payload": {
         "id": "render-1-10",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 2216,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-11",
         "aborted": false
       }
     }

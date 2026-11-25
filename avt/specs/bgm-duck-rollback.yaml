@@ -50,4 +50,9 @@ expect:
   # 30% of 80.
   - { source: theme.wav, at: 2500, volume: 24 }
   - { source: other.wav, at: 2500, volume: 0 }
-  - { source: theme.wav, from: 2000, to: 3000, maxVolume: 24 }
+  # Never above 80 before the duck ends, and never above 24 after it, while
+  # the other music plays, or after the ducked line returns. The duck ends
+  # just after 800.
+  - { source: theme.wav, from: 0, to: 800, maxVolume: 80 }
+  - { source: theme.wav, from: 820, to: 3000, maxVolume: 24 }
+  - { source: other.wav, from: 0, to: 3000, maxVolume: 50 }

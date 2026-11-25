@@ -39,6 +39,10 @@ const ROUTE_GRAPHICS_PATH = path.resolve(
 );
 const ORIGIN = "http://route-engine.avt";
 const TIMEOUT_MS = 60_000;
+// After a page error, how long to wait for the run's result before failing
+// with that error, for example when a bundle fails to load.
+const PAGE_ERROR_GRACE_MS = 2_000;
+const MAX_VOLUME_WINDOW_MS = 20;
 const DEFAULT_TOLERANCE = { volume: 0.75, pan: 0.02, rate: 0.005 };
 const MODES = ["test", "generate", "report"];
 
@@ -68,23 +72,162 @@ const escapeHtml = (value) =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
 
+const SPEC_KEYS = [
+  "title",
+  "description",
+  "durationMs",
+  "runtime",
+  "tones",
+  "projectData",
+  "steps",
+  "expect",
+];
+const STEP_KEYS = ["at", "actions", "lineId"];
+const POINT_KEYS = ["source", "at", "window", "tolerance", "rate"];
+const POINT_CHECKS = ["volume", "left", "right", "pan", "rate"];
+const RANGE_KEYS = ["source", "from", "to", "maxVolume", "rate", "tolerance"];
+const TOLERANCE_KEYS = Object.keys(DEFAULT_TOLERANCE);
+
+const isNumber = (value) => typeof value === "number" && Number.isFinite(value);
+const isObject = (value) =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+const unknownKeys = (value, allowed) =>
+  Object.keys(value).filter((key) => !allowed.includes(key));
+
+// A misspelled key would otherwise check nothing, and generate would record
+// a reference for a spec that checks less than it says.
+const findSpecProblems = (spec, systemActionNames) => {
+  const problems = [];
+  const unknownSpecKeys = unknownKeys(spec, SPEC_KEYS);
+  if (unknownSpecKeys.length) {
+    problems.push(`unknown keys ${unknownSpecKeys.join(", ")}`);
+  }
+  if (!isNumber(spec.durationMs) || spec.durationMs <= 0) {
+    problems.push("durationMs must be a positive number");
+  }
+  if (!isObject(spec.tones)) problems.push("tones must be a map");
+  if (!Array.isArray(spec.expect) || spec.expect.length === 0) {
+    problems.push("expect must list at least one expectation");
+  }
+
+  for (const [index, step] of (spec.steps ?? []).entries()) {
+    const label = `step ${index + 1}`;
+    if (!isObject(step)) {
+      problems.push(`${label} must be a map`);
+      continue;
+    }
+    const unknown = unknownKeys(step, STEP_KEYS);
+    if (unknown.length) {
+      problems.push(`${label} has unknown keys ${unknown.join(", ")}`);
+    }
+    if (!isNumber(step.at) || step.at < 0 || step.at >= spec.durationMs) {
+      problems.push(`${label} needs an at inside the render`);
+    }
+    if (!isObject(step.actions)) {
+      problems.push(`${label} needs actions`);
+      continue;
+    }
+    // The engine ignores an action it does not know.
+    const unknownActions = unknownKeys(step.actions, systemActionNames);
+    if (unknownActions.length) {
+      problems.push(
+        `${label} has unknown actions ${unknownActions.join(", ")}`,
+      );
+    }
+  }
+
+  for (const [index, expectation] of (spec.expect ?? []).entries()) {
+    const label = `expectation ${index + 1}`;
+    if (!isObject(expectation)) {
+      problems.push(`${label} must be a map`);
+      continue;
+    }
+    if (!Object.hasOwn(spec.tones ?? {}, expectation.source)) {
+      problems.push(`${label} names no tone: ${expectation.source}`);
+    }
+    if (expectation.tolerance !== undefined) {
+      const unknown = isObject(expectation.tolerance)
+        ? unknownKeys(expectation.tolerance, TOLERANCE_KEYS)
+        : ["(not a map)"];
+      if (unknown.length) {
+        problems.push(`${label} has unknown tolerances ${unknown.join(", ")}`);
+      }
+    }
+    const isRange = expectation.maxVolume !== undefined;
+    const unknown = unknownKeys(
+      expectation,
+      isRange ? RANGE_KEYS : [...POINT_KEYS, ...POINT_CHECKS],
+    );
+    if (unknown.length) {
+      problems.push(`${label} has unknown keys ${unknown.join(", ")}`);
+    }
+    for (const key of [...POINT_CHECKS, "maxVolume", "window"]) {
+      if (expectation[key] !== undefined && !isNumber(expectation[key])) {
+        problems.push(`${label} ${key} must be a number`);
+      }
+    }
+    if (isRange) {
+      const { from, to } = expectation;
+      if (
+        !isNumber(from) ||
+        !isNumber(to) ||
+        from < 0 ||
+        to > spec.durationMs ||
+        to - from < MAX_VOLUME_WINDOW_MS
+      ) {
+        problems.push(
+          `${label} needs from and to inside the render, at least ` +
+            `${MAX_VOLUME_WINDOW_MS}ms apart`,
+        );
+      }
+    } else {
+      if (!isNumber(expectation.at)) problems.push(`${label} needs an at`);
+      if (!POINT_CHECKS.some((key) => expectation[key] !== undefined)) {
+        problems.push(
+          `${label} checks nothing: give ${POINT_CHECKS.join(", ")}, or a maxVolume range`,
+        );
+      }
+    }
+  }
+  return problems;
+};
+
 const loadSpecs = async () => {
   const filenames = (await readdir(SPEC_DIRECTORY))
     .filter((filename) => filename.endsWith(".yaml"))
     .sort();
+  const unknownNames = specNames.filter(
+    (name) => !filenames.includes(`${name}.yaml`),
+  );
+  if (unknownNames.length > 0) {
+    throw new Error(`No audio output spec named: ${unknownNames.join(", ")}`);
+  }
   const selected = specNames.length
     ? filenames.filter((filename) => specNames.includes(filename.slice(0, -5)))
     : filenames;
-  if (selected.length === 0) {
-    throw new Error(`No audio output specs match: ${specNames.join(", ")}`);
-  }
+  // The public system actions of the engine under test.
+  const systemActionNames = Object.keys(
+    yaml.load(
+      await readFile(
+        path.join(ENGINE_ROOT, "src/schemas/systemActions.yaml"),
+        "utf8",
+      ),
+    ).properties,
+  );
   return await Promise.all(
     selected.map(async (filename) => {
+      const name = filename.slice(0, -5);
       const spec = yaml.load(
         await readFile(path.join(SPEC_DIRECTORY, filename), "utf8"),
       );
+      const problems = findSpecProblems(spec, systemActionNames);
+      if (problems.length > 0) {
+        throw new Error(
+          `Invalid audio output spec ${name}:\n${problems.map((problem) => `  - ${problem}`).join("\n")}`,
+        );
+      }
       return {
-        name: filename.slice(0, -5),
+        name,
         ...spec,
         runtime: { musicVolume: 100, soundVolume: 100, ...spec.runtime },
       };
@@ -185,6 +328,11 @@ const check = (expectation, measured) => {
 
 const checkExpectations = (spec, render) => {
   const failures = [...render.errors];
+  for (const [index, { at }] of (spec.steps ?? []).entries()) {
+    if (!render.stepsRun.includes(index)) {
+      failures.push(`Step ${index + 1} at ${at}ms never ran`);
+    }
+  }
   for (const { at, lineId } of spec.steps ?? []) {
     if (lineId === undefined) continue;
     const reached = render.lines.find((line) => line.atMs === at)?.lineId;
@@ -240,6 +388,52 @@ const describeJsonDifferences = (expected, actual) => {
   return differences.join("\n");
 };
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Waits for the run's result. A page error before it arrives, such as a
+// bundle that fails to load, fails the run with that error after a short
+// grace period instead of the full timeout.
+const waitForResult = async (page, pageErrors) => {
+  const startedAt = Date.now();
+  let firstErrorAt;
+  for (;;) {
+    const result = await page.evaluate(() => globalThis.__RE_AVT_RESULT__);
+    if (result) return result;
+    const now = Date.now();
+    if (pageErrors.length > 0) firstErrorAt ??= now;
+    if (
+      firstErrorAt !== undefined &&
+      now - firstErrorAt > PAGE_ERROR_GRACE_MS
+    ) {
+      throw new Error(
+        `The page failed before the run finished:\n${pageErrors.join("\n")}`,
+      );
+    }
+    if (now - startedAt > TIMEOUT_MS) {
+      throw new Error(`No result after ${TIMEOUT_MS}ms.`);
+    }
+    await delay(50);
+  }
+};
+
+// The version in the package.json next to the bundle's dist directory, when
+// it is a route-graphics package.
+const readRouteGraphicsVersion = async () => {
+  try {
+    const packageJson = JSON.parse(
+      await readFile(
+        path.join(path.dirname(ROUTE_GRAPHICS_PATH), "..", "package.json"),
+        "utf8",
+      ),
+    );
+    return packageJson.name === "route-graphics"
+      ? packageJson.version
+      : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 const renderSpec = async (browser, files, spec) => {
   const page = await browser.newPage();
   try {
@@ -260,12 +454,21 @@ const renderSpec = async (browser, files, spec) => {
     }, spec);
     const pageErrors = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
-    await page.goto(`${ORIGIN}/index.html`);
-    await page.waitForFunction(() => globalThis.__RE_AVT_RESULT__, null, {
-      timeout: TIMEOUT_MS,
+    // Warnings count as failures: Route Graphics only warns when a sound's
+    // asset is missing and plays nothing, which would otherwise pass as
+    // silence.
+    page.on("console", (message) => {
+      if (["warning", "error"].includes(message.type())) {
+        pageErrors.push(`console.${message.type()}: ${message.text()}`);
+      }
     });
-    const result = await page.evaluate(() => globalThis.__RE_AVT_RESULT__);
-    if (!result.ok) throw new Error(`Run failed: ${result.error}`);
+    await page.goto(`${ORIGIN}/index.html`);
+    const result = await waitForResult(page, pageErrors);
+    if (!result.ok) {
+      throw new Error(
+        [`Run failed: ${result.error}`, ...pageErrors].join("\n"),
+      );
+    }
     const { wavBase64, ...render } = result;
     return {
       ...render,
@@ -332,7 +535,7 @@ const createReportHtml = (results) => {
           ${result.failures.length ? `<pre>${escapeHtml(result.failures.join("\n"))}</pre>` : ""}
           <table><tr><th>Check</th><th>Expected</th><th>Heard</th></tr>${rows}</table>
           <div class="audios">
-            ${audioPanel(result.ok ? "Rendered (matches the reference)" : "Rendered", actualKey)}
+            ${audioPanel(result.generated ? "Rendered (recorded as the reference)" : result.ok && result.compared ? "Rendered (matches the reference)" : "Rendered", actualKey)}
             ${referenceKey ? audioPanel("Reference", referenceKey) : ""}
           </div>
         </section>`;
@@ -497,6 +700,7 @@ const runSpec = async (browser, files, spec) => {
         `No reference. Run: bun run test:audio:generate ${spec.name}`,
       );
     } else {
+      result.compared = true;
       result.referenceWav = reference.wav;
       if (!reference.wav.equals(actual.wav)) {
         result.failures.push(
@@ -547,9 +751,7 @@ const main = async () => {
     "/RouteEngine.js": await buildEngineBundle(),
     "/RouteGraphics.js": await readFile(ROUTE_GRAPHICS_PATH, "utf8"),
   };
-  const routeGraphicsVersion = files["/RouteGraphics.js"].match(
-    /route-graphics@([\d.]+)/,
-  )?.[1];
+  const routeGraphicsVersion = await readRouteGraphicsVersion();
   console.log(
     `Route Graphics bundle: ${path.relative(ROOT, ROUTE_GRAPHICS_PATH)}` +
       (routeGraphicsVersion ? ` (${routeGraphicsVersion})` : ""),
@@ -560,7 +762,12 @@ const main = async () => {
     );
   }
 
-  const browser = await chromium.launch();
+  // Route Graphics renders through software WebGL in headless Chromium. The
+  // pages are this repository's own, so opt in instead of getting a
+  // deprecation warning, which would fail every spec.
+  const browser = await chromium.launch({
+    args: ["--enable-unsafe-swiftshader"],
+  });
   const results = [];
   try {
     for (const spec of specs) {

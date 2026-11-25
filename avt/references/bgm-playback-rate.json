@@ -39,6 +39,27 @@
       "right": 56.5549,
       "pan": 0,
       "rate": 0.625
+    },
+    {
+      "check": "theme.wav 0-20ms",
+      "maxVolume": {
+        "volume": 79.5786,
+        "atMs": 10
+      }
+    },
+    {
+      "check": "theme.wav 520-1200ms",
+      "maxVolume": {
+        "volume": 79.9805,
+        "atMs": 685
+      }
+    },
+    {
+      "check": "theme.wav 1520-2500ms",
+      "maxVolume": {
+        "volume": 79.9816,
+        "atMs": 1705
+      }
     }
   ],
   "events": [

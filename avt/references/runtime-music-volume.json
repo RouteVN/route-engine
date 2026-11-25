@@ -32,10 +32,10 @@
       "pan": 0
     },
     {
-      "check": "theme.wav 0-1800ms",
+      "check": "theme.wav 0-1790ms",
       "maxVolume": {
         "volume": 37.4998,
-        "atMs": 1715
+        "atMs": 1725
       }
     },
     {
@@ -44,6 +44,13 @@
       "left": 53.0325,
       "right": 53.0325,
       "pan": 0
+    },
+    {
+      "check": "theme.wav 1800-2500ms",
+      "maxVolume": {
+        "volume": 74.999,
+        "atMs": 2160
+      }
     }
   ],
   "events": [

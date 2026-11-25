@@ -48,3 +48,9 @@ steps:
 expect:
   - { source: theme.wav, at: 900, volume: 80, rate: 1.25 }
   - { source: theme.wav, at: 2000, volume: 80, rate: 0.625 }
+  # Never above 80. The volume is measured at one pitch, so these ranges
+  # cover where the rate holds: the start at 0.5 x 1.25, the settled 1.25 up
+  # to the line change, and the settled 0.625 after it.
+  - { source: theme.wav, from: 0, to: 20, rate: 0.625, maxVolume: 80 }
+  - { source: theme.wav, from: 520, to: 1200, rate: 1.25, maxVolume: 80 }
+  - { source: theme.wav, from: 1520, to: 2500, rate: 0.625, maxVolume: 80 }

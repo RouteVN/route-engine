@@ -33,6 +33,20 @@
       "left": 55.4318,
       "right": 22.9603,
       "pan": -0.5
+    },
+    {
+      "check": "click.wav 0-600ms",
+      "maxVolume": {
+        "volume": 52.2643,
+        "atMs": 110
+      }
+    },
+    {
+      "check": "rain.wav 0-600ms",
+      "maxVolume": {
+        "volume": 60.0012,
+        "atMs": 450
+      }
     }
   ],
   "events": [

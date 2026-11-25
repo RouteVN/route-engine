@@ -50,7 +50,10 @@ steps:
 expect:
   # 30% of 80.
   - { source: theme.wav, at: 1200, volume: 24 }
-  - { source: theme.wav, from: 1000, to: 3000, maxVolume: 24 }
+  # Never above 80 before the duck ends just after 1000, and never above 24
+  # after it, through the fade-out.
+  - { source: theme.wav, from: 0, to: 1000, maxVolume: 80 }
+  - { source: theme.wav, from: 1020, to: 3000, maxVolume: 24 }
   # Halfway through the fade-out from 24.
   - { source: theme.wav, at: 1950, volume: 12 }
   - { source: theme.wav, at: 2700, volume: 0 }

@@ -67,10 +67,17 @@
       "pan": 0
     },
     {
+      "check": "old.wav 0-2500ms",
+      "maxVolume": {
+        "volume": 59.9987,
+        "atMs": 40
+      }
+    },
+    {
       "check": "new.wav 0-2500ms",
       "maxVolume": {
         "volume": 59.9994,
-        "atMs": 2440
+        "atMs": 2450
       }
     }
   ],

@@ -36,7 +36,10 @@ A spec in `avt/specs/<name>.yaml` declares:
 - `runtime`: optional runtime values. Music and sound volume default to 100,
   so the authored mix is heard unscaled.
 - `steps`: engine actions to dispatch at `at` milliseconds, for example
-  `nextLine`. A `lineId` checks the line the step reached.
+  `nextLine`. A `lineId` checks the line the step reached. Every step must
+  run: one the clock never reaches, such as one in the render's last
+  moment, fails the spec. Steps run on the next 128-frame render quantum,
+  which is up to 2.67 ms after `at` unless `at` is a multiple of 8 ms.
 - `expect`: what is heard.
   - `{ source, at, window, volume, pan, rate }` measures one window, by
     default 100 ms from `at`. `volume` is 0-100 of the source at full gain.
@@ -47,9 +50,20 @@ A spec in `avt/specs/<name>.yaml` declares:
     sounds folds one side into the other.
   - `{ source, from, to, maxVolume }` checks that the sound is never louder
     than `maxVolume` anywhere in that range. This catches a sound that jumps
-    to full volume before it settles.
+    to full volume before it settles. It measures 20 ms windows centred on
+    every point of the range, so they reach 10 ms past each end and a spike
+    at an end counts in full. End a range 10 ms before a change that may make
+    the sound louder, and start one 10 to 20 ms after a change that makes it
+    quieter. Cover every step and every line start with a range, so a spike
+    when something changes cannot go unheard. Add `rate` to measure a sound
+    played at another speed; the range must then hold that rate.
   - `tolerance` overrides the defaults of 0.75 volume points, 0.02 pan, and
     0.005 playback rate. `left` and `right` use the volume tolerance.
+
+A spec with an unknown key, an unknown action, a range shorter than a
+window, or an expectation that checks nothing fails to load. A warning or
+error in the page's console fails the run: Route Graphics only warns when a
+sound's asset is missing, and the spec would otherwise hear silence.
 
 Derive every expected value from the authored numbers, and say how in a
 comment, for example `# channel 75 x sound 40`. Never copy a value from a
@@ -75,7 +89,8 @@ RE_AVT_ENGINE_ROOT=../route-engine-before bun run test:audio <name>
 Each spec has two reference files in `avt/references`:
 
 - `<name>.wav`: the rendered audio as 48 kHz stereo 16-bit PCM, stored in
-  Git LFS.
+  Git LFS. Run `git lfs pull` before running the tests locally; without it,
+  every spec fails with `WAV differs from the reference`.
 - `<name>.json`: the WAV's SHA-256, length, and signal level, the line each
   step reached, the Route Graphics events with their times, and every
   measurement rounded to four decimals.
@@ -104,6 +119,12 @@ The references belong to this checkout's Route Engine and the
 `route-graphics` version in `package.json`. A Route Graphics upgrade can
 change them, so regenerate them in the same pull request and check that every
 expectation still passes.
+
+The references are recorded with Playwright's Chromium on x86-64 Linux, as
+CI runs it. Rendering is exact there, run after run. Chromium on another
+platform, such as macOS on Apple silicon, may compute some samples a bit
+differently, and then its bytes differ from the references even though the
+expectations pass. Record references on x86-64 Linux.
 
 ## Route Graphics Version
 

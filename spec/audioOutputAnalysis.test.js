@@ -121,6 +121,69 @@ describe("audio output analysis", () => {
     expect(max.atMs).toBeLessThan(400);
   });
 
+  // One Web Audio render quantum: the shortest change a late step makes.
+  const QUANTUM_MS = (128 / SAMPLE_RATE) * 1000;
+
+  it.each([
+    ["start", 500, 500 + QUANTUM_MS],
+    ["end", 1000 - QUANTUM_MS, 1000],
+    ["middle", 750, 750 + QUANTUM_MS],
+  ])(
+    "finds a spike of one render quantum at the %s of the range",
+    (_, spikeFromMs, spikeToMs) => {
+      const channels = render(1500, [
+        {
+          frequency: 400,
+          gainAt: (ms) => (ms >= spikeFromMs && ms < spikeToMs ? 80 : 24),
+        },
+      ]);
+      const max = measureMaxVolume(channels, SAMPLE_RATE, {
+        frequency: 400,
+        amplitude: AMPLITUDE,
+        fromMs: 500,
+        toMs: 1000,
+      });
+
+      // A 20 ms Hann window centred on the spike weighs it at about a quarter
+      // of the window, enough to clear the 24 + 0.75 limit a spec would set.
+      expect(max.volume).toBeGreaterThan(30);
+      expect(Math.abs(max.atMs - spikeFromMs)).toBeLessThanOrEqual(5);
+    },
+  );
+
+  it("measures up to the ends of the rendered audio", () => {
+    // No window can be centred past the end, so the last one ends there.
+    const channels = render(200, [
+      { frequency: 400, gainAt: (ms) => (ms >= 190 ? 100 : 50) },
+    ]);
+    const max = measureMaxVolume(channels, SAMPLE_RATE, {
+      frequency: 400,
+      amplitude: AMPLITUDE,
+      fromMs: 0,
+      toMs: 200,
+    });
+
+    expect(max.volume).toBeGreaterThan(70);
+    expect(max.atMs).toBe(190);
+  });
+
+  it.each([
+    ["no start", { toMs: 500 }],
+    ["no end", { fromMs: 0 }],
+    ["a reversed range", { fromMs: 500, toMs: 100 }],
+    ["a range shorter than a window", { fromMs: 100, toMs: 110 }],
+  ])("rejects a maximum-volume range with %s", (_, range) => {
+    const channels = render(1000, [{ frequency: 400, volume: 50 }]);
+
+    expect(() =>
+      measureMaxVolume(channels, SAMPLE_RATE, {
+        frequency: 400,
+        amplitude: AMPLITUDE,
+        ...range,
+      }),
+    ).toThrow("maximum-volume range");
+  });
+
   it.each([400, 500, 312.5])("measures a frequency of %s Hz", (frequency) => {
     const channels = render(200, [{ frequency, volume: 40, pan: 0.3 }]);
 

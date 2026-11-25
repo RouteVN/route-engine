@@ -40,6 +40,13 @@
       "left": 44.4449,
       "right": 66.5167,
       "pan": 0.25
+    },
+    {
+      "check": "theme.wav 0-1500ms",
+      "maxVolume": {
+        "volume": 79.9985,
+        "atMs": 1225
+      }
     }
   ],
   "events": [

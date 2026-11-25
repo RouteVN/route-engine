@@ -110,24 +110,44 @@ export const measureFrequency = (
 };
 
 // Highest volume of one tone over a time range, in short overlapping windows.
+// The windows are centred on every point of the range, so they reach half a
+// window past each end, and a change right at an end counts as fully as one
+// in the middle. `atMs` is the centre of the loudest window. A range that
+// ends where the sound may get louder, or starts where it gets quieter, ends
+// or starts half a window away from that change.
 export const measureMaxVolume = (
   channels,
   sampleRate,
   { frequency, amplitude, fromMs, toMs, windowMs = 20, stepMs = 5 },
 ) => {
+  if (
+    !Number.isFinite(fromMs) ||
+    !Number.isFinite(toMs) ||
+    toMs - fromMs < windowMs
+  ) {
+    throw new Error(
+      `A maximum-volume range needs from and to at least ${windowMs}ms ` +
+        `apart, got ${fromMs}-${toMs}ms.`,
+    );
+  }
+  const durationMs = (channels[0].length * 1000) / sampleRate;
+  const firstStartMs = Math.max(0, fromMs - windowMs / 2);
+  const lastStartMs = Math.min(durationMs - windowMs, toMs - windowMs / 2);
   let max = 0;
-  let atMs = fromMs;
-  for (let startMs = fromMs; startMs + windowMs <= toMs; startMs += stepMs) {
+  let atMs;
+  for (let startMs = firstStartMs; ; startMs += stepMs) {
+    const windowStartMs = Math.min(startMs, lastStartMs);
     const { volume } = measureTone(channels, sampleRate, {
       frequency,
       amplitude,
-      startMs,
+      startMs: windowStartMs,
       windowMs,
     });
-    if (volume > max) {
+    if (atMs === undefined || volume > max) {
       max = volume;
-      atMs = startMs;
+      atMs = windowStartMs + windowMs / 2;
     }
+    if (windowStartMs >= lastStartMs) break;
   }
   return { volume: max, atMs };
 };

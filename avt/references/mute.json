@@ -93,10 +93,66 @@
       "pan": 0
     },
     {
+      "check": "theme.wav 0-600ms",
+      "maxVolume": {
+        "volume": 79.9985,
+        "atMs": 460
+      }
+    },
+    {
+      "check": "theme.wav 610-1790ms",
+      "maxVolume": {
+        "volume": 0,
+        "atMs": 610
+      }
+    },
+    {
       "check": "theme.wav 1800-2600ms",
       "maxVolume": {
         "volume": 23.9995,
-        "atMs": 2115
+        "atMs": 2125
+      }
+    },
+    {
+      "check": "click.wav 0-600ms",
+      "maxVolume": {
+        "volume": 20.0012,
+        "atMs": 565
+      }
+    },
+    {
+      "check": "click.wav 610-1790ms",
+      "maxVolume": {
+        "volume": 0,
+        "atMs": 610
+      }
+    },
+    {
+      "check": "click.wav 1800-2600ms",
+      "maxVolume": {
+        "volume": 20,
+        "atMs": 1845
+      }
+    },
+    {
+      "check": "ambience.wav 0-590ms",
+      "maxVolume": {
+        "volume": 0.0067,
+        "atMs": 370
+      }
+    },
+    {
+      "check": "ambience.wav 610-1790ms",
+      "maxVolume": {
+        "volume": 0,
+        "atMs": 610
+      }
+    },
+    {
+      "check": "ambience.wav 1810-2600ms",
+      "maxVolume": {
+        "volume": 0.003,
+        "atMs": 2460
       }
     }
   ],

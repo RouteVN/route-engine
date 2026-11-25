@@ -3,6 +3,10 @@ description: >
   While a music-room track plays, story BGM is paused. The track is heard at
   the music volume setting times its sound volume. Clearing the selection
   resumes the BGM at the level its duck left it, scaled by the setting.
+  The pause and resume fall at different points of the theme's 2.5 ms
+  cycle, so resuming, restarting, and playing on while muted each render
+  different samples. The expectations hear the same volume in all three;
+  the reference catches a restart.
 durationMs: 3200
 runtime: { musicVolume: 50 }
 tones:
@@ -45,8 +49,11 @@ projectData:
                     sounds: [{ id: main, resourceId: theme }]
 steps:
   - { at: 500, actions: { nextLine: {} }, lineId: ducked }
-  - { at: 1200, actions: { playMusicRoomTrack: { trackId: song } } }
-  - { at: 2200, actions: { clearMusicRoomSelection: {} } }
+  # Both on render-quantum boundaries (multiples of 8 ms), 24 and 48 of the
+  # theme cycle's 120 frames in. A whole number of cycles would make a
+  # restart sound identical to a resume.
+  - { at: 1208, actions: { playMusicRoomTrack: { trackId: song } } }
+  - { at: 2216, actions: { clearMusicRoomSelection: {} } }
 expect:
   # Setting 50 x channel 80.
   - { source: theme.wav, at: 200, volume: 40 }
@@ -57,4 +64,8 @@ expect:
   - { source: song.wav, at: 1600, volume: 40 }
   - { source: song.wav, at: 2700, volume: 0 }
   - { source: theme.wav, at: 2700, volume: 12 }
-  - { source: theme.wav, from: 2200, to: 3200, maxVolume: 12 }
+  # Never above setting 50 x channel 80 before the duck ends just after 800,
+  # never above 12 after it, and the song never above 40.
+  - { source: theme.wav, from: 0, to: 800, maxVolume: 40 }
+  - { source: theme.wav, from: 820, to: 3200, maxVolume: 12 }
+  - { source: song.wav, from: 0, to: 3200, maxVolume: 40 }

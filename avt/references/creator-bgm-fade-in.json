@@ -38,7 +38,7 @@
       "check": "theme.wav 0-2500ms",
       "maxVolume": {
         "volume": 74.999,
-        "atMs": 2150
+        "atMs": 2160
       }
     }
   ],

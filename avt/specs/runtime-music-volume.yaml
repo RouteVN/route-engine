@@ -40,5 +40,8 @@ steps:
 expect:
   # Setting 50 x channel 75.
   - { source: theme.wav, at: 1500, volume: 37.5 }
-  - { source: theme.wav, from: 0, to: 1800, maxVolume: 37.5 }
+  # Never above 37.5 until the setting changes at 1800, and never above
+  # setting 100 x channel 75 after it.
+  - { source: theme.wav, from: 0, to: 1790, maxVolume: 37.5 }
   - { source: theme.wav, at: 2200, volume: 75 }
+  - { source: theme.wav, from: 1800, to: 2500, maxVolume: 75 }

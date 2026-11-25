@@ -66,4 +66,17 @@ expect:
   - { source: theme.wav, at: 2100, volume: 24 }
   - { source: click.wav, at: 2100, volume: 20 }
   - { source: ambience.wav, at: 2100, volume: 0 }
+  # Before muting, nothing above its mix; while muted, nothing audible; after
+  # unmuting, nothing above the ducked 24 and the SFX 20.
+  - { source: theme.wav, from: 0, to: 600, maxVolume: 80 }
+  - { source: theme.wav, from: 610, to: 1790, maxVolume: 0 }
   - { source: theme.wav, from: 1800, to: 2600, maxVolume: 24 }
+  - { source: click.wav, from: 0, to: 600, maxVolume: 20 }
+  - { source: click.wav, from: 610, to: 1790, maxVolume: 0 }
+  - { source: click.wav, from: 1800, to: 2600, maxVolume: 20 }
+  # The muted BGM sound is never heard. The other tones stop and start
+  # abruptly at 600 and 1800, which leaks into a window at this pitch, so
+  # these ranges leave out the 20 ms around each switch.
+  - { source: ambience.wav, from: 0, to: 590, maxVolume: 0 }
+  - { source: ambience.wav, from: 610, to: 1790, maxVolume: 0 }
+  - { source: ambience.wav, from: 1810, to: 2600, maxVolume: 0 }

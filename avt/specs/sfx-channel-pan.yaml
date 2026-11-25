@@ -44,3 +44,7 @@ expect:
   - { source: click.wav, at: 200, left: 20, right: 48.28 }
   # A mono sound panned -0.5 in a centered channel: volume 60, pan -0.5.
   - { source: rain.wav, at: 200, volume: 60, pan: -0.5 }
+  # Never louder than that: the click's stereo magnitude is
+  # hypot(20, 48.28) = 52.26.
+  - { source: click.wav, from: 0, to: 600, maxVolume: 52.26 }
+  - { source: rain.wav, from: 0, to: 600, maxVolume: 60 }

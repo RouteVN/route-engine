@@ -122,6 +122,9 @@ const run = async (spec) => {
   const errors = [];
   const lines = [];
   const events = [];
+  // Indices of the steps the clock reached. A step it never reaches, such as
+  // one at or past the end of the render, is reported missing.
+  const stepsRun = [];
   try {
     app = createRouteGraphics();
     const effectsHandler = createEffectsHandler({
@@ -181,8 +184,9 @@ const run = async (spec) => {
     });
     lines.push({ atMs: 0, lineId: getPointer(engine).lineId });
 
-    for (const step of spec.steps ?? []) {
+    for (const [index, step] of (spec.steps ?? []).entries()) {
       runtime.scheduleAt(step.at, () => {
+        stepsRun.push(index);
         try {
           engine.handleActions(step.actions);
           lines.push({ atMs: step.at, lineId: getPointer(engine).lineId });
@@ -203,6 +207,7 @@ const run = async (spec) => {
       errors,
       lines,
       events,
+      stepsRun,
       measurements: spec.expect.map((expectation) =>
         measure(channels, tones, expectation),
       ),

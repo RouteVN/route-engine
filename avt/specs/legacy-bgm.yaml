@@ -52,6 +52,8 @@ steps:
 expect:
   - { source: theme.wav, at: 450, volume: 30 }
   - { source: theme.wav, at: 1500, volume: 60 }
-  - { source: theme.wav, from: 0, to: 2000, maxVolume: 60 }
-  # 30% of 60.
+  # Never above the authored 60, through the fade-in and the duck.
+  - { source: theme.wav, from: 0, to: 3000, maxVolume: 60 }
+  # 30% of 60, and never above it once the duck ends just after 2300.
   - { source: theme.wav, at: 2600, volume: 18 }
+  - { source: theme.wav, from: 2320, to: 3000, maxVolume: 18 }

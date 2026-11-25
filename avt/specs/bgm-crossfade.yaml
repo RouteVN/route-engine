@@ -51,4 +51,6 @@ expect:
   - { source: new.wav, at: 950, volume: 30 }
   - { source: old.wav, at: 1800, volume: 0 }
   - { source: new.wav, at: 1800, volume: 60, pan: 0 }
+  # Neither track is ever louder than the channel volume of 60.
+  - { source: old.wav, from: 0, to: 2500, maxVolume: 60 }
   - { source: new.wav, from: 0, to: 2500, maxVolume: 60 }

@@ -38,7 +38,7 @@
       "check": "click.wav 0-2000ms",
       "maxVolume": {
         "volume": 20.0041,
-        "atMs": 1895
+        "atMs": 1905
       }
     },
     {
@@ -59,7 +59,7 @@
       "check": "greeting.wav 0-2000ms",
       "maxVolume": {
         "volume": 60.0004,
-        "atMs": 1320
+        "atMs": 1330
       }
     }
   ],
