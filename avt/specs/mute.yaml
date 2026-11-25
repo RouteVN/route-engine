@@ -1,0 +1,82 @@
+title: Muting silences audio without losing the mix
+description: >
+  A muted BGM sound stays silent, muting everything silences BGM and SFX,
+  and a duck applied while muted is heard when the audio is unmuted.
+durationMs: 2600
+tones:
+  theme.wav: { frequency: 400, amplitude: 0.5 }
+  ambience.wav: { frequency: 600, amplitude: 0.5 }
+  click.wav: { frequency: 800, amplitude: 0.5 }
+projectData:
+  screen: { width: 64, height: 36 }
+  resources:
+    sounds:
+      theme: { fileId: theme.wav }
+      ambience: { fileId: ambience.wav }
+      click: { fileId: click.wav }
+    audioEffects:
+      duck:
+        type: update
+        tween:
+          volume:
+            keyframes:
+              - { value: 30, duration: 300, easing: linear }
+  story:
+    initialSceneId: scene
+    scenes:
+      scene:
+        initialSectionId: section
+        sections:
+          section:
+            lines:
+              - id: music
+                actions:
+                  bgm:
+                    volume: 80
+                    sounds:
+                      - { id: theme, resourceId: theme }
+                      - { id: ambience, resourceId: ambience, muted: true }
+                  sfx:
+                    channels:
+                      - id: ui
+                        volume: 50
+                        applyMode: persistent
+                        sounds: [{ id: click, resourceId: click, volume: 40 }]
+              - id: ducked
+                actions:
+                  bgm:
+                    volume: 80
+                    audioEffects: { resourceId: duck }
+                    sounds:
+                      - { id: theme, resourceId: theme }
+                      - { id: ambience, resourceId: ambience, muted: true }
+steps:
+  - { at: 600, actions: { setMuteAll: { value: true } } }
+  - { at: 1000, actions: { nextLine: {} }, lineId: ducked }
+  - { at: 1800, actions: { setMuteAll: { value: false } } }
+expect:
+  - { source: theme.wav, at: 200, volume: 80 }
+  - { source: ambience.wav, at: 200, volume: 0 }
+  # SFX channel 50 x sound 40.
+  - { source: click.wav, at: 200, volume: 20 }
+  - { source: theme.wav, at: 750, volume: 0 }
+  - { source: click.wav, at: 750, volume: 0 }
+  - { source: theme.wav, at: 1500, volume: 0 }
+  # Unmuted: 30% of 80, and the SFX channel as before.
+  - { source: theme.wav, at: 2100, volume: 24 }
+  - { source: click.wav, at: 2100, volume: 20 }
+  - { source: ambience.wav, at: 2100, volume: 0 }
+  # Before muting, nothing above its mix; while muted, nothing audible; after
+  # unmuting, nothing above the ducked 24 and the SFX 20.
+  - { source: theme.wav, from: 0, to: 600, maxVolume: 80 }
+  - { source: theme.wav, from: 610, to: 1790, maxVolume: 0 }
+  - { source: theme.wav, from: 1800, to: 2600, maxVolume: 24 }
+  - { source: click.wav, from: 0, to: 600, maxVolume: 20 }
+  - { source: click.wav, from: 610, to: 1790, maxVolume: 0 }
+  - { source: click.wav, from: 1800, to: 2600, maxVolume: 20 }
+  # The muted BGM sound is never heard. The other tones stop and start
+  # abruptly at 600 and 1800, which leaks into a window at this pitch, so
+  # these ranges leave out the 20 ms around each switch.
+  - { source: ambience.wav, from: 0, to: 590, maxVolume: 0 }
+  - { source: ambience.wav, from: 610, to: 1790, maxVolume: 0 }
+  - { source: ambience.wav, from: 1810, to: 2600, maxVolume: 0 }

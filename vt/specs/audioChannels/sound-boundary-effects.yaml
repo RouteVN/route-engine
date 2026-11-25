@@ -5,6 +5,7 @@ skipInitialScreenshot: true
 specs:
   - a BGM sound selects reusable update effects for its natural begin and end boundaries
   - Route Engine emits concrete beginEffect and endEffect tracks on the sound node
+  - the fade-in to 100 ends at the sound's rendered volume, 75% of 80, not at full volume
   - Route Graphics starts the sound and schedules both boundary gain ramps
   - no top-level audio effect occurrence is created for sound boundaries
 steps:
@@ -19,8 +20,12 @@ steps:
     value: 0
   - action: assert
     type: js
+    global: __vtLastRenderState.audio.0.children.0.volume
+    value: 60
+  - action: assert
+    type: js
     global: __vtLastRenderState.audio.0.children.0.beginEffect.volume.keyframes.0.value
-    value: 100
+    value: 60
   - action: assert
     type: js
     global: __vtLastRenderState.audio.0.children.0.endEffect.volume.keyframes.0.value
@@ -40,7 +45,7 @@ steps:
   - action: assert
     type: js
     global: __vtAudioParamRamps.0.value
-    value: 1
+    value: 0.6
   - action: assert
     type: js
     global: __vtAudioParamRamps.1.value
@@ -100,10 +105,12 @@ story:
               actions:
                 bgm:
                   loop: true
+                  volume: 75
                   sounds:
                     - id: main
                       resourceId: theme
                       loop: false
+                      volume: 80
                       beginEffect:
                         resourceId: fade-in
                       endEffect:

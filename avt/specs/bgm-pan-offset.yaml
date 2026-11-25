@@ -1,0 +1,47 @@
+title: A BGM pan sweep settles on the authored pan
+description: >
+  A pan effect from -1 to 0 offsets the authored channel pan of -0.25 and
+  sound pan of 0.5, so it sweeps in from the left and settles at 0.25.
+durationMs: 1500
+tones:
+  theme.wav: { frequency: 400, amplitude: 0.5 }
+projectData:
+  screen: { width: 64, height: 36 }
+  resources:
+    sounds:
+      theme: { fileId: theme.wav }
+    audioEffects:
+      panSweep:
+        type: update
+        tween:
+          pan:
+            keyframes:
+              - { startValue: -1, value: 0, duration: 500, easing: linear }
+  story:
+    initialSceneId: scene
+    scenes:
+      scene:
+        initialSectionId: section
+        sections:
+          section:
+            lines:
+              - id: music
+                actions:
+                  bgm:
+                    volume: 80
+                    pan: -0.25
+                    audioEffects: { resourceId: panSweep }
+                    sounds: [{ id: theme, resourceId: theme, pan: 0.5 }]
+expect:
+  # -0.25 - 1 + 0.5 at the start, -0.25 + 0 + 0.5 at the end.
+  - {
+      source: theme.wav,
+      at: 0,
+      window: 20,
+      pan: -0.75,
+      tolerance: { pan: 0.05 },
+    }
+  - { source: theme.wav, at: 230, window: 40, pan: -0.25 }
+  - { source: theme.wav, at: 1000, volume: 80, pan: 0.25 }
+  # Panning moves the volume between the sides, never above 80.
+  - { source: theme.wav, from: 0, to: 1500, maxVolume: 80 }

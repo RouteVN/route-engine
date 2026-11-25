@@ -1,6 +1,6 @@
 {
   "name": "route-engine-js",
-  "version": "1.55.0",
+  "version": "1.56.0",
   "description": "A lightweight Visual Novel engine built in JavaScript for creating interactive narrative games with branching storylines",
   "repository": {
     "type": "git",
@@ -34,6 +34,9 @@
   "scripts": {
     "test": "vitest run --reporter=default --reporter=./scripts/reject-disabled-tests-reporter.js",
     "test:watch": "vitest",
+    "test:audio": "node scripts/audioOutputTest.mjs",
+    "test:audio:generate": "node scripts/audioOutputTest.mjs generate",
+    "test:audio:report": "node scripts/audioOutputTest.mjs report",
     "generate:l10n-validator": "node scripts/generate-l10n-payload-validators.js",
     "prepare": "husky",
     "prepack": "bun run build",
@@ -62,6 +65,7 @@
     "@vitest/ui": "4.0.16",
     "ajv": "^8.18.0",
     "husky": "^9.1.7",
+    "playwright": "1.57.0",
     "prettier": "^3.7.4",
     "route-graphics": "1.43.0",
     "vitest": "4.0.16"

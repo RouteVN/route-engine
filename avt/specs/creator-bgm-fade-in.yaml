@@ -1,0 +1,56 @@
+title: Creator BGM fade-in plays at the channel volume
+description: >
+  BGM in the shape the RouteVN creator writes, a channel at volume 75 with a
+  channel fade-in, a per-sound begin fade that ends at 100, and a per-sound
+  end fade that ends at 0, is heard at 75 and never louder. The tone outlasts
+  the render, so the end fade does not play.
+durationMs: 2500
+tones:
+  theme.wav: { frequency: 400, amplitude: 0.5 }
+projectData:
+  screen: { width: 64, height: 36 }
+  resources:
+    sounds:
+      theme: { fileId: theme.wav }
+    audioEffects:
+      fadeIn:
+        type: update
+        tween:
+          volume:
+            keyframes:
+              - { startValue: 0, value: 100, duration: 1000, easing: linear }
+      fadeOut:
+        type: update
+        tween:
+          volume:
+            keyframes:
+              - { startValue: 100, value: 0, duration: 1000, easing: linear }
+  story:
+    initialSceneId: scene
+    scenes:
+      scene:
+        initialSectionId: section
+        sections:
+          section:
+            lines:
+              - id: music
+                actions:
+                  bgm:
+                    loop: true
+                    volume: 75
+                    audioEffects: { resourceId: fadeIn, playback: { speed: 1 } }
+                    sounds:
+                      - id: theme
+                        resourceId: theme
+                        loop: false
+                        volume: 100
+                        startDelayMs: 0
+                        beginEffect:
+                          { resourceId: fadeIn, playback: { speed: 1 } }
+                        endEffect:
+                          { resourceId: fadeOut, playback: { speed: 1 } }
+expect:
+  # Channel 75 x sound 100.
+  - { source: theme.wav, at: 1500, volume: 75, pan: 0 }
+  - { source: theme.wav, at: 2300, volume: 75 }
+  - { source: theme.wav, from: 0, to: 2500, maxVolume: 75 }

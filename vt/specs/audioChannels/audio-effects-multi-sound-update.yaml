@@ -91,7 +91,7 @@ resources:
       tween:
         volume:
           keyframes:
-            - value: 30
+            - value: 100
               duration: 1000
               easing: linear
   colors:

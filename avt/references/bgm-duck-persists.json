@@ -1,0 +1,158 @@
+{
+  "version": 1,
+  "wavSha256": "bbda323c0cc1761303e52449baac799db0b2715ba4f4ad46a87115a09b7e028e",
+  "metadata": {
+    "sampleRate": 48000,
+    "numberOfChannels": 2,
+    "frameCount": 144000,
+    "durationMs": 3000,
+    "byteLength": 576044,
+    "signal": {
+      "peak": 0.2828369140625,
+      "rms": 0.13499275844374023,
+      "nonZeroSamples": 283200
+    }
+  },
+  "lines": [
+    {
+      "atMs": 0,
+      "lineId": "music"
+    },
+    {
+      "atMs": 500,
+      "lineId": "ducked"
+    },
+    {
+      "atMs": 1500,
+      "lineId": "no-bgm"
+    },
+    {
+      "atMs": 2500,
+      "lineId": "restored"
+    }
+  ],
+  "measurements": [
+    {
+      "check": "theme.wav at 200ms",
+      "volume": 80.0001,
+      "left": 56.5686,
+      "right": 56.5686,
+      "pan": 0
+    },
+    {
+      "check": "theme.wav at 700ms",
+      "volume": 52.1498,
+      "left": 36.8755,
+      "right": 36.8755,
+      "pan": 0
+    },
+    {
+      "check": "theme.wav at 1200ms",
+      "volume": 23.9992,
+      "left": 16.97,
+      "right": 16.97,
+      "pan": 0
+    },
+    {
+      "check": "theme.wav at 2000ms",
+      "volume": 23.9992,
+      "left": 16.97,
+      "right": 16.97,
+      "pan": 0
+    },
+    {
+      "check": "theme.wav 0-1000ms",
+      "maxVolume": {
+        "volume": 79.9998,
+        "atMs": 235
+      }
+    },
+    {
+      "check": "theme.wav 1020-2490ms",
+      "maxVolume": {
+        "volume": 23.9991,
+        "atMs": 1790
+      }
+    },
+    {
+      "check": "theme.wav 2500-3000ms",
+      "maxVolume": {
+        "volume": 79.9998,
+        "atMs": 2680
+      }
+    },
+    {
+      "check": "theme.wav at 2700ms",
+      "volume": 80.0001,
+      "left": 56.5686,
+      "right": 56.5686,
+      "pan": 0
+    }
+  ],
+  "events": [
+    {
+      "atMs": 0,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-1",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 0,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-2",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 501.333,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-3",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 501.333,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-4",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 1501.333,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-5",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 1501.333,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-6",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 2501.333,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-7",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 2501.333,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-8",
+        "aborted": false
+      }
+    }
+  ]
+}

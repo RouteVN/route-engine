@@ -1,0 +1,56 @@
+title: BGM playback-rate effects multiply the authored rate
+description: >
+  A playback-rate effect from 0.5 to 1 speeds a sound with a resource rate of
+  1.25 up to 1.25, and an effect that ends at 0.5 then halves it to 0.625.
+durationMs: 2500
+tones:
+  theme.wav: { frequency: 400, amplitude: 0.5 }
+projectData:
+  screen: { width: 64, height: 36 }
+  resources:
+    sounds:
+      tuned: { fileId: theme.wav, playbackRate: 1.25 }
+    audioEffects:
+      slowStart:
+        type: update
+        tween:
+          playbackRate:
+            keyframes:
+              - { startValue: 0.5, value: 1, duration: 500, easing: linear }
+      halfSpeed:
+        type: update
+        tween:
+          playbackRate:
+            keyframes:
+              - { value: 0.5, duration: 300, easing: linear }
+  story:
+    initialSceneId: scene
+    scenes:
+      scene:
+        initialSectionId: section
+        sections:
+          section:
+            lines:
+              - id: music
+                actions:
+                  bgm:
+                    volume: 80
+                    audioEffects: { resourceId: slowStart }
+                    sounds: [{ id: main, resourceId: tuned }]
+              - id: slower
+                actions:
+                  bgm:
+                    volume: 80
+                    audioEffects: { resourceId: halfSpeed }
+                    sounds: [{ id: main, resourceId: tuned }]
+steps:
+  - { at: 1200, actions: { nextLine: {} }, lineId: slower }
+expect:
+  - { source: theme.wav, at: 900, volume: 80, rate: 1.25 }
+  - { source: theme.wav, at: 2000, volume: 80, rate: 0.625 }
+  # Never above 80. The volume is measured at one pitch, so these ranges
+  # cover where the rate holds: the start at 0.5 x 1.25, the settled 1.25 up
+  # to the line change, and the settled 0.625 after it.
+  - { source: theme.wav, from: 0, to: 20, rate: 0.625, maxVolume: 80 }
+  - { source: theme.wav, from: 520, to: 1200, rate: 1.25, maxVolume: 80 }
+  - { source: theme.wav, from: 1520, to: 2500, rate: 0.625, maxVolume: 80 }

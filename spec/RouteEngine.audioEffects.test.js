@@ -119,21 +119,26 @@ describe("RouteEngine audioEffects occurrences", () => {
     projectData.story.scenes.scene.sections.section.lines[0].actions.bgm.audioEffects =
       { resourceId: "crossfade" };
 
-    const effect = createEngine({ projectData }).selectRenderState()
-      .audioEffects?.[0];
+    const engine = createEngine({ projectData });
+    const effect = engine.selectRenderState().audioEffects?.[0];
 
+    // The fade-in ends at 100% of the authored channel volume of 80.
     expect(effect).toMatchObject({
       targetId: "bgm:main",
       properties: {
         volume: {
           enter: {
             initialValue: 0,
-            keyframes: [expect.objectContaining({ value: 100 })],
+            keyframes: [expect.objectContaining({ value: 80 })],
           },
         },
       },
     });
     expect(effect.properties.volume).not.toHaveProperty("exit");
+    expect(engine.selectPresentationState().bgm).not.toHaveProperty(
+      "audioEffectMix",
+    );
+    expect(engine.selectRenderState().audio[0].children[0].volume).toBe(80);
   });
 
   it("plays an update effect on the initial BGM as its incoming track", () => {
@@ -144,22 +149,26 @@ describe("RouteEngine audioEffects occurrences", () => {
     const engine = createEngine({ projectData });
     const effect = engine.selectRenderState().audioEffects?.[0];
 
+    // 50% and 30% of the authored channel volume of 80.
     expect(effect).toMatchObject({
       targetId: "bgm:main",
       properties: {
         volume: {
           enter: {
             keyframes: [
-              expect.objectContaining({ value: 50 }),
-              expect.objectContaining({ value: 30 }),
+              expect.objectContaining({ value: 40 }),
+              expect.objectContaining({ value: 24 }),
             ],
           },
         },
       },
     });
     expect(Object.keys(effect.properties.volume)).toEqual(["enter"]);
-    expect(engine.selectPresentationState().bgm.volume).toBe(30);
-    expect(engine.selectRenderState().audio[0].children[0].volume).toBe(30);
+    expect(engine.selectPresentationState().bgm).toMatchObject({
+      volume: 80,
+      audioEffectMix: { volume: 30 },
+    });
+    expect(engine.selectRenderState().audio[0].children[0].volume).toBe(24);
   });
 
   it("plays an update effect as the incoming track of a new BGM source", () => {
@@ -171,14 +180,15 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(() => enterNextLine(engine)).not.toThrow();
     const effect = engine.selectRenderState().audioEffects?.[0];
 
+    // 50% and 30% of the incoming channel volume of 60.
     expect(effect).toMatchObject({
       targetId: "bgm:main",
       properties: {
         volume: {
           enter: {
             keyframes: [
-              expect.objectContaining({ value: 50, duration: 400 }),
-              expect.objectContaining({ value: 30, duration: 600 }),
+              expect.objectContaining({ value: 30, duration: 400 }),
+              expect.objectContaining({ value: 18, duration: 600 }),
             ],
           },
         },
@@ -187,7 +197,7 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(Object.keys(effect.properties.volume)).toEqual(["enter"]);
     expect(engine.selectRenderState().audio[0].children[0]).toMatchObject({
       src: "next.ogg",
-      volume: 30,
+      volume: 18,
     });
   });
 
@@ -202,14 +212,15 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(() => enterNextLine(engine)).not.toThrow();
     const effect = engine.selectRenderState().audioEffects?.[0];
 
+    // The outgoing track plays against the volume the music is playing at, 80.
     expect(effect).toMatchObject({
       targetId: "bgm:main",
       properties: {
         volume: {
           exit: {
             keyframes: [
-              expect.objectContaining({ value: 50, duration: 400 }),
-              expect.objectContaining({ value: 30, duration: 600 }),
+              expect.objectContaining({ value: 40, duration: 400 }),
+              expect.objectContaining({ value: 24, duration: 600 }),
             ],
           },
         },
@@ -223,7 +234,7 @@ describe("RouteEngine audioEffects occurrences", () => {
     const projectData = createProjectData();
     projectData.resources.audioEffects.hold = {
       type: "update",
-      tween: { volume: { keyframes: [{ value: 80, duration: 500 }] } },
+      tween: { volume: { keyframes: [{ value: 100, duration: 500 }] } },
     };
     const lines = projectData.story.scenes.scene.sections.section.lines;
     lines[0].actions.bgm.sounds.push({ id: "ambience", resourceId: "next" });
@@ -276,6 +287,12 @@ describe("RouteEngine audioEffects occurrences", () => {
 
   it("templates the BGM audio effect selection used by line entry", () => {
     const projectData = createProjectData();
+    projectData.resources.audioEffects.swell = {
+      type: "update",
+      tween: {
+        volume: { keyframes: [{ startValue: 0, value: 100, duration: 500 }] },
+      },
+    };
     const action =
       projectData.story.scenes.scene.sections.section.lines[1].actions.bgm;
     action.volume = 30;
@@ -283,16 +300,32 @@ describe("RouteEngine audioEffects occurrences", () => {
     action.audioEffects.resourceId = "${variables.audioEffectId}";
     const engine = createEngine({
       projectData,
-      global: { variables: { audioEffectId: "smooth" } },
+      global: { variables: { audioEffectId: "swell" } },
     });
 
     enterNextLine(engine);
 
-    expect(
-      engine
-        .selectRenderState()
-        .audioEffects[0].properties.volume.update.keyframes.at(-1).value,
-    ).toBe(30);
+    const renderState = engine.selectRenderState();
+    expect(renderState.audioEffects[0].properties.volume.update).toMatchObject({
+      keyframes: [expect.objectContaining({ startValue: 0, value: 30 })],
+    });
+    expect(renderState.audio[0].children[0].volume).toBe(30);
+  });
+
+  it("rejects a templated selection whose final values would persist", () => {
+    const projectData = createProjectData();
+    const action =
+      projectData.story.scenes.scene.sections.section.lines[1].actions.bgm;
+    action.sounds = [{ id: "main", resourceId: "old" }];
+    action.audioEffects.resourceId = "${variables.audioEffectId}";
+    const engine = createEngine({
+      projectData,
+      global: { variables: { audioEffectId: "smooth" } },
+    });
+
+    expect(() => enterNextLine(engine)).toThrow(
+      'Audio effect "smooth" ends at values that persist in the BGM mix, but the mix was recorded without them.',
+    );
   });
 
   it("preserves each local mix while updating a multi-sound BGM channel", () => {
@@ -322,8 +355,10 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(() => enterNextLine(engine)).not.toThrow();
     const renderState = engine.selectRenderState();
 
+    // The channel settles at 30% of 30 (9); main is at 75% and ambience at
+    // its resource volume of 40%.
     expect(renderState.audio[0].children.map(({ volume }) => volume)).toEqual([
-      22.5, 12,
+      6.75, 3.6,
     ]);
     expect(renderState.audioEffects.map((effect) => effect.targetId)).toEqual([
       "bgm:main",
@@ -333,7 +368,7 @@ describe("RouteEngine audioEffects occurrences", () => {
       renderState.audioEffects.map(
         (effect) => effect.properties.volume.update.keyframes.at(-1).value,
       ),
-    ).toEqual([22.5, 12]);
+    ).toEqual([6.75, 3.6]);
     expect(engine.selectPresentationState().bgm.sounds).toEqual([
       { id: "main", resourceId: "old", volume: 75 },
       { id: "ambience", resourceId: "ambience" },
@@ -359,7 +394,6 @@ describe("RouteEngine audioEffects occurrences", () => {
       sounds: [{ id: "main", resourceId: "old", pan: 0.5 }],
     };
     lines[1].actions.bgm = {
-      pan: 0.4,
       audioEffects: { resourceId: "panCurve" },
       sounds: [{ id: "main", resourceId: "old", pan: 0.5 }],
     };
@@ -394,7 +428,7 @@ describe("RouteEngine audioEffects occurrences", () => {
       properties: {
         volume: {
           exit: { keyframes: [expect.objectContaining({ value: 0 })] },
-          enter: { keyframes: [expect.objectContaining({ value: 100 })] },
+          enter: { keyframes: [expect.objectContaining({ value: 60 })] },
         },
       },
     });
@@ -409,7 +443,7 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(settingsRender.audio[0]).toMatchObject({
       id: "channel:bgm",
       volume: 25,
-      children: [expect.objectContaining({ id: "bgm:main", volume: 100 })],
+      children: [expect.objectContaining({ id: "bgm:main", volume: 60 })],
     });
 
     engine.commitRenderState(retry);
@@ -435,7 +469,7 @@ describe("RouteEngine audioEffects occurrences", () => {
 
     expect(
       retry.audioEffects[0].properties.volume.enter.keyframes[0].value,
-    ).toBe(100);
+    ).toBe(60);
     expect(retry.audioEffects[0].properties.volume.exit.keyframes).toHaveLength(
       1,
     );
@@ -471,6 +505,7 @@ describe("RouteEngine audioEffects occurrences", () => {
     engine.commitRenderState(engine.selectRenderState());
     enterNextLine(engine);
 
+    // 50% and 30% of the authored channel volume of 90.
     expect(engine.selectRenderState().audioEffects[0]).toMatchObject({
       type: "audio-transition",
       targetId: "bgm:main",
@@ -478,8 +513,8 @@ describe("RouteEngine audioEffects occurrences", () => {
         volume: {
           update: {
             keyframes: [
-              expect.objectContaining({ value: 50 }),
-              expect.objectContaining({ value: 30 }),
+              expect.objectContaining({ value: 45 }),
+              expect.objectContaining({ value: 27 }),
             ],
           },
         },
@@ -489,13 +524,14 @@ describe("RouteEngine audioEffects occurrences", () => {
     engine.handleAction("setSkipTransitionsAndAnimations", { value: true });
     expect(engine.selectRenderState().audioEffects).toBeUndefined();
     expect(engine.selectPresentationState().bgm).toMatchObject({
-      volume: 30,
+      volume: 90,
+      audioEffectMix: { volume: 30 },
       sounds: [expect.objectContaining({ id: "main", resourceId: "old" })],
     });
-    expect(engine.selectRenderState().audio[0].children[0].volume).toBe(30);
+    expect(engine.selectRenderState().audio[0].children[0].volume).toBe(27);
     engine.handleAction("setSkipTransitionsAndAnimations", { value: false });
     expect(engine.selectRenderState().audioEffects).toBeUndefined();
-    expect(engine.selectRenderState().audio[0].children[0].volume).toBe(30);
+    expect(engine.selectRenderState().audio[0].children[0].volume).toBe(27);
   });
 
   it("removes an active effect when an unanimated BGM action supersedes it", () => {
@@ -545,7 +581,7 @@ describe("RouteEngine audioEffects occurrences", () => {
         volume: {
           update: {
             keyframes: expect.arrayContaining([
-              expect.objectContaining({ value: 30 }),
+              expect.objectContaining({ value: 27 }),
             ]),
           },
         },
@@ -578,7 +614,7 @@ describe("RouteEngine audioEffects occurrences", () => {
         volume: {
           update: {
             keyframes: expect.arrayContaining([
-              expect.objectContaining({ value: 30 }),
+              expect.objectContaining({ value: 27 }),
             ]),
           },
         },
@@ -603,7 +639,7 @@ describe("RouteEngine audioEffects occurrences", () => {
         volume: {
           update: {
             keyframes: expect.arrayContaining([
-              expect.objectContaining({ value: 30 }),
+              expect.objectContaining({ value: 27 }),
             ]),
           },
         },
@@ -640,7 +676,7 @@ describe("RouteEngine audioEffects occurrences", () => {
         volume: {
           update: {
             keyframes: expect.arrayContaining([
-              expect.objectContaining({ value: 30 }),
+              expect.objectContaining({ value: 7.5 }),
             ]),
           },
         },
@@ -688,7 +724,7 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(engine.selectRenderState().audio[0].children[0]).toMatchObject({
       id: "bgm:main",
       src: "old.ogg",
-      volume: 30,
+      volume: 27,
     });
   });
 
@@ -732,7 +768,7 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(engine.selectRenderState().audio[0].children[0]).toMatchObject({
       id: "bgm:main",
       src: "old.ogg",
-      volume: 30,
+      volume: 27,
     });
   });
 
@@ -826,7 +862,7 @@ describe("RouteEngine audioEffects occurrences", () => {
         volume: {
           update: {
             keyframes: expect.arrayContaining([
-              expect.objectContaining({ value: 30 }),
+              expect.objectContaining({ value: 9 }),
             ]),
           },
         },
@@ -875,22 +911,23 @@ describe("RouteEngine audioEffects occurrences", () => {
     const engine = createEngine({ projectData });
 
     expect(engine.selectRenderState().audioEffects).toBeUndefined();
+    // Boundary keyframes play relative to the sound's declared volume of 80.
     expect(engine.selectRenderState().audio[0].children[0]).toMatchObject({
       id: "bgm:lead%3A%25main",
       loop: false,
       beginEffect: {
         volume: {
           keyframes: [
-            expect.objectContaining({ value: 50, duration: 200 }),
-            expect.objectContaining({ value: 30, duration: 300 }),
+            expect.objectContaining({ value: 40, duration: 200 }),
+            expect.objectContaining({ value: 24, duration: 300 }),
           ],
         },
       },
       endEffect: {
         volume: {
           keyframes: [
-            expect.objectContaining({ value: 50, duration: 400 }),
-            expect.objectContaining({ value: 30, duration: 600 }),
+            expect.objectContaining({ value: 40, duration: 400 }),
+            expect.objectContaining({ value: 24, duration: 600 }),
           ],
         },
       },
@@ -919,7 +956,6 @@ describe("RouteEngine audioEffects occurrences", () => {
 
   it("uses startup skip state for a no-op boundary-effect handoff", () => {
     const projectData = createProjectData();
-    projectData.resources.audioEffects.crossfade.next.volume.keyframes[0].value = 80;
     const lines = projectData.story.scenes.scene.sections.section.lines;
     const sound = {
       id: "main",
@@ -1080,11 +1116,12 @@ describe("RouteEngine transition audioEffects on music that keeps playing", () =
     const renderState = engine.selectRenderState();
     expect(renderState.audioEffects).toBeUndefined();
     expect(renderState.audio[0].children).toHaveLength(1);
-    // The transition's final next volume is the persistent mix on every path.
+    // The transition ends at 100%, so the authored volume of 80 is the
+    // persistent mix on every path.
     expect(renderState.audio[0].children[0]).toMatchObject({
       id: "bgm:main",
       src: "old.ogg",
-      volume: 100,
+      volume: 80,
     });
   };
 
@@ -1157,7 +1194,7 @@ describe("RouteEngine transition audioEffects on music that keeps playing", () =
           volume: {
             enter: expect.objectContaining({
               initialValue: 0,
-              keyframes: [expect.objectContaining({ value: 100 })],
+              keyframes: [expect.objectContaining({ value: 80 })],
             }),
           },
         },

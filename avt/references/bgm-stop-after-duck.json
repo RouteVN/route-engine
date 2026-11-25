@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "wavSha256": "2478a09001f5069459a216f0820c092fbee4dbd28d44bbabe2e282c16b837c2b",
+  "metadata": {
+    "sampleRate": 48000,
+    "numberOfChannels": 2,
+    "frameCount": 144000,
+    "durationMs": 3000,
+    "byteLength": 576044,
+    "signal": {
+      "peak": 0.2828369140625,
+      "rms": 0.10379409586400361,
+      "nonZeroSamples": 236084
+    }
+  },
+  "lines": [
+    {
+      "atMs": 0,
+      "lineId": "music"
+    },
+    {
+      "atMs": 500,
+      "lineId": "ducked"
+    },
+    {
+      "atMs": 1500,
+      "lineId": "stopped"
+    }
+  ],
+  "measurements": [
+    {
+      "check": "theme.wav at 1200ms",
+      "volume": 23.9992,
+      "left": 16.97,
+      "right": 16.97,
+      "pan": 0
+    },
+    {
+      "check": "theme.wav 0-1000ms",
+      "maxVolume": {
+        "volume": 79.9998,
+        "atMs": 235
+      }
+    },
+    {
+      "check": "theme.wav 1020-3000ms",
+      "maxVolume": {
+        "volume": 23.9991,
+        "atMs": 1420
+      }
+    },
+    {
+      "check": "theme.wav at 1950ms",
+      "volume": 12.032,
+      "left": 8.5079,
+      "right": 8.5079,
+      "pan": 0
+    },
+    {
+      "check": "theme.wav at 2700ms",
+      "volume": 0,
+      "left": 0,
+      "right": 0
+    }
+  ],
+  "events": [
+    {
+      "atMs": 0,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-1",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 0,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-2",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 501.333,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-3",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 501.333,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-4",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 1501.333,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-5",
+        "aborted": false
+      }
+    },
+    {
+      "atMs": 1501.333,
+      "name": "renderComplete",
+      "payload": {
+        "id": "render-1-6",
+        "aborted": false
+      }
+    }
+  ]
+}

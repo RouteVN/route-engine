@@ -1,0 +1,71 @@
+title: The music room pauses ducked BGM and resumes it at the ducked level
+description: >
+  While a music-room track plays, story BGM is paused. The track is heard at
+  the music volume setting times its sound volume. Clearing the selection
+  resumes the BGM at the level its duck left it, scaled by the setting.
+  The pause and resume fall at different points of the theme's 2.5 ms
+  cycle, so resuming, restarting, and playing on while muted each render
+  different samples. The expectations hear the same volume in all three;
+  the reference catches a restart.
+durationMs: 3200
+runtime: { musicVolume: 50 }
+tones:
+  theme.wav: { frequency: 400, amplitude: 0.5 }
+  song.wav: { frequency: 600, amplitude: 0.5 }
+projectData:
+  screen: { width: 64, height: 36 }
+  resources:
+    sounds:
+      theme: { fileId: theme.wav }
+      song: { fileId: song.wav, volume: 80 }
+    musicRoom:
+      pageSize: 8
+      tracks:
+        - { id: song, soundId: song, title: Song }
+    audioEffects:
+      duck:
+        type: update
+        tween:
+          volume:
+            keyframes:
+              - { value: 30, duration: 300, easing: linear }
+  story:
+    initialSceneId: scene
+    scenes:
+      scene:
+        initialSectionId: section
+        sections:
+          section:
+            lines:
+              - id: music
+                actions:
+                  addViewedResource: { resourceId: song }
+                  bgm: { volume: 80, sounds: [{ id: main, resourceId: theme }] }
+              - id: ducked
+                actions:
+                  bgm:
+                    volume: 80
+                    audioEffects: { resourceId: duck }
+                    sounds: [{ id: main, resourceId: theme }]
+steps:
+  - { at: 500, actions: { nextLine: {} }, lineId: ducked }
+  # Both on render-quantum boundaries (multiples of 8 ms), 24 and 48 of the
+  # theme cycle's 120 frames in. A whole number of cycles would make a
+  # restart sound identical to a resume.
+  - { at: 1208, actions: { playMusicRoomTrack: { trackId: song } } }
+  - { at: 2216, actions: { clearMusicRoomSelection: {} } }
+expect:
+  # Setting 50 x channel 80.
+  - { source: theme.wav, at: 200, volume: 40 }
+  # Setting 50 x 30% of 80.
+  - { source: theme.wav, at: 1000, volume: 12 }
+  - { source: theme.wav, at: 1600, volume: 0 }
+  # Setting 50 x sound 80.
+  - { source: song.wav, at: 1600, volume: 40 }
+  - { source: song.wav, at: 2700, volume: 0 }
+  - { source: theme.wav, at: 2700, volume: 12 }
+  # Never above setting 50 x channel 80 before the duck ends just after 800,
+  # never above 12 after it, and the song never above 40.
+  - { source: theme.wav, from: 0, to: 800, maxVolume: 40 }
+  - { source: theme.wav, from: 820, to: 3200, maxVolume: 12 }
+  - { source: song.wav, from: 0, to: 3200, maxVolume: 40 }

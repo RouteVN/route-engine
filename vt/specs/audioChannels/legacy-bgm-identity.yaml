@@ -53,7 +53,7 @@ steps:
   - action: assert
     type: js
     global: __vtLastAudioEffect.properties.volume.update.keyframes.0.value
-    value: 20
+    value: 10
   - action: wait
     ms: 300
   - action: click

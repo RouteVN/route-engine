@@ -1,0 +1,59 @@
+title: Stopping ducked BGM fades out from the ducked volume
+description: >
+  A fade-out that stops music which an earlier effect left at 30% of its
+  authored volume starts from that volume and never jumps back up first.
+durationMs: 3000
+tones:
+  theme.wav: { frequency: 400, amplitude: 0.5 }
+projectData:
+  screen: { width: 64, height: 36 }
+  resources:
+    sounds:
+      theme: { fileId: theme.wav }
+    audioEffects:
+      duck:
+        type: update
+        tween:
+          volume:
+            keyframes:
+              - { value: 30, duration: 500, easing: linear }
+      fadeOut:
+        type: update
+        tween:
+          volume:
+            keyframes:
+              - { startValue: 100, value: 0, duration: 1000, easing: linear }
+  story:
+    initialSceneId: scene
+    scenes:
+      scene:
+        initialSectionId: section
+        sections:
+          section:
+            lines:
+              - id: music
+                actions:
+                  bgm:
+                    { volume: 80, sounds: [{ id: theme, resourceId: theme }] }
+              - id: ducked
+                actions:
+                  bgm:
+                    volume: 80
+                    audioEffects: { resourceId: duck }
+                    sounds: [{ id: theme, resourceId: theme }]
+              - id: stopped
+                actions:
+                  bgm: { sounds: [], audioEffects: { resourceId: fadeOut } }
+steps:
+  - { at: 500, actions: { nextLine: {} }, lineId: ducked }
+  - { at: 1500, actions: { nextLine: {} }, lineId: stopped }
+expect:
+  # 30% of 80.
+  - { source: theme.wav, at: 1200, volume: 24 }
+  # Never above 80 before the duck ends just after 1000, and never above 24
+  # after it, through the fade-out.
+  - { source: theme.wav, from: 0, to: 1000, maxVolume: 80 }
+  - { source: theme.wav, from: 1020, to: 3000, maxVolume: 24 }
+  # Halfway through the fade-out from 24.
+  - { source: theme.wav, at: 1950, volume: 12 }
+  - { source: theme.wav, at: 2700, volume: 0 }
