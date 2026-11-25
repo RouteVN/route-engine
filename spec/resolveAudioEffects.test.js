@@ -864,7 +864,7 @@ describe("resolveAudioEffect", () => {
     },
   );
 
-  it("writes final update values into the persistent BGM mix without mutating authoring", () => {
+  it("records final update values as an effect mix without replacing the authored mix", () => {
     const bgm = {
       volume: 25,
       pan: 0.75,
@@ -894,23 +894,13 @@ describe("resolveAudioEffect", () => {
     const snapshot = structuredClone(bgm);
 
     expect(applyAudioEffectEndpoints({ bgm, resources })).toEqual({
-      volume: 50,
-      pan: -0.5,
-      audioEffects: { resourceId: "smooth" },
-      sounds: [
-        {
-          id: "main",
-          resourceId: "old",
-          volume: 40,
-          pan: 0.25,
-          playbackRate: 0.75,
-        },
-      ],
+      ...snapshot,
+      audioEffectMix: { volume: 50, pan: -0.5, playbackRate: 0.75 },
     });
     expect(bgm).toEqual(snapshot);
   });
 
-  it("writes incoming transition endpoints into the persistent BGM mix", () => {
+  it("records the incoming transition's final values as an effect mix", () => {
     const bgm = {
       volume: 25,
       pan: 0.75,
@@ -932,10 +922,126 @@ describe("resolveAudioEffect", () => {
     };
 
     expect(applyAudioEffectEndpoints({ bgm, resources })).toEqual({
-      volume: 50,
-      pan: -0.5,
+      volume: 25,
+      pan: 0.75,
       audioEffects: { resourceId: "crossfade" },
-      sounds: [{ id: "main", resourceId: "next", playbackRate: 0.75 }],
+      audioEffectMix: { volume: 50, pan: -0.5, playbackRate: 0.75 },
+      sounds: [{ id: "main", resourceId: "next", playbackRate: 2 }],
+    });
+  });
+
+  describe("applyAudioEffectEndpoints keeps the authored mix", () => {
+    const fadeResources = (tween) => ({
+      audioEffects: { fade: { type: "update", tween } },
+    });
+    const creatorBgm = {
+      volume: 75,
+      audioEffects: { resourceId: "fade" },
+      sounds: [{ id: "main", resourceId: "old", volume: 100 }],
+    };
+
+    it("records nothing when every final value is its identity", () => {
+      const resolved = applyAudioEffectEndpoints({
+        bgm: creatorBgm,
+        resources: fadeResources({
+          volume: {
+            keyframes: [{ startValue: 0, value: 100, duration: 1000 }],
+          },
+          pan: { keyframes: [{ startValue: -1, value: 0, duration: 1000 }] },
+          playbackRate: {
+            keyframes: [{ startValue: 0.5, value: 1, duration: 1000 }],
+          },
+        }),
+      });
+
+      expect(resolved).toEqual(creatorBgm);
+      expect(resolved).not.toHaveProperty("audioEffectMix");
+      expect(resolved).not.toBe(creatorBgm);
+    });
+
+    it("records only the final values that differ from their identity", () => {
+      expect(
+        applyAudioEffectEndpoints({
+          bgm: creatorBgm,
+          resources: fadeResources({
+            volume: { keyframes: [{ value: 30, duration: 100 }] },
+            pan: { keyframes: [{ value: 0, duration: 100 }] },
+          }),
+        }).audioEffectMix,
+      ).toEqual({ volume: 30 });
+    });
+
+    it("re-derives the effect mix instead of trusting a stale one", () => {
+      const stale = { ...creatorBgm, audioEffectMix: { volume: 5, pan: 1 } };
+
+      expect(
+        applyAudioEffectEndpoints({
+          bgm: stale,
+          resources: fadeResources({
+            volume: { keyframes: [{ value: 100, duration: 100 }] },
+          }),
+        }),
+      ).not.toHaveProperty("audioEffectMix");
+      expect(
+        applyAudioEffectEndpoints({
+          bgm: { ...stale, audioEffects: undefined },
+          resources: {},
+        }),
+      ).not.toHaveProperty("audioEffectMix");
+    });
+
+    it("records the effect mix for legacy single-sound BGM", () => {
+      expect(
+        applyAudioEffectEndpoints({
+          bgm: {
+            resourceId: "old",
+            volume: 80,
+            audioEffects: { resourceId: "fade" },
+          },
+          resources: fadeResources({
+            volume: { keyframes: [{ value: 50, duration: 100 }] },
+          }),
+        }),
+      ).toEqual({
+        resourceId: "old",
+        volume: 80,
+        audioEffects: { resourceId: "fade" },
+        audioEffectMix: { volume: 50 },
+      });
+    });
+
+    it.each([
+      ["an unknown resource", { resourceId: "missing" }, {}],
+      [
+        "a relative final keyframe",
+        { resourceId: "fade" },
+        fadeResources({
+          volume: { keyframes: [{ value: -10, relative: true, duration: 1 }] },
+        }),
+      ],
+      [
+        "a resource of another type",
+        { resourceId: "fade" },
+        { audioEffects: { fade: { type: "sequence" } } },
+      ],
+    ])("records nothing for %s", (_, audioEffects, resources) => {
+      expect(
+        applyAudioEffectEndpoints({
+          bgm: { ...creatorBgm, audioEffects },
+          resources,
+        }),
+      ).not.toHaveProperty("audioEffectMix");
+    });
+
+    it("records nothing for BGM without sounds", () => {
+      expect(
+        applyAudioEffectEndpoints({
+          bgm: { ...creatorBgm, sounds: [] },
+          resources: fadeResources({
+            volume: { keyframes: [{ value: 30, duration: 100 }] },
+          }),
+        }),
+      ).not.toHaveProperty("audioEffectMix");
     });
   });
 
@@ -1234,29 +1340,32 @@ describe("resolveAudioEffect", () => {
   });
 
   it("normalizes channel updates per sound without flattening the local mix", () => {
+    // The channel is authored at volume 80 and pan 0.25. The effect ends at
+    // 30% and -0.5, so the channel settles at volume 24 and pan -0.25, and
+    // each sound keeps its local volume and pan on top of that.
     const previousChannel = {
       ...oldChannel,
       children: [
-        { ...oldChannel.children[0], volume: 60, pan: 0.1 },
+        { ...oldChannel.children[0], volume: 60, pan: 0.35 },
         {
           ...oldChannel.children[0],
           id: "bgm:ambience",
           src: "ambience.ogg",
           volume: 32,
-          pan: -0.2,
+          pan: 0.05,
         },
       ],
     };
     const nextChannel = {
       ...oldChannel,
       children: [
-        { ...oldChannel.children[0], volume: 22.5, pan: -0.4 },
+        { ...oldChannel.children[0], volume: 18, pan: -0.15 },
         {
           ...oldChannel.children[0],
           id: "bgm:ambience",
           src: "ambience.ogg",
-          volume: 12,
-          pan: -0.7,
+          volume: 9.6,
+          pan: -0.45,
         },
       ],
     };
@@ -1284,6 +1393,25 @@ describe("resolveAudioEffect", () => {
         },
       },
     };
+    const authoredBgm = {
+      volume: 80,
+      pan: 0.25,
+      sounds: [
+        { id: "main", resourceId: "main", volume: 75, pan: 0.1 },
+        {
+          id: "ambience",
+          resourceId: "ambience",
+          volume: 40,
+          pan: -0.2,
+        },
+      ],
+    };
+    const nextBgm = applyAudioEffectEndpoints({
+      bgm: { ...authoredBgm, audioEffects: { resourceId: "mixed" } },
+      resources,
+    });
+    expect(nextBgm.audioEffectMix).toEqual({ volume: 30, pan: -0.5 });
+
     const effects = resolveAudioEffects({
       occurrence: {
         ...occurrence,
@@ -1291,43 +1419,90 @@ describe("resolveAudioEffect", () => {
       },
       resources,
       nextResources: resources,
-      nextBgm: {
-        volume: 30,
-        pan: -0.5,
-        sounds: [
-          { id: "main", resourceId: "main", volume: 75, pan: 0.1 },
-          {
-            id: "ambience",
-            resourceId: "ambience",
-            volume: 40,
-            pan: -0.2,
-          },
-        ],
-      },
+      previousBgm: authoredBgm,
+      nextBgm,
       previousChannel,
       nextChannel,
     });
 
     expect(effects).toHaveLength(2);
+    // Main: 80 * 50% = 40 and 80 * 30% = 24 on the channel, at 75% locally.
     expect(effects[0].properties.volume.update.keyframes).toEqual([
-      expect.objectContaining({ value: 37.5 }),
-      expect.objectContaining({ value: 22.5 }),
+      expect.objectContaining({ value: 30 }),
+      expect.objectContaining({ value: 18 }),
     ]);
+    // Ambience: the same channel values at 40% locally.
     expect(effects[1].properties.volume.update.keyframes).toEqual([
-      expect.objectContaining({ value: 20 }),
-      expect.objectContaining({ value: 12 }),
+      expect.objectContaining({ value: 16 }),
+      expect.objectContaining({ value: 9.6 }),
     ]);
+    // The 80% initial value is 64 on the channel.
     expect(
       effects.map((effect) => effect.properties.volume.update.initialValue),
-    ).toEqual([60, 32]);
+    ).toEqual([48, 25.6]);
+    // The -0.25 initial offset moves the channel pan from 0.25 to 0.
     expect(
       effects.map((effect) => effect.properties.pan.update.initialValue),
-    ).toEqual([-0.15, -0.45]);
+    ).toEqual([0.1, -0.2]);
     expect(
       effects.map(
         (effect) => effect.properties.pan.update.keyframes.at(-1).value,
       ),
-    ).toEqual([-0.4, -0.7]);
+    ).toEqual([-0.15, -0.45]);
+  });
+
+  it("offsets channel pan keyframes from the authored channel pan", () => {
+    const resources = {
+      sounds: { old: { fileId: "old.ogg" } },
+      audioEffects: {
+        swing: {
+          type: "update",
+          tween: {
+            pan: {
+              keyframes: [
+                { startValue: 0.5, value: -0.5, duration: 100 },
+                { value: 0, duration: 100 },
+              ],
+            },
+          },
+        },
+      },
+    };
+    const nextBgm = applyAudioEffectEndpoints({
+      bgm: {
+        pan: -0.25,
+        audioEffects: { resourceId: "swing" },
+        sounds: [{ id: "main", resourceId: "old" }],
+      },
+      resources,
+    });
+    expect(nextBgm).not.toHaveProperty("audioEffectMix");
+
+    const [effect] = resolveAudioEffects({
+      occurrence: { ...occurrence, selection: { resourceId: "swing" } },
+      resources,
+      previousBgm: { pan: 0.5, sounds: [{ id: "main", resourceId: "old" }] },
+      nextBgm,
+      previousChannel: {
+        ...oldChannel,
+        children: [{ ...oldChannel.children[0], pan: 0.5 }],
+      },
+      nextChannel: {
+        ...oldChannel,
+        children: [{ ...oldChannel.children[0], pan: -0.25 }],
+      },
+    });
+
+    expect(effect.properties.pan.update.keyframes).toEqual([
+      {
+        startValue: 0.25,
+        value: -0.75,
+        delay: 0,
+        duration: 100,
+        easing: "linear",
+      },
+      { value: -0.25, delay: 0, duration: 100, easing: "linear" },
+    ]);
   });
 
   it("resolves relative channel pan before composing a clamped local pan", () => {
@@ -1357,6 +1532,16 @@ describe("resolveAudioEffect", () => {
       },
     };
 
+    // The effect ends at a 0.4 offset from the authored channel pan of 0.
+    const nextBgm = applyAudioEffectEndpoints({
+      bgm: {
+        audioEffects: { resourceId: "panCurve" },
+        sounds: [{ id: "main", resourceId: "old", pan: 0.5 }],
+      },
+      resources,
+    });
+    expect(nextBgm.audioEffectMix).toEqual({ pan: 0.4 });
+
     const [effect] = resolveAudioEffects({
       occurrence: {
         ...occurrence,
@@ -1368,10 +1553,7 @@ describe("resolveAudioEffect", () => {
         pan: 0.9,
         sounds: [{ id: "main", resourceId: "old", pan: 0.5 }],
       },
-      nextBgm: {
-        pan: 0.4,
-        sounds: [{ id: "main", resourceId: "old", pan: 0.5 }],
-      },
+      nextBgm,
       previousChannel,
       nextChannel,
     });
@@ -1412,16 +1594,26 @@ describe("resolveAudioEffect", () => {
         },
       },
     };
+    // The channel is authored at pan 0.25 and the sweep ends 0.5 to the
+    // right of it, at 0.75.
+    const nextBgm = applyAudioEffectEndpoints({
+      bgm: {
+        pan: 0.25,
+        audioEffects: { resourceId: "panSweep" },
+        sounds: [{ id: "main", resourceId: "next" }],
+      },
+      resources: panResources,
+    });
     const resolvePan = ({ previousBgm, previousChannel }) =>
       resolveAudioEffects({
         occurrence: { ...occurrence, selection: { resourceId: "panSweep" } },
         resources: panResources,
         previousBgm,
-        nextBgm: { pan: 0.5, sounds: [{ id: "main", resourceId: "next" }] },
+        nextBgm,
         previousChannel,
         nextChannel: {
           ...oldChannel,
-          children: [{ ...oldChannel.children[0], src: "new.ogg", pan: 0.5 }],
+          children: [{ ...oldChannel.children[0], src: "new.ogg", pan: 0.75 }],
         },
       })[0].properties.pan.enter.keyframes.map((keyframe) => keyframe.value);
 
@@ -1437,13 +1629,29 @@ describe("resolveAudioEffect", () => {
             children: [{ ...oldChannel.children[0], pan: -0.4 }],
           },
         }),
-      ).toEqual([-0.2, 0.5]);
+      ).toEqual([-0.2, 0.75]);
     });
 
-    it("starts from the new channel pan when music starts", () => {
+    it("continues from the outgoing channel's effect mix", () => {
+      expect(
+        resolvePan({
+          previousBgm: {
+            pan: -0.4,
+            audioEffectMix: { pan: 0.2 },
+            sounds: [{ id: "main", resourceId: "old" }],
+          },
+          previousChannel: {
+            ...oldChannel,
+            children: [{ ...oldChannel.children[0], pan: -0.2 }],
+          },
+        }),
+      ).toEqual([0, 0.75]);
+    });
+
+    it("starts from the new channel's authored pan when music starts", () => {
       expect(
         resolvePan({ previousBgm: undefined, previousChannel: null }),
-      ).toEqual([0.7, 0.5]);
+      ).toEqual([0.45, 0.75]);
     });
   });
 
@@ -1482,7 +1690,7 @@ describe("resolveAudioEffect", () => {
     });
   });
 
-  it("writes update endpoints across a multi-sound BGM channel", () => {
+  it("records one channel effect mix for a multi-sound BGM channel", () => {
     const bgm = {
       volume: 80,
       pan: 0.25,
@@ -1505,13 +1713,9 @@ describe("resolveAudioEffect", () => {
       },
     };
 
-    expect(applyAudioEffectEndpoints({ bgm, resources })).toMatchObject({
-      volume: 30,
-      pan: -0.5,
-      sounds: [
-        { volume: 75, pan: 0.1, playbackRate: 0.75 },
-        { volume: 40, pan: -0.2, playbackRate: 0.75 },
-      ],
+    expect(applyAudioEffectEndpoints({ bgm, resources })).toEqual({
+      ...bgm,
+      audioEffectMix: { volume: 30, pan: -0.5, playbackRate: 0.75 },
     });
   });
 });

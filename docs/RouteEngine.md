@@ -1516,13 +1516,16 @@ Animation selections use `animations.resourceId` plus optional
 render-scoped behavior when omitted.
 
 BGM update effects use numeric keyframes for `volume`, `pan`, and
-`playbackRate`. The final keyframe must be absolute. When the line keeps or
-starts music, its value becomes the persistent BGM value after the effect
-finishes; intermediate keyframes only shape the tween. Retained sounds play the
-update as an update, added or source-replaced sounds as their incoming track,
-and, when the line stops every BGM sound, those sounds as their outgoing track
-(see Audio Channels). Relative pan keyframes continue from the channel pan
-before the line, or from the new channel pan when music starts. Channel-level
+`playbackRate`, relative to the authored mix (see
+[Audio Effects and the Authored Mix](#audio-effects-and-the-authored-mix)).
+The final keyframe must be absolute. An effect that ends at volume `100`, pan
+`0`, and playback rate `1` settles on the authored mix; another final value
+persists as a modulation of it after the effect finishes. Intermediate
+keyframes only shape the tween. Retained sounds play the update as an update,
+added or source-replaced sounds as their incoming track, and, when the line
+stops every BGM sound, those sounds as their outgoing track (see Audio
+Channels). Relative pan keyframes continue from the channel pan before the
+line, or from the new channel's authored pan when music starts. Channel-level
 volume and pan keyframes are flattened into each rendered sound while
 preserving that sound's authored or resource-level volume and pan.
 
@@ -2342,15 +2345,16 @@ Engine audio is authored with `sounds` and rendered as Route Graphics
 - BGM `audioEffects` updates animate one track per sound, like the visual
   update fallback in `AnimationModel.md`, preferring the sounds the line
   plays. A retained sound plays the update as an update. An added or
-  source-replaced sound plays it as its incoming (`enter`) track, and its final
-  keyframes must still match the sound's persistent mix. When the line stops
+  source-replaced sound plays it as its incoming (`enter`) track, which ends on
+  the sound's persistent mix. When the line stops
   every sound, each one plays the update as its outgoing (`exit`) track, so an
   update that fades to 0 fades the music out. A sound removed while others play
   or enter stops without an effect; if those others do not change, the update
   has no effect at all. Transitions target only added, removed, or
   source-replaced sounds. A sound that keeps playing from the same source
-  plays no transition and takes its new mix at once, including the final
-  `next` values that the transition writes into the persistent mix. Whether a
+  plays no transition and takes its new mix at once, including any final
+  `next` values other than the identities, which persist as a modulation of
+  the authored mix. Whether a
   line keeps a sound depends on how the player reached it (the previous line,
   a section transition, or a reset), so the same line can start the music
   with the transition on one path and keep it on another.
@@ -2469,6 +2473,69 @@ channel's authored `muted: true` is combined with the runtime mute.
 
 Legacy single-sound BGM and Voice payloads preserve their previous effective
 volume behavior when compiled into channels.
+
+### Audio Effects and the Authored Mix
+
+Audio effect keyframes are relative to the mix they play on, so one effect
+resource works for any authored volume, pan, or playback rate:
+
+| Property       | Keyframe value                         | Identity |
+| -------------- | -------------------------------------- | -------- |
+| `volume`       | Percentage of the authored volume      | `100`    |
+| `pan`          | Offset added to the authored pan       | `0`      |
+| `playbackRate` | Multiple of the authored playback rate | `1`      |
+
+A fade-in from `0` to `100` on a BGM channel authored at volume `75` renders
+from `0` to `75`. A relative volume keyframe is scaled the same way: `-20` on
+that channel moves it by 15 points. Pan is composed before it is clamped to
+`-1..1`.
+
+A BGM `audioEffects` selection whose final absolute values are the identities
+settles on the authored mix. A final value other than the identity persists
+after the effect finishes: an update that ends at volume `30` leaves the music
+at 30% of its authored volume. The engine records those values in presentation
+state as `bgm.audioEffectMix` (for example `{ volume: 30 }`), next to the
+unchanged authored fields. Lines without a `bgm` action, save data, rollback,
+and skipped transitions keep it. The next `bgm` action replaces it, with its
+own selection's final values or none.
+
+The final values that persist are read when the line is folded into
+presentation state, before templates resolve. A selection that only resolves
+when the line starts, such as a templated `resourceId`, must therefore end at
+the identities; the engine rejects one that does not.
+
+Each canonical sound may also declare `beginEffect` and `endEffect`, which
+select an audio effect resource that Route Graphics plays when the sound
+starts and before it ends. Their keyframes are relative to that sound's
+rendered mix, the same way: on a BGM sound they scale its rendered volume
+(channel, any persistent channel effect, and sound), on an SFX or Voice sound
+they scale the sound's own volume, while the channel volume stays on the
+channel node. Runtime `musicVolume` and `soundVolume` also stay on the channel
+node and never change effect keyframes.
+
+```yaml
+resources:
+  audioEffects:
+    fadeIn:
+      type: update
+      tween:
+        volume:
+          keyframes: [{ startValue: 0, value: 100, duration: 1000 }]
+    duck:
+      type: update
+      tween:
+        volume:
+          keyframes: [{ value: 30, duration: 500 }]
+
+actions:
+  bgm:
+    volume: 75
+    audioEffects: { resourceId: duck } # settles at 22.5 and stays there
+    sounds:
+      - id: theme
+        resourceId: music_1
+        beginEffect: { resourceId: fadeIn } # fades in to 22.5
+```
 
 ### Video Audio
 

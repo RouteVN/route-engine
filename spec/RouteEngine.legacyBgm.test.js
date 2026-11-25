@@ -123,7 +123,8 @@ describe("legacy BGM playback identity", () => {
   ])(
     "targets a %s update effect at the retained legacy sound",
     (_, makeBgm) => {
-      const updated = makeBgm(35);
+      // The update ends at 35% of the authored channel volume of 100.
+      const updated = makeBgm(100);
       updated.audioEffects = { resourceId: "quieter" };
       const engine = createEngine([{ bgm: legacyBgm(80) }, { bgm: updated }]);
 
@@ -150,9 +151,9 @@ describe("legacy BGM playback identity", () => {
       const engine = createEngine([
         { bgm: { volume: 80, sounds: [sound] } },
         {
+          // The effect ends at 35% and a 0.3 pan offset of the authored
+          // channel volume of 100 and pan of 0.
           bgm: {
-            volume: 35,
-            pan: 0.3,
             sounds: [sound],
             audioEffects: { resourceId: "mix" },
           },
@@ -309,7 +310,6 @@ describe("legacy BGM playback identity", () => {
         {
           bgm: {
             sounds: [theme],
-            volume: 35,
             audioEffects: { resourceId: "quieter" },
           },
         },
@@ -358,7 +358,6 @@ describe("legacy BGM playback identity", () => {
       {
         bgm: {
           sounds: [theme, missing, companion],
-          volume: 35,
           audioEffects: { resourceId: "quieter" },
         },
       },

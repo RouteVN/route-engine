@@ -18,7 +18,12 @@ import {
   getBgmSounds,
   resolveBgmSoundRenderIds,
 } from "../audioIds.js";
-import { resolveSoundBoundaryEffect } from "../resolveAudioEffects.js";
+import {
+  clampAudioPan,
+  composeAudioVolume,
+  getBgmChannelMix,
+  resolveSoundBoundaryEffect,
+} from "../resolveAudioEffects.js";
 
 const jemplFunctions = {
   __arrayOrEmpty: (value) => (Array.isArray(value) ? value : []),
@@ -2368,6 +2373,9 @@ const OPTIONAL_SOUND_PROPERTIES = [
   "endAt",
 ];
 
+// `applyMix` composes any channel layers that the engine flattens into the
+// sound node, such as the BGM channel mix. Boundary effects are compiled after
+// it, so they play relative to the mix the node finally declares.
 const createSoundNode = ({
   id,
   sound,
@@ -2376,6 +2384,7 @@ const createSoundNode = ({
   soundPath = "sound",
   defaultLoop = false,
   skipTransitionsAndAnimations = false,
+  applyMix = (node) => node,
 }) => {
   const node = {
     id,
@@ -2398,11 +2407,13 @@ const createSoundNode = ({
   if (sound.playback !== undefined) {
     node.playback = structuredClone(sound.playback);
   }
+  applyMix(node);
   for (const field of ["beginEffect", "endEffect"]) {
     const effect = resolveSoundBoundaryEffect({
       selection: sound[field],
       selectionPath: `${soundPath}.${field}`,
       resources: projectResources,
+      mix: node,
     });
     if (effect && !skipTransitionsAndAnimations) node[field] = effect;
   }
@@ -2419,12 +2430,14 @@ const createSoundNode = ({
   return node;
 };
 
-const clampAudioPan = (pan) => Math.max(-1, Math.min(1, pan));
-
-const applyBgmSoundMix = ({ node, bgm, sound, resource, usesLegacySound }) => {
-  if (!usesLegacySound) {
-    node.volume = getLayeredVolume(
-      bgm.volume ?? DEFAULT_AUTHORED_AUDIO_VOLUME,
+// Flattens the BGM channel layer, including the persistent final values of the
+// line's audio effect, into one rendered sound. resolveAudioEffects compiles
+// effect keyframes against the same layers, so their endpoints match.
+const applyBgmSoundMix = ({ node, bgm, sound, resource }) => {
+  const channel = getBgmChannelMix(bgm);
+  if (channel.volume !== undefined) {
+    node.volume = composeAudioVolume(
+      channel.volume,
       node.volume ?? DEFAULT_AUTHORED_AUDIO_VOLUME,
     );
   }
@@ -2436,10 +2449,13 @@ const applyBgmSoundMix = ({ node, bgm, sound, resource, usesLegacySound }) => {
     node.muted = bgm.muted === true || node.muted === true;
   }
 
-  const hasBgmPan = bgm.pan !== undefined;
   const hasSoundPan = sound.pan !== undefined || resource.pan !== undefined;
-  if (hasBgmPan || hasSoundPan) {
-    node.pan = clampAudioPan((bgm.pan ?? 0) + (node.pan ?? 0));
+  if (channel.pan !== undefined || hasSoundPan) {
+    node.pan = clampAudioPan((channel.pan ?? 0) + (node.pan ?? 0));
+  }
+
+  if (channel.playbackRate !== undefined) {
+    node.playbackRate = (node.playbackRate ?? 1) * channel.playbackRate;
   }
 
   return node;
@@ -4565,20 +4581,21 @@ export const createBgmChannelNode = ({
         : sound;
 
       children.push(
-        applyBgmSoundMix({
-          node: createSoundNode({
-            id: soundRenderIds.get(sound.id),
-            sound: renderSound,
-            resource: audioResource,
-            projectResources: resources,
-            soundPath: `bgm.sounds[${JSON.stringify(sound.id)}]`,
-            defaultLoop: loopsChannel ? false : true,
-            skipTransitionsAndAnimations,
-          }),
-          bgm,
+        createSoundNode({
+          id: soundRenderIds.get(sound.id),
           sound: renderSound,
           resource: audioResource,
-          usesLegacySound,
+          projectResources: resources,
+          soundPath: `bgm.sounds[${JSON.stringify(sound.id)}]`,
+          defaultLoop: loopsChannel ? false : true,
+          skipTransitionsAndAnimations,
+          applyMix: (node) =>
+            applyBgmSoundMix({
+              node,
+              bgm,
+              sound: renderSound,
+              resource: audioResource,
+            }),
         }),
       );
     });

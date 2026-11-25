@@ -40,7 +40,7 @@ $defs:
       - easeInOutElastic
   keyframeValue:
     type: number
-    description: Numeric tween value; when the line keeps or starts music, the final absolute value becomes the persistent BGM property value
+    description: Numeric tween value relative to the mix the effect plays on, as a percentage of its volume, an offset from its pan, or a multiple of its playback rate. A final absolute value other than 100, 0, or 1 persists as a modulation of the authored BGM mix when the line keeps or starts music
   keyframe:
     type: object
     required: [value, duration]
@@ -195,7 +195,7 @@ properties:
     $ref: "#/$defs/propertyTracks"
   next:
     $ref: "#/$defs/propertyTracks"
-    description: Incoming property tracks must end at the next sound's declared property values
+    description: Incoming property tracks, which settle on the next sound's authored mix as modulated by their final values
 allOf:
   - if:
       properties:

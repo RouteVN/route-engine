@@ -1,9 +1,19 @@
-import { createBgmSoundRenderId } from "./audioIds.js";
+import { createBgmSoundRenderId, getBgmSounds } from "./audioIds.js";
 import { getOwnProperty } from "./util.js";
 
 const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
 
 const DEFAULT_AUDIO_VALUES = Object.freeze({
+  volume: 100,
+  pan: 0,
+  playbackRate: 1,
+});
+
+// Audio effects play relative to the mix they are applied to: volume is a
+// percentage of that mix, pan an offset from it, and playback rate a multiple
+// of it. A value at these identities leaves the mix unchanged, so an effect
+// that ends at them settles on the authored mix.
+export const AUDIO_EFFECT_IDENTITY = Object.freeze({
   volume: 100,
   pan: 0,
   playbackRate: 1,
@@ -39,100 +49,130 @@ const areEquivalentAudioValues = (authored, rendered) =>
   Math.abs(authored - rendered) <=
     Number.EPSILON * Math.max(1, Math.abs(authored), Math.abs(rendered));
 
-const clampAudioPan = (pan) => Math.max(-1, Math.min(1, pan));
+export const clampAudioPan = (pan) => Math.max(-1, Math.min(1, pan));
 
-const getCanonicalSoundProperty = ({
-  bgm,
-  resources,
-  renderedSound,
-  property,
-}) => {
-  const sound =
-    bgm?.sounds?.length === 1
-      ? bgm.sounds[0]
-      : bgm?.sounds?.find(
-          (sound) => createBgmSoundRenderId(bgm, sound) === renderedSound?.id,
-        );
-  const resource = getOwnProperty(resources.sounds, sound?.resourceId);
-  return (
-    sound?.[property] ?? resource?.[property] ?? DEFAULT_AUDIO_VALUES[property]
+// Scales a volume by a percentage. Either side at 100 returns the other one
+// unchanged, so an identity never introduces floating-point drift.
+export const scaleAudioVolume = (volume, percent) => {
+  if (percent === 100) return volume;
+  if (volume === 100) return percent;
+  return (volume * percent) / 100;
+};
+
+// Composes a channel volume with a sound volume, as the BGM render does.
+export const composeAudioVolume = (channelVolume, soundVolume) =>
+  (channelVolume * soundVolume) / 100;
+
+// The channel layer of the BGM mix. `audioEffectMix` holds the final values of
+// the line's audio effect that differ from the identities; it modulates the
+// authored channel instead of replacing it. Legacy single-sound BGM has no
+// channel volume layer, so its volume is undefined unless an effect sets one.
+export const getBgmChannelMix = (bgm, { includeEffectMix = true } = {}) => {
+  const effectMix = includeEffectMix ? (bgm?.audioEffectMix ?? {}) : {};
+  let volume = Array.isArray(bgm?.sounds) ? (bgm.volume ?? 100) : undefined;
+  if (effectMix.volume !== undefined) {
+    volume = scaleAudioVolume(volume ?? 100, effectMix.volume);
+  }
+  return {
+    volume,
+    pan:
+      effectMix.pan === undefined ? bgm?.pan : (bgm?.pan ?? 0) + effectMix.pan,
+    playbackRate: effectMix.playbackRate,
+  };
+};
+
+const findAuthoredBgmSound = (bgm, renderedSound) => {
+  const sounds = getBgmSounds(bgm);
+  if (sounds.length === 1) return sounds[0];
+  return sounds.find(
+    (sound) => createBgmSoundRenderId(bgm, sound) === renderedSound?.id,
   );
 };
 
-const normalizeChannelPropertyValue = ({
-  property,
-  value,
-  relative,
+// The layers an audio effect value is applied to for one rendered BGM sound.
+// Incoming and update tracks play against the authored mix and end at the
+// persistent mix; outgoing tracks play against the mix the sound is currently
+// rendered with, including the previous line's audio effect.
+const getBgmSoundLayers = ({
   bgm,
   resources,
   renderedSound,
+  includeEffectMix,
 }) => {
-  if (!bgm || !renderedSound) return value;
+  // Without authored BGM state there is no mix to play against, and values
+  // are emitted as written. The engine always passes the BGM state.
+  if (!bgm) return undefined;
 
-  if (property === "volume") {
-    const soundVolume = getCanonicalSoundProperty({
-      bgm,
-      resources,
-      renderedSound,
-      property,
-    });
-    return (value * soundVolume) / 100;
-  }
-
-  if (property === "pan" && !relative) {
-    const soundPan = getCanonicalSoundProperty({
-      bgm,
-      resources,
-      renderedSound,
-      property,
-    });
-    return clampAudioPan(value + soundPan);
-  }
-
-  return value;
+  const sound = findAuthoredBgmSound(bgm, renderedSound);
+  const resource = getOwnProperty(resources?.sounds, sound?.resourceId);
+  const channel = getBgmChannelMix(bgm, { includeEffectMix });
+  return {
+    channelVolume: channel.volume,
+    soundVolume:
+      sound?.volume ?? resource?.volume ?? DEFAULT_AUDIO_VALUES.volume,
+    channelPan: channel.pan ?? DEFAULT_AUDIO_VALUES.pan,
+    soundPan: sound?.pan ?? resource?.pan ?? DEFAULT_AUDIO_VALUES.pan,
+    playbackRate:
+      (sound?.playbackRate ??
+        resource?.playbackRate ??
+        DEFAULT_AUDIO_VALUES.playbackRate) *
+      (channel.playbackRate ?? AUDIO_EFFECT_IDENTITY.playbackRate),
+  };
 };
 
-const resolveRelativeChannelPanKeyframes = ({
-  authoredInitialValue,
-  authoredKeyframes,
-  baselineBgm,
-  compiledKeyframes,
-  bgm,
-  resources,
-  renderedSound,
-}) => {
-  if (!bgm || !renderedSound) return compiledKeyframes;
+// Maps one channel audio effect value onto a rendered BGM sound. Volume and
+// playback rate scale linearly, so relative deltas map the same way as
+// absolute values. Relative pan is resolved by
+// resolveRelativeChannelPanKeyframes.
+const mapChannelEffectValue = ({ property, value, relative, layers }) => {
+  if (!layers) return value;
+  if (property === "volume") {
+    return composeAudioVolume(
+      scaleAudioVolume(layers.channelVolume ?? 100, value),
+      layers.soundVolume,
+    );
+  }
+  if (property === "playbackRate") {
+    return layers.playbackRate * value;
+  }
+  if (relative) return value;
+  return clampAudioPan(layers.channelPan + value + layers.soundPan);
+};
 
-  const localPan = getCanonicalSoundProperty({
-    bgm,
-    resources,
-    renderedSound,
-    property: "pan",
-  });
-  let channelPan =
-    authoredInitialValue ?? baselineBgm?.pan ?? DEFAULT_AUDIO_VALUES.pan;
+// Relative pan keyframes move the channel pan before Route Graphics composes
+// it with the local pan and clamps it, so they are resolved to absolute
+// rendered values here. Absolute pan values are offsets from the channel pan
+// the track plays against; relative values continue from the previous
+// keyframe, or from the channel pan before the line.
+const resolveRelativeChannelPanKeyframes = ({
+  authored,
+  baselineChannelPan,
+  compiledKeyframes,
+  layers,
+}) => {
+  let channelPan = hasOwn(authored, "initialValue")
+    ? layers.channelPan + authored.initialValue
+    : (baselineChannelPan ?? layers.channelPan);
 
   return compiledKeyframes.map((compiled, index) => {
-    const authored = authoredKeyframes[index];
-    if (authored.relative !== true) {
-      channelPan = authored.value;
+    const keyframe = authored.keyframes[index];
+    if (keyframe.relative !== true) {
+      channelPan = layers.channelPan + keyframe.value;
       return compiled;
     }
 
-    const startChannelPan = hasOwn(authored, "startValue")
-      ? channelPan + authored.startValue
+    const startChannelPan = hasOwn(keyframe, "startValue")
+      ? channelPan + keyframe.startValue
       : channelPan;
-    const nextChannelPan = startChannelPan + authored.value;
+    const nextChannelPan = startChannelPan + keyframe.value;
     const { relative: _, ...absolute } = compiled;
     channelPan = nextChannelPan;
 
-    return {
-      ...absolute,
-      ...(hasOwn(authored, "startValue")
-        ? { startValue: clampAudioPan(startChannelPan + localPan) }
-        : {}),
-      value: clampAudioPan(nextChannelPan + localPan),
-    };
+    if (hasOwn(keyframe, "startValue")) {
+      absolute.startValue = clampAudioPan(startChannelPan + layers.soundPan);
+    }
+    absolute.value = clampAudioPan(nextChannelPan + layers.soundPan);
+    return absolute;
   });
 };
 
@@ -207,41 +247,46 @@ const compileProperty = ({
 const compileChannelProperty = ({
   authored,
   bgm,
-  baselineBgm = bgm,
+  baselineChannelPan,
+  includeEffectMix,
   property,
   propertyPath,
   renderedSound,
   resources,
   speed,
 }) => {
+  const layers = getBgmSoundLayers({
+    bgm,
+    resources,
+    renderedSound,
+    includeEffectMix,
+  });
   const compiled = compileProperty({
     property,
     authored,
     speed,
     propertyPath,
     normalizeValue: ({ value, relative }) =>
-      normalizeChannelPropertyValue({
-        property,
-        value,
-        relative,
-        bgm,
-        resources,
-        renderedSound,
-      }),
+      mapChannelEffectValue({ property, value, relative, layers }),
   });
-  if (property === "pan") {
+  if (property === "pan" && bgm) {
     compiled.keyframes = resolveRelativeChannelPanKeyframes({
-      authoredInitialValue: authored.initialValue,
-      authoredKeyframes: authored.keyframes,
-      baselineBgm,
+      authored,
+      baselineChannelPan,
       compiledKeyframes: compiled.keyframes,
-      bgm,
-      resources,
-      renderedSound,
+      layers,
     });
   }
   return compiled;
 };
+
+// The channel pan of a BGM state as it was rendered, including its audio
+// effect, or as authored for a channel that only starts now.
+const getRenderedChannelPan = (bgm, { includeEffectMix = true } = {}) =>
+  bgm
+    ? (getBgmChannelMix(bgm, { includeEffectMix }).pan ??
+      DEFAULT_AUDIO_VALUES.pan)
+    : undefined;
 
 const settlePropertyEndpoint = ({
   actionPath,
@@ -261,10 +306,25 @@ const settlePropertyEndpoint = ({
   finalKeyframe.value = persistentValue;
 };
 
+// Maps one boundary effect value onto the mix a sound declares to Route
+// Graphics. Route Graphics plays boundary keyframes as written, so a fade
+// that ends at 100 must end at the sound's declared volume, not at full
+// volume.
+const mapSoundEffectValue = ({ property, value, relative, mix }) => {
+  if (property === "volume") return scaleAudioVolume(mix.volume, value);
+  if (property === "playbackRate") return mix.playbackRate * value;
+  if (relative) return value;
+  return clampAudioPan(mix.pan + value);
+};
+
+// `mix` is the sound's declared volume, pan, and playback rate after every
+// authored layer that Route Graphics applies to the sound node itself. It
+// defaults to the identities, which emit the authored values unchanged.
 export const resolveSoundBoundaryEffect = ({
   selection,
   selectionPath,
   resources = {},
+  mix = {},
 }) => {
   if (!selection) return undefined;
 
@@ -283,6 +343,11 @@ export const resolveSoundBoundaryEffect = ({
   }
 
   const speed = getPlaybackSpeed(selection, selectionPath);
+  const soundMix = {
+    volume: mix.volume ?? DEFAULT_AUDIO_VALUES.volume,
+    pan: mix.pan ?? DEFAULT_AUDIO_VALUES.pan,
+    playbackRate: mix.playbackRate ?? DEFAULT_AUDIO_VALUES.playbackRate,
+  };
   const properties = {};
   for (const property of AUDIO_EFFECT_PROPERTIES) {
     if (!hasOwn(resource.tween, property)) continue;
@@ -291,14 +356,26 @@ export const resolveSoundBoundaryEffect = ({
       authored: resource.tween[property],
       speed,
       propertyPath: `${resourcePath}.tween.${property}`,
+      normalizeValue: ({ value, relative }) =>
+        mapSoundEffectValue({ property, value, relative, mix: soundMix }),
     });
   }
 
   return properties;
 };
 
+// Records the final values of the BGM audio effect that persist after it
+// finishes. The authored volume, pan, and playback rate stay as written; a
+// final value other than its identity is kept in `audioEffectMix` and
+// modulates them when the BGM renders. An effect that ends at the identities
+// leaves the authored mix exactly as it was.
 export const applyAudioEffectEndpoints = ({ bgm, resources = {} }) => {
-  const resourceId = bgm?.audioEffects?.resourceId;
+  if (!bgm) return bgm;
+
+  const resolvedBgm = structuredClone(bgm);
+  delete resolvedBgm.audioEffectMix;
+
+  const resourceId = bgm.audioEffects?.resourceId;
   const resource = getOwnProperty(resources.audioEffects, resourceId);
   const propertyTracks =
     resource?.type === "update"
@@ -306,13 +383,9 @@ export const applyAudioEffectEndpoints = ({ bgm, resources = {} }) => {
       : resource?.type === "transition"
         ? resource.next
         : undefined;
-  if (!propertyTracks) return bgm;
+  if (!propertyTracks || getBgmSounds(bgm).length === 0) return resolvedBgm;
 
-  const sounds = bgm.sounds ?? [];
-  if (sounds.length === 0) return bgm;
-
-  const resolvedBgm = structuredClone(bgm);
-
+  const effectMix = {};
   for (const property of AUDIO_EFFECT_PROPERTIES) {
     if (!hasOwn(propertyTracks, property)) continue;
 
@@ -325,17 +398,14 @@ export const applyAudioEffectEndpoints = ({ bgm, resources = {} }) => {
       continue;
     }
 
-    if (property === "volume") {
-      resolvedBgm.volume = finalKeyframe.value;
-    } else if (property === "pan") {
-      resolvedBgm.pan = finalKeyframe.value;
-    } else {
-      resolvedBgm.sounds.forEach((sound) => {
-        sound.playbackRate = finalKeyframe.value;
-      });
+    if (finalKeyframe.value !== AUDIO_EFFECT_IDENTITY[property]) {
+      effectMix[property] = finalKeyframe.value;
     }
   }
 
+  if (Object.keys(effectMix).length > 0) {
+    resolvedBgm.audioEffectMix = effectMix;
+  }
   return resolvedBgm;
 };
 
@@ -347,13 +417,15 @@ const createBaseEffect = (occurrence, targetId) => ({
 
 // Compile one authored property track on one side of a handoff. `side` is the
 // sound with its BGM and resources: the outgoing side for an exit track, the
-// incoming side otherwise. `baselineBgm` holds the channel pan that relative
-// pan keyframes start from. Enter and update tracks must end at the incoming
-// sound's persistent mix.
+// incoming side otherwise. An exit track plays against the mix the outgoing
+// sound is rendered with; enter and update tracks play against the incoming
+// sound's authored mix and must end at its persistent mix.
+// `baselineChannelPan` is the channel pan that relative pan keyframes start
+// from.
 const compileLifecycleTrack = ({
   phase,
   side,
-  baselineBgm,
+  baselineChannelPan,
   authored,
   property,
   propertyPath,
@@ -363,7 +435,8 @@ const compileLifecycleTrack = ({
   const track = compileChannelProperty({
     authored,
     bgm: side.bgm,
-    baselineBgm,
+    baselineChannelPan,
+    includeEffectMix: phase === "exit",
     property,
     propertyPath,
     renderedSound: side.sound,
@@ -453,7 +526,7 @@ export const resolveAudioEffect = ({
         lifecycle.exit = compileLifecycleTrack({
           phase: "exit",
           side: previous,
-          baselineBgm: previousBgm,
+          baselineChannelPan: getRenderedChannelPan(previousBgm),
           authored: previousTrack,
           property,
           propertyPath: `${resourcePath}.prev.${property}`,
@@ -467,7 +540,9 @@ export const resolveAudioEffect = ({
         lifecycle.enter = compileLifecycleTrack({
           phase: "enter",
           side: next,
-          baselineBgm: nextBgm,
+          baselineChannelPan: getRenderedChannelPan(nextBgm, {
+            includeEffectMix: false,
+          }),
           authored: nextTrack,
           property,
           propertyPath: `${resourcePath}.next.${property}`,
@@ -482,16 +557,18 @@ export const resolveAudioEffect = ({
     }
   } else if (resource.type === "update") {
     const phase = getUpdatePhase(previousSound, nextSound);
-    // Relative pan continues from the channel as it was before the line; a
-    // channel that only starts now has its own pan.
-    const baselineBgm =
-      phase === "enter" ? (previousBgm ?? nextBgm) : previousBgm;
+    // Relative pan continues from the channel as it was rendered before the
+    // line; a channel that only starts now has its own authored pan.
+    const baselineChannelPan =
+      phase === "enter" && !previousBgm
+        ? getRenderedChannelPan(nextBgm, { includeEffectMix: false })
+        : getRenderedChannelPan(previousBgm);
     for (const property of AUDIO_EFFECT_PROPERTIES) {
       if (!hasOwn(resource.tween, property)) continue;
       const track = compileLifecycleTrack({
         phase,
         side: phase === "exit" ? previous : next,
-        baselineBgm,
+        baselineChannelPan,
         authored: resource.tween[property],
         property,
         propertyPath: `${resourcePath}.tween.${property}`,
@@ -523,6 +600,31 @@ export const resolveAudioEffect = ({
   };
 };
 
+// The persistent BGM mix is recorded from the line's authored selection, while
+// the effect plays the selection as resolved when the line starts. Templated
+// resource IDs only resolve then, so the recorded mix cannot hold their final
+// values. Reject the line instead of playing an effect that settles on a mix
+// it was not compiled against.
+const assertRecordedAudioEffectMix = ({ occurrence, nextBgm, resources }) => {
+  if (!nextBgm || getBgmSounds(nextBgm).length === 0) return;
+
+  const expected = applyAudioEffectEndpoints({
+    bgm: { ...nextBgm, audioEffects: occurrence.selection },
+    resources,
+  }).audioEffectMix;
+  if (
+    JSON.stringify(expected ?? {}) ===
+    JSON.stringify(nextBgm.audioEffectMix ?? {})
+  ) {
+    return;
+  }
+
+  const actionPath = occurrence.actionPath ?? "bgm";
+  throw new Error(
+    `[${actionPath}.audioEffects] Audio effect "${occurrence.selection.resourceId}" ends at values that persist in the BGM mix, but the mix was recorded without them. A selection that only resolves when the line starts, such as a templated resource ID, must end at volume 100, pan 0, and playbackRate 1.`,
+  );
+};
+
 export const resolveAudioEffects = (options) => {
   const nextResources = options.nextResources ?? options.resources;
   const occurrence = options.occurrence;
@@ -532,6 +634,13 @@ export const resolveAudioEffects = (options) => {
   const nextSounds = options.nextChannel?.children ?? [];
   const resourceId = occurrence.selection.resourceId;
   const resource = nextResources?.audioEffects?.[resourceId];
+  if (resource && ["transition", "update"].includes(resource.type)) {
+    assertRecordedAudioEffectMix({
+      occurrence,
+      nextBgm: options.nextBgm,
+      resources: nextResources,
+    });
+  }
 
   const createSingleSoundChannel = (channel, sound) => {
     if (!sound) return null;

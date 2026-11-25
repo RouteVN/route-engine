@@ -72,7 +72,7 @@ resources:
               relative: true
               duration: 1000
               easing: linear
-            - value: 0.4
+            - value: 0
               duration: 1000
               easing: linear
   colors:

@@ -28,7 +28,7 @@ steps:
   - action: assert
     type: js
     global: __vtLastRenderState.audio.0.children.0.volume
-    value: 100
+    value: 90
   - action: assert
     type: js
     global: __vtLastAudioEffect
@@ -45,7 +45,7 @@ steps:
   - action: assert
     type: js
     global: __vtLastRenderState.audio.0.children.0.volume
-    value: 50
+    value: 35
   - action: assert
     type: js
     global: __vtLastAudioEffect
@@ -141,7 +141,7 @@ story:
                 control:
                   resourceId: toSection
                 bgm:
-                  volume: 70
+                  volume: 90
                   audioEffects:
                     resourceId: fade-in
                   sounds:
